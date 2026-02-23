@@ -1,0 +1,426 @@
+Build a full-stack MVP web application called TrustLayer.
+
+TrustLayer is an escrow-backed milestone workflow system for private freelance deals (not a marketplace).
+
+Tech Stack:
+
+Frontend: Next.js + TailwindCSS
+
+Backend: Node.js + Express (or NestJS if structured)
+
+Database: PostgreSQL
+
+Auth: JWT authentication
+
+Payments: Stripe Connect (structure only, mock first)
+
+Architecture must be modular and clean.
+
+🔐 1. AUTHENTICATION SYSTEM
+
+Create User model:
+
+id (UUID)
+
+full_name
+
+email (unique)
+
+password (hashed with bcrypt)
+
+role (ENUM: BUYER, FREELANCER)
+
+profile_completed (boolean, default false)
+
+created_at
+
+Features:
+
+Signup (must choose role)
+
+Login
+
+JWT token
+
+Protected routes middleware
+
+Logout
+
+After signup → redirect to Profile Completion.
+
+👤 2. PROFILE COMPLETION (MANDATORY)
+
+Buyer Profile fields:
+
+company_name
+
+phone
+
+country
+
+Freelancer Profile fields:
+
+skills (text)
+
+portfolio_link
+
+phone
+
+country
+
+Users cannot create or join projects unless profile_completed = true.
+
+📁 3. PROJECT SYSTEM
+
+Project Model:
+
+id (UUID)
+
+project_code (6-character unique uppercase code like X7K9P2)
+
+title
+
+description
+
+created_by (User ID)
+
+buyer_id (nullable)
+
+freelancer_id (nullable)
+
+status (ENUM):
+
+DRAFT
+
+WAITING_FOR_ACCEPTANCE
+
+WAITING_FOR_FUNDING
+
+ACTIVE
+
+UNDER_REVIEW
+
+DISPUTED
+
+COMPLETED
+
+CANCELLED
+
+expires_at (48 hour auto expiry)
+
+created_at
+
+When project is created:
+
+Assign creator role automatically
+
+Generate unique project code
+
+Set status = WAITING_FOR_ACCEPTANCE
+
+Set expires_at = now + 48 hours
+
+🔗 4. PROJECT CODE CONNECTION FLOW
+
+Either buyer or freelancer can create project.
+
+Second party enters project code:
+
+System:
+
+Fetch project
+
+Show summary (title, description, milestones)
+
+Buttons: Accept / Reject
+
+If accepted:
+
+Assign second party ID
+
+Set status = WAITING_FOR_FUNDING
+
+If rejected:
+
+Set status = CANCELLED
+
+If expires_at passed:
+
+Auto mark CANCELLED
+
+💰 5. MILESTONE SYSTEM
+
+Milestone Model:
+
+id (UUID)
+
+project_id
+
+title
+
+description
+
+amount
+
+deadline (date)
+
+status (ENUM):
+
+PENDING
+
+SUBMITTED
+
+REVISION_REQUESTED
+
+APPROVED
+
+RELEASED
+
+submission_url (nullable)
+
+created_at
+
+Project must have at least 1 milestone before funding.
+
+🏦 6. ESCROW STRUCTURE (Stripe-Ready, Mock First)
+
+Escrow Model:
+
+id
+
+project_id
+
+total_amount
+
+funded (boolean)
+
+funded_at
+
+released_amount
+
+remaining_amount
+
+Funding Logic:
+
+When Buyer clicks "Fund Project":
+
+Create mock Stripe payment session
+
+After success:
+
+escrow.funded = true
+
+status = ACTIVE
+
+funded_at = now
+
+Freelancer cannot submit work if funded = false.
+
+🔄 7. WORKFLOW ENGINE (STRICT RULES)
+
+When project ACTIVE:
+
+Freelancer can:
+
+Submit milestone
+
+Add submission_url
+
+milestone.status = SUBMITTED
+
+project.status = UNDER_REVIEW
+
+Buyer can:
+
+Approve:
+
+milestone.status = APPROVED
+
+escrow.released_amount += milestone.amount
+
+escrow.remaining_amount -= milestone.amount
+
+milestone.status = RELEASED
+
+If all milestones RELEASED → project.status = COMPLETED
+
+Request Revision:
+
+milestone.status = REVISION_REQUESTED
+
+project.status = ACTIVE
+
+Raise Dispute:
+
+project.status = DISPUTED
+
+Save dispute_reason
+
+⚖ 8. DISPUTE SYSTEM (MVP SIMPLE)
+
+Create Admin role (hardcoded for MVP).
+
+Admin can:
+
+Release funds
+
+Refund buyer (mock logic)
+
+Partial release
+
+Mark project COMPLETED
+
+All dispute actions must be logged.
+
+⏳ 9. DEADLINE MONITOR SYSTEM
+
+Create background job (simple cron simulation):
+
+Daily check:
+
+If milestone deadline passed AND status not RELEASED:
+
+Mark as "OVERDUE"
+
+Send notification
+
+Do NOT auto-penalize in MVP.
+Just flag overdue.
+
+📊 10. DASHBOARDS
+
+Buyer Dashboard:
+
+Projects created
+
+Fund project
+
+Review submissions
+
+Approve / Revision / Dispute
+
+Escrow summary
+
+Freelancer Dashboard:
+
+Joined projects
+
+Submit milestones
+
+Track payments
+
+View status
+
+Use color-coded status badges.
+
+⭐ 11. RATING SYSTEM
+
+After project COMPLETED:
+
+Both sides can submit:
+
+rating (1–5)
+
+review text
+
+Rating Model:
+
+id
+
+project_id
+
+reviewer_id
+
+reviewee_id
+
+rating
+
+comment
+
+Display average rating on profile.
+
+🔐 12. SECURITY RULES
+
+Only assigned buyer/freelancer can access project
+
+No editing milestones after funding
+
+No deleting funded projects
+
+Cannot approve without submission
+
+Cannot submit if not ACTIVE
+
+JWT required for all protected APIs
+
+🎨 13. UI REQUIREMENTS
+
+Clean minimal dashboard
+
+Role-based navigation
+
+Project timeline view
+
+Milestone progress tracker
+
+Countdown to deadline
+
+Clear call-to-action buttons
+
+📁 14. FOLDER STRUCTURE
+
+Backend:
+
+/controllers
+
+/routes
+
+/models
+
+/services
+
+/middleware
+
+/config
+
+/utils
+
+Frontend:
+
+/pages
+
+/components
+
+/services/api
+
+/context/auth
+
+/styles
+
+🎯 15. DELIVERABLE
+
+Generate:
+
+Complete folder structure
+
+All models
+
+Controllers
+
+Routes
+
+Middleware
+
+Database schema
+
+Seed admin user
+
+Basic working frontend pages
+
+Mock Stripe funding logic
+
+Clear README instructions
+
+Code must be clean, modular, scalable, and production-style.
+
+END OF BUILD INSTRUCTIONS.
