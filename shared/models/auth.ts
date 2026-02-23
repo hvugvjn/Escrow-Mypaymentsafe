@@ -26,6 +26,8 @@ export const users = pgTable("users", {
   country: varchar("country"),
   skills: text("skills"),
   portfolioLink: varchar("portfolio_link"),
+  bio: text("bio"),
+  resumeUrl: varchar("resume_url"),
   currentOtp: varchar("current_otp"),
   otpExpiresAt: timestamp("otp_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),

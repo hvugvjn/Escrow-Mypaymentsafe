@@ -156,8 +156,7 @@ export default function Landing() {
                     placeholder="Enter 6-digit OTP code"
                     className="pl-10 h-14 bg-card tracking-widest text-center text-xl font-bold"
                     value={otp}
-                    onChange={e => setOtp(e.target.value)}
-                    maxLength={6}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     required
                   />
                 </div>

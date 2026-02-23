@@ -5,6 +5,23 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { isAuthenticated } from "./auth";
 import { setupAuth, registerAuthRoutes } from "./auth";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+const uploadDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storageEngine = multer.diskStorage({
+  destination: uploadDir,
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage: storageEngine });
 
 export async function registerRoutes(
   httpServer: Server,
@@ -13,6 +30,13 @@ export async function registerRoutes(
   // Set up Replit Auth
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  app.post("/api/upload", isAuthenticated, upload.single("document"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    res.json({ url: `/uploads/${req.file.filename}` });
+  });
 
   // Profile update
   app.put(api.profile.update.path, isAuthenticated, async (req: any, res) => {
@@ -48,7 +72,30 @@ export async function registerRoutes(
     const milestones = await storage.getMilestones(project.id);
     const escrow = await storage.getEscrow(project.id);
 
-    res.json({ project, milestones, escrow });
+    let buyerName = 'Awaiting Buyer';
+    let freelancerName = 'Awaiting Freelancer';
+
+    if (project.buyerId) {
+      const buyer = await storage.getUser(project.buyerId);
+      if (buyer) {
+        buyerName =
+          (buyer.companyName && buyer.companyName.trim()) ||
+          [buyer.firstName, buyer.lastName].filter(Boolean).join(' ') ||
+          (buyer.email ? buyer.email.split('@')[0] : '') ||
+          'Company';
+      }
+    }
+    if (project.freelancerId) {
+      const freelancer = await storage.getUser(project.freelancerId);
+      if (freelancer) {
+        freelancerName =
+          [freelancer.firstName, freelancer.lastName].filter(Boolean).join(' ') ||
+          (freelancer.email ? freelancer.email.split('@')[0] : '') ||
+          'Freelancer';
+      }
+    }
+
+    res.json({ project, milestones, escrow, buyerName, freelancerName });
   });
 
   app.get(api.projects.getByCode.path, isAuthenticated, async (req: any, res) => {

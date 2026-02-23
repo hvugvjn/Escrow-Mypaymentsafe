@@ -21,7 +21,9 @@ export default function CreateProject() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [expiresAt, setExpiresAt] = useState<Date>(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
-  
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const [milestones, setMilestones] = useState([{
     title: "",
     description: "",
@@ -49,11 +51,28 @@ export default function CreateProject() {
     }
 
     try {
+      let documentUrl = null;
+      if (documentFile) {
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("document", documentFile);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        setIsUploading(false);
+        if (res.ok) {
+          const data = await res.json();
+          documentUrl = data.url;
+        }
+      }
+
       // 1. Create Project
       const project = await createProject.mutateAsync({
         title,
         description,
-        expiresAt
+        expiresAt,
+        ...(documentUrl && { documentUrl }),
       });
 
       // 2. Create Milestones sequentially
@@ -110,6 +129,14 @@ export default function CreateProject() {
                   <Calendar mode="single" selected={expiresAt} onSelect={(d) => d && setExpiresAt(d)} initialFocus />
                 </PopoverContent>
               </Popover>
+            </div>
+            <div className="space-y-2 flex flex-col">
+              <Label>Project Document (Optional)</Label>
+              <Input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={e => {
+                if (e.target.files && e.target.files[0]) {
+                  setDocumentFile(e.target.files[0]);
+                }
+              }} />
             </div>
           </CardContent>
         </Card>
@@ -185,8 +212,8 @@ export default function CreateProject() {
         </div>
 
         <div className="flex justify-end pt-4">
-          <Button type="submit" size="lg" className="w-full md:w-auto px-8 hover-elevate" disabled={createProject.isPending || createMilestone.isPending}>
-            {createProject.isPending ? "Creating..." : "Create Project & Escrow"}
+          <Button type="submit" size="lg" className="w-full md:w-auto px-8 hover-elevate" disabled={createProject.isPending || createMilestone.isPending || isUploading}>
+            {createProject.isPending || isUploading ? "Creating..." : "Create Project & Escrow"}
           </Button>
         </div>
       </form>

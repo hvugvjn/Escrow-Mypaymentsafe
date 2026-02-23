@@ -12,7 +12,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     ...(user?.role === 'BUYER' ? [{ title: "Create Project", url: "/projects/new", icon: PlusCircle }] : []),
-    { title: "Profile", url: "/profile/complete", icon: User },
+    { title: "Profile", url: "/profile", icon: User },
   ];
 
   return (
@@ -26,7 +26,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               <span className="font-display font-bold text-xl tracking-tight">TrustLayer</span>
             </div>
-            
+
             <div className="px-6 py-4">
               <div className="flex items-center gap-3 bg-secondary/50 p-3 rounded-xl border border-border/50">
                 <Avatar className="h-10 w-10 border border-background">

@@ -22,7 +22,15 @@ export function useProject(id: string) {
       const res = await fetch(url, { credentials: "include" });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch project details");
-      return api.projects.get.responses[200].parse(await res.json());
+      // Use raw JSON to avoid strict Zod parse failures on extended fields
+      const json = await res.json();
+      return json as {
+        project: any;
+        milestones: any[];
+        escrow: any | null;
+        buyerName: string;
+        freelancerName: string;
+      };
     },
     enabled: !!id,
   });

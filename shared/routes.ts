@@ -21,6 +21,8 @@ export const api = {
         country: z.string().optional(),
         skills: z.string().optional(),
         portfolioLink: z.string().optional(),
+        bio: z.string().optional(),
+        resumeUrl: z.string().optional(),
       }),
       responses: {
         200: z.any(), // Returns User
@@ -46,6 +48,8 @@ export const api = {
           project: z.custom<typeof projects.$inferSelect>(),
           milestones: z.array(z.custom<typeof milestones.$inferSelect>()),
           escrow: z.custom<typeof escrows.$inferSelect>().nullable(),
+          buyerName: z.string(),
+          freelancerName: z.string(),
         }),
         404: errorSchemas.notFound,
         401: errorSchemas.unauthorized,

@@ -15,6 +15,7 @@ export const projects = pgTable("projects", {
   freelancerId: varchar("freelancer_id"),
   status: varchar("status").notNull().default('WAITING_FOR_ACCEPTANCE'),
   expiresAt: timestamp("expires_at").notNull(),
+  documentUrl: text("document_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -25,7 +26,7 @@ export const milestones = pgTable("milestones", {
   description: text("description").notNull(),
   amount: integer("amount").notNull(), // Amount in cents
   deadline: timestamp("deadline").notNull(),
-  status: varchar("status").notNull().default('PENDING'), 
+  status: varchar("status").notNull().default('PENDING'),
   submissionUrl: text("submission_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -73,6 +74,8 @@ export type UpdateProfileRequest = {
   country?: string;
   skills?: string;
   portfolioLink?: string;
+  bio?: string;
+  resumeUrl?: string;
 };
 
 export type JoinProjectRequest = {

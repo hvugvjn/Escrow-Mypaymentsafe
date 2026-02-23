@@ -10,6 +10,7 @@ import ProfileComplete from "@/pages/profile-complete";
 import Dashboard from "@/pages/dashboard";
 import CreateProject from "@/pages/create-project";
 import ProjectDetails from "@/pages/project-details";
+import Profile from "@/pages/profile";
 import { AppLayout } from "@/components/layout";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -55,7 +56,8 @@ function Router() {
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/projects/new" component={() => <ProtectedRoute component={CreateProject} />} />
       <Route path="/projects/:id" component={() => <ProtectedRoute component={ProjectDetails} />} />
-      
+      <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
+
       {/* Fallback */}
       <Route component={NotFound} />
     </Switch>
