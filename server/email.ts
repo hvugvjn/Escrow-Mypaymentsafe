@@ -1,23 +1,28 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD,
-    },
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // Use STARTTLS (port 587) — port 465 is blocked on Render free tier
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
 
 export async function sendOtpEmail(to: string, otp: string) {
-    if (!process.env.SMTP_EMAIL || !process.env.SMTP_PASSWORD) {
-        console.warn("SMTP_EMAIL or SMTP_PASSWORD not set. Logging OTP instead.");
-        console.log(`[OTP] Email to ${to}: ${otp}`);
-        return;
-    }
+  if (!process.env.SMTP_EMAIL || !process.env.SMTP_PASSWORD) {
+    console.warn("SMTP_EMAIL or SMTP_PASSWORD not set. Logging OTP instead.");
+    console.log(`[OTP] Email to ${to}: ${otp}`);
+    return;
+  }
 
-    const otpDigits = otp.split('').join('</td><td style="width:48px;height:56px;background:#f0f4ff;border:2px solid #e0e7ff;border-radius:10px;text-align:center;vertical-align:middle;font-size:28px;font-weight:800;color:#4f46e5;font-family:\'Courier New\',monospace;padding:0 4px;margin:0 4px;">');
+  const otpDigits = otp.split('').join('</td><td style="width:48px;height:56px;background:#f0f4ff;border:2px solid #e0e7ff;border-radius:10px;text-align:center;vertical-align:middle;font-size:28px;font-weight:800;color:#4f46e5;font-family:\'Courier New\',monospace;padding:0 4px;margin:0 4px;">');
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -145,7 +150,7 @@ export async function sendOtpEmail(to: string, otp: string) {
 </html>
     `.trim();
 
-    const text = `
+  const text = `
 TrustLayer – Your Login Code
 
 Hi there,
@@ -159,16 +164,16 @@ If you did not request this code, please ignore this email.
 © ${new Date().getFullYear()} TrustLayer
     `.trim();
 
-    try {
-        const info = await transporter.sendMail({
-            from: `"TrustLayer 🔐" <${process.env.SMTP_EMAIL}>`,
-            to,
-            subject: `${otp} is your TrustLayer verification code`,
-            text,
-            html,
-        });
-        console.log("OTP email sent: %s", info.messageId);
-    } catch (err) {
-        console.error("Error sending OTP email", err);
-    }
+  try {
+    const info = await transporter.sendMail({
+      from: `"TrustLayer 🔐" <${process.env.SMTP_EMAIL}>`,
+      to,
+      subject: `${otp} is your TrustLayer verification code`,
+      text,
+      html,
+    });
+    console.log("OTP email sent: %s", info.messageId);
+  } catch (err) {
+    console.error("Error sending OTP email", err);
+  }
 }
