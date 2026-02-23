@@ -3,8 +3,8 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { isAuthenticated } from "./replit_integrations/auth";
-import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import { isAuthenticated } from "./auth";
+import { setupAuth, registerAuthRoutes } from "./auth";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -39,7 +39,7 @@ export async function registerRoutes(
   app.get(api.projects.get.path, isAuthenticated, async (req: any, res) => {
     const project = await storage.getProject(req.params.id);
     if (!project) return res.status(404).json({ message: 'Project not found' });
-    
+
     const userId = req.user.claims.sub;
     if (project.createdBy !== userId && project.buyerId !== userId && project.freelancerId !== userId) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -54,7 +54,7 @@ export async function registerRoutes(
   app.get(api.projects.getByCode.path, isAuthenticated, async (req: any, res) => {
     const project = await storage.getProjectByCode(req.params.code);
     if (!project) return res.status(404).json({ message: 'Project not found' });
-    
+
     const milestones = await storage.getMilestones(project.id);
     res.json({ project, milestones });
   });
@@ -103,11 +103,11 @@ export async function registerRoutes(
       if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
       if (project.createdBy === userId) {
-         return res.status(400).json({ message: 'Cannot join your own project' });
+        return res.status(400).json({ message: 'Cannot join your own project' });
       }
 
       const updatedProject = await storage.joinProject(project.id, userId, user.role || 'FREELANCER');
-      
+
       // Calculate total escrow needed
       const milestones = await storage.getMilestones(project.id);
       const totalAmount = milestones.reduce((sum, m) => sum + m.amount, 0);
@@ -133,7 +133,7 @@ export async function registerRoutes(
   app.post(api.projects.fund.path, isAuthenticated, async (req: any, res) => {
     const project = await storage.getProject(req.params.id);
     if (!project) return res.status(404).json({ message: 'Project not found' });
-    
+
     const userId = req.user.claims.sub;
     if (project.buyerId !== userId) return res.status(403).json({ message: 'Only buyer can fund' });
 
@@ -186,7 +186,7 @@ export async function registerRoutes(
     const milestone = await storage.updateMilestone(req.params.id, {
       status: 'RELEASED'
     });
-    
+
     const escrow = await storage.getEscrow(milestone.projectId);
     if (escrow) {
       await storage.updateEscrow(escrow.id, {
