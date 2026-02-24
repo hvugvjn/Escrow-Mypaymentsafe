@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "wouter";
 import { useProject, useFundProject } from "@/hooks/use-projects";
 import { useSubmitMilestone, useApproveMilestone, useRequestRevision } from "@/hooks/use-milestones";
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { format, isPast } from "date-fns";
@@ -30,6 +30,10 @@ export default function ProjectDetails() {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isSendingMsg, setIsSendingMsg] = useState(false);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -39,6 +43,43 @@ export default function ProjectDetails() {
     }).catch(() => {
       toast({ title: "Copied!", description: `Share this link: ${url}`, variant: "default" });
     });
+  };
+
+  // Fetch chat messages and poll every 5s
+  useEffect(() => {
+    if (!id) return;
+    const fetchMsgs = async () => {
+      try {
+        const res = await fetch(`/api/projects/${id}/messages`, { credentials: 'include' });
+        if (res.ok) setChatMessages(await res.json());
+      } catch { }
+    };
+    fetchMsgs();
+    const interval = setInterval(fetchMsgs, 5000);
+    return () => clearInterval(interval);
+  }, [id]);
+
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  const handleSendMessage = async () => {
+    if (!chatInput.trim() || isSendingMsg) return;
+    setIsSendingMsg(true);
+    try {
+      const res = await fetch(`/api/projects/${id}/messages`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: chatInput.trim() }),
+      });
+      if (res.ok) {
+        const msg = await res.json();
+        setChatMessages(prev => [...prev, msg]);
+        setChatInput('');
+      }
+    } catch { }
+    setIsSendingMsg(false);
   };
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading project details...</div>;
@@ -242,6 +283,9 @@ export default function ProjectDetails() {
           <TabsTrigger value="milestones" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1">Milestones & Tracking</TabsTrigger>
           <TabsTrigger value="activity" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1">Activity</TabsTrigger>
           <TabsTrigger value="payments" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1">Payments</TabsTrigger>
+          <TabsTrigger value="chat" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1 flex items-center gap-1.5">
+            <MessageCircle className="w-4 h-4" /> Chat
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="details" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -548,6 +592,83 @@ export default function ProjectDetails() {
                     <p className="text-muted-foreground flex items-center justify-center gap-2"><Lock className="w-4 h-4" /> No payment history yet.</p>
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Chat Tab ──────────────────────────────────── */}
+        <TabsContent value="chat" className="mt-0">
+          <Card className="border-0 shadow-none">
+            <CardHeader className="px-8 py-6 border-b">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MessageCircle className="w-5 h-5 text-primary" /> Project Chat
+                <span className="ml-auto text-xs font-normal text-muted-foreground">Messages refresh every 5 seconds</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {/* Messages Area */}
+              <div className="h-[420px] overflow-y-auto px-8 py-6 space-y-4 bg-muted/10">
+                {chatMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center gap-3">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                      <MessageCircle className="w-7 h-7 text-primary" />
+                    </div>
+                    <p className="text-muted-foreground font-medium">No messages yet</p>
+                    <p className="text-sm text-muted-foreground">Start the conversation with your project partner!</p>
+                  </div>
+                ) : (
+                  chatMessages.map((msg: any) => {
+                    const isMe = msg.senderId === user?.id;
+                    return (
+                      <div key={msg.id} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 ${msg.senderRole === 'BUYER' ? 'bg-violet-500' : 'bg-emerald-500'
+                          }`}>
+                          {msg.senderName?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <div className={`max-w-[70%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                          <div className="flex items-center gap-2">
+                            {!isMe && <span className="text-xs font-semibold text-foreground">{msg.senderName}</span>}
+                            <span className="text-xs text-muted-foreground">
+                              {msg.senderRole === 'BUYER' ? '🏢 Buyer' : '💼 Freelancer'}
+                            </span>
+                          </div>
+                          <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMe
+                            ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                            : 'bg-background border border-border rounded-tl-sm'
+                            }`}>
+                            {msg.content}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={chatBottomRef} />
+              </div>
+
+              {/* Input Area */}
+              <div className="px-8 py-5 border-t bg-background">
+                <div className="flex gap-3 items-center">
+                  <Input
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                    placeholder="Type a message... (Enter to send)"
+                    className="flex-1 rounded-xl"
+                    disabled={isSendingMsg}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!chatInput.trim() || isSendingMsg}
+                    className="gap-2 rounded-xl px-5"
+                  >
+                    <Send className="w-4 h-4" /> Send
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

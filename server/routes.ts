@@ -266,5 +266,35 @@ export async function registerRoutes(
     res.json(project);
   });
 
+  // ── Chat Routes ──────────────────────────────────────────
+  app.get('/api/projects/:id/messages', isAuthenticated, async (req: any, res) => {
+    const msgs = await storage.getMessages(req.params.id);
+    res.json(msgs);
+  });
+
+  app.post('/api/projects/:id/messages', isAuthenticated, async (req: any, res) => {
+    const { content } = req.body;
+    if (!content?.trim()) return res.status(400).json({ message: 'Message cannot be empty' });
+
+    const userId = req.user.claims.sub;
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+    const senderName =
+      (user.companyName?.trim()) ||
+      [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+      user.email?.split('@')[0] ||
+      'User';
+
+    const msg = await storage.createMessage({
+      projectId: req.params.id,
+      senderId: userId,
+      senderName,
+      senderRole: user.role || 'USER',
+      content: content.trim(),
+    });
+    res.json(msg);
+  });
+
   return httpServer;
 }

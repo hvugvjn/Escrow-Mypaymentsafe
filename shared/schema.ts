@@ -51,6 +51,16 @@ export const ratings = pgTable("ratings", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  senderId: varchar("sender_id").notNull(),
+  senderName: varchar("sender_name").notNull(),
+  senderRole: varchar("sender_role").notNull(), // 'BUYER' | 'FREELANCER'
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, projectCode: true, createdBy: true, status: true, expiresAt: true, buyerId: true, freelancerId: true });
 export const insertMilestoneSchema = createInsertSchema(milestones).omit({ id: true, createdAt: true, status: true, submissionUrl: true });
 export const insertEscrowSchema = createInsertSchema(escrows).omit({ id: true });
@@ -65,6 +75,7 @@ export type Escrow = typeof escrows.$inferSelect;
 export type InsertEscrow = z.infer<typeof insertEscrowSchema>;
 export type Rating = typeof ratings.$inferSelect;
 export type InsertRating = z.infer<typeof insertRatingSchema>;
+export type Message = typeof messages.$inferSelect;
 
 // API Request/Response Types
 export type UpdateProfileRequest = {

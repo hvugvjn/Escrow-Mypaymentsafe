@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { users, projects, milestones, escrows, ratings, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow } from "@shared/schema";
-import { eq, or } from "drizzle-orm";
+import { users, projects, milestones, escrows, ratings, messages, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow, type Message } from "@shared/schema";
+import { eq, or, asc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -20,6 +20,9 @@ export interface IStorage {
   getEscrow(projectId: string): Promise<Escrow | undefined>;
   createEscrow(escrow: InsertEscrow): Promise<Escrow>;
   updateEscrow(id: string, updates: Partial<Escrow>): Promise<Escrow>;
+
+  getMessages(projectId: string): Promise<Message[]>;
+  createMessage(msg: { projectId: string; senderId: string; senderName: string; senderRole: string; content: string }): Promise<Message>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -93,6 +96,15 @@ export class DatabaseStorage implements IStorage {
   async updateEscrow(id: string, updates: Partial<Escrow>): Promise<Escrow> {
     const [escrow] = await db.update(escrows).set(updates).where(eq(escrows.id, id)).returning();
     return escrow;
+  }
+
+  async getMessages(projectId: string): Promise<Message[]> {
+    return await db.select().from(messages).where(eq(messages.projectId, projectId)).orderBy(asc(messages.createdAt));
+  }
+
+  async createMessage(msg: { projectId: string; senderId: string; senderName: string; senderRole: string; content: string }): Promise<Message> {
+    const [newMsg] = await db.insert(messages).values(msg).returning();
+    return newMsg;
   }
 }
 
