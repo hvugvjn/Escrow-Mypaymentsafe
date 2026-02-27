@@ -7,24 +7,58 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 type Step =
-  | "email"           // Step 1: Enter email
-  | "register"        // Step 2a: New user — password + confirm + then OTP
-  | "otp-register"    // Step 3a: Verify OTP after register
-  | "login"           // Step 2b: Returning user — password only
+  | "auth"            // Combined: email + password (login or register)
+  | "otp-register"    // Verify OTP after register
   | "forgot"          // Forgot password — enter email
   | "otp-reset"       // OTP for password reset
   | "reset";          // New password + confirm after OTP verified
 
+// ── Defined OUTSIDE Landing so it never remounts on re-render ──────────────
+interface PasswordInputProps {
+  id?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+  show: boolean;
+  toggle: () => void;
+  minLength?: number;
+}
+
+function PasswordInput({ id, value, onChange, placeholder, show, toggle, minLength = 8 }: PasswordInputProps) {
+  return (
+    <div className="relative">
+      <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        id={id}
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        className="pl-10 pr-10 h-14 bg-card"
+        value={value}
+        onChange={onChange}
+        required
+        minLength={minLength}
+        autoComplete={show ? "off" : "current-password"}
+      />
+      <button type="button" onClick={toggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+}
+
 export default function Landing() {
-  const [step, setStep] = useState<Step>("email");
+  const [step, setStep] = useState<Step>("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isNewUser, setIsNewUser] = useState(false);
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNew, setShowConfirmNew] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -40,17 +74,45 @@ export default function Landing() {
     return data;
   };
 
-  // Step 1: Check if email is new or returning
-  const handleCheckEmail = async (e: React.FormEvent) => {
+  // Combined auth: try login first; if no account, register
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
+
     setLoading(true);
     try {
-      const data = await api("/api/auth/check-email", { email });
-      if (data.exists && data.hasPassword) {
-        setStep("login"); // Returning user
+      // Check if email exists
+      const { exists, hasPassword } = await api("/api/auth/check-email", { email });
+
+      if (exists && hasPassword) {
+        // Returning user → try login
+        if (isNewUser) {
+          // they toggled to register mode, but account exists
+          toast({ variant: "destructive", title: "Account exists", description: "This email already has an account. Please log in instead." });
+          setIsNewUser(false);
+          setLoading(false);
+          return;
+        }
+        await api("/api/auth/login", { email, password });
+        toast({ title: "Welcome back! 👋", description: "Logged in successfully." });
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       } else {
-        setStep("register"); // New user
+        // New user → register
+        if (confirmPassword === "") {
+          // they haven't filled confirm password yet — show confirm field
+          setIsNewUser(true);
+          setLoading(false);
+          toast({ title: "New account", description: "Please confirm your password to create your account." });
+          return;
+        }
+        if (password !== confirmPassword) {
+          toast({ variant: "destructive", title: "Error", description: "Passwords do not match" });
+          setLoading(false);
+          return;
+        }
+        await api("/api/auth/register", { email, password, confirmPassword });
+        toast({ title: "OTP Sent!", description: "Check your email to verify your account." });
+        setStep("otp-register");
       }
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
@@ -58,25 +120,7 @@ export default function Landing() {
     setLoading(false);
   };
 
-  // Step 2a: Register new user → sends OTP
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      toast({ variant: "destructive", title: "Error", description: "Passwords do not match" });
-      return;
-    }
-    setLoading(true);
-    try {
-      await api("/api/auth/register", { email, password, confirmPassword });
-      toast({ title: "OTP Sent!", description: "Check your email to verify your account." });
-      setStep("otp-register");
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
-    }
-    setLoading(false);
-  };
-
-  // Step 3a: Verify OTP after registration
+  // Verify OTP after registration
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -86,20 +130,6 @@ export default function Landing() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Invalid OTP", description: err.message });
-    }
-    setLoading(false);
-  };
-
-  // Step 2b: Login returning user
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await api("/api/auth/login", { email, password });
-      toast({ title: "Welcome back! 👋", description: "Logged in successfully." });
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Login Failed", description: err.message });
     }
     setLoading(false);
   };
@@ -147,32 +177,12 @@ export default function Landing() {
   };
 
   const stepConfig: Record<Step, { title: string; subtitle: string }> = {
-    email: { title: "Welcome to PAX", subtitle: "Enter your email to get started." },
-    register: { title: "Create Your Account", subtitle: "Set a secure password for your account." },
+    auth: { title: "Welcome to PAX", subtitle: "Sign in or create your account." },
     "otp-register": { title: "Verify Your Email", subtitle: `We sent a 6-digit code to ${email}` },
-    login: { title: "Welcome Back!", subtitle: "Enter your password to continue." },
     forgot: { title: "Forgot Password?", subtitle: "We'll send a reset code to your email." },
     "otp-reset": { title: "Enter Reset Code", subtitle: `Check your email at ${email}` },
     reset: { title: "Set New Password", subtitle: "Choose a strong password for your account." },
   };
-
-  const PasswordInput = ({ value, onChange, placeholder, show, toggle }: any) => (
-    <div className="relative">
-      <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        type={show ? "text" : "password"}
-        placeholder={placeholder}
-        className="pl-10 pr-10 h-14 bg-card"
-        value={value}
-        onChange={onChange}
-        required
-        minLength={8}
-      />
-      <button type="button" onClick={toggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-      </button>
-    </div>
-  );
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
@@ -217,41 +227,72 @@ export default function Landing() {
           <div className="bg-background border border-border p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
             <AnimatePresence mode="wait">
 
-              {/* STEP 1: Email */}
-              {step === "email" && (
-                <motion.form key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleCheckEmail} className="space-y-4">
+              {/* COMBINED AUTH: Email + Password (+ optional Confirm for new users) */}
+              {step === "auth" && (
+                <motion.form key="auth" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleAuth} className="space-y-4">
                   <div className="relative">
                     <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input type="email" placeholder="Enter your email address" className="pl-10 h-14 bg-card" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <Input
+                      id="auth-email"
+                      type="email"
+                      placeholder="Enter your email address"
+                      className="pl-10 h-14 bg-card"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                    />
                   </div>
-                  <Button type="submit" size="lg" className="w-full h-14 text-lg font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90" disabled={loading}>
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Continue →"}
-                  </Button>
-                </motion.form>
-              )}
-
-              {/* STEP 2a: Register — New User */}
-              {step === "register" && (
-                <motion.form key="register" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleRegister} className="space-y-4">
-                  <div className="relative">
-                    <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input type="email" className="pl-10 h-14 bg-muted/50 text-muted-foreground" value={email} readOnly />
-                  </div>
-                  <PasswordInput value={password} onChange={(e: any) => setPassword(e.target.value)} placeholder="Create password (min 8 chars)" show={showPassword} toggle={() => setShowPassword(v => !v)} />
-                  <PasswordInput value={confirmPassword} onChange={(e: any) => setConfirmPassword(e.target.value)} placeholder="Confirm password" show={showConfirm} toggle={() => setShowConfirm(v => !v)} />
-                  {password && confirmPassword && password !== confirmPassword && (
-                    <p className="text-xs text-destructive text-left">⚠ Passwords do not match</p>
+                  <PasswordInput
+                    id="auth-password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Enter your password (min 8 chars)"
+                    show={showPassword}
+                    toggle={() => setShowPassword(v => !v)}
+                  />
+                  {/* Confirm password field — shown when user appears new */}
+                  {isNewUser && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                      <PasswordInput
+                        id="auth-confirm-password"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm password"
+                        show={showConfirm}
+                        toggle={() => setShowConfirm(v => !v)}
+                      />
+                      {password && confirmPassword && password !== confirmPassword && (
+                        <p className="text-xs text-destructive text-left mt-1">⚠ Passwords do not match</p>
+                      )}
+                    </motion.div>
                   )}
-                  <Button type="submit" size="lg" className="w-full h-14 text-lg font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90" disabled={loading || (!!password && !!confirmPassword && password !== confirmPassword)}>
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Create Account & Verify Email"}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full h-14 text-lg font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90"
+                    disabled={loading || (isNewUser && !!password && !!confirmPassword && password !== confirmPassword)}
+                  >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : isNewUser ? "Create Account & Verify Email" : "Continue →"}
                   </Button>
-                  <button type="button" onClick={() => { setStep("email"); setPassword(""); setConfirmPassword(""); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mx-auto">
-                    <ArrowLeft className="w-3 h-3" /> Use different email
-                  </button>
+                  <div className="flex items-center justify-between pt-2">
+                    {isNewUser ? (
+                      <button type="button" onClick={() => { setIsNewUser(false); setConfirmPassword(""); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                        <ArrowLeft className="w-3 h-3" /> Back to Sign In
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => { setIsNewUser(true); }} className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2">
+                        New here? Create account
+                      </button>
+                    )}
+                    <button type="button" onClick={() => setStep("forgot")} className="text-sm text-primary hover:underline font-medium">
+                      Forgot Password?
+                    </button>
+                  </div>
                 </motion.form>
               )}
 
-              {/* STEP 3a: OTP for new user */}
+              {/* OTP for new user registration */}
               {step === "otp-register" && (
                 <motion.form key="otp-register" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleVerifyOtp} className="space-y-4">
                   <div className="relative">
@@ -261,45 +302,36 @@ export default function Landing() {
                   <Button type="submit" size="lg" className="w-full h-14 text-lg font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90" disabled={loading || otp.length < 6}>
                     {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Verify & Create Account"}
                   </Button>
-                  <button type="button" onClick={() => handleRegister({ preventDefault: () => { } } as any)} className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
+                      // Re-send OTP by re-calling register
+                      setLoading(true);
+                      fetch("/api/auth/register", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password, confirmPassword: password }),
+                      }).finally(() => setLoading(false));
+                    }}
+                    className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2"
+                  >
                     Resend OTP
                   </button>
                 </motion.form>
               )}
 
-              {/* STEP 2b: Login — Returning User */}
-              {step === "login" && (
-                <motion.form key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleLogin} className="space-y-4">
-                  <div className="relative">
-                    <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input type="email" className="pl-10 h-14 bg-muted/50 text-muted-foreground" value={email} readOnly />
-                  </div>
-                  <PasswordInput value={password} onChange={(e: any) => setPassword(e.target.value)} placeholder="Enter your password" show={showPassword} toggle={() => setShowPassword(v => !v)} />
-                  <Button type="submit" size="lg" className="w-full h-14 text-lg font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90" disabled={loading}>
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Login →"}
-                  </Button>
-                  <div className="flex items-center justify-between pt-2">
-                    <button type="button" onClick={() => { setStep("email"); setPassword(""); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-                      <ArrowLeft className="w-3 h-3" /> Back
-                    </button>
-                    <button type="button" onClick={() => setStep("forgot")} className="text-sm text-primary hover:underline font-medium">
-                      Forgot Password?
-                    </button>
-                  </div>
-                </motion.form>
-              )}
-
-              {/* Forgot Password */}
+              {/* Forgot Password — email entry */}
               {step === "forgot" && (
                 <motion.form key="forgot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleForgotPassword} className="space-y-4">
                   <div className="relative">
                     <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input type="email" placeholder="Enter your email" className="pl-10 h-14 bg-card" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <Input type="email" placeholder="Enter your email" className="pl-10 h-14 bg-card" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
                   </div>
                   <Button type="submit" size="lg" className="w-full h-14 text-lg font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90" disabled={loading}>
                     {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Send Reset Code"}
                   </Button>
-                  <button type="button" onClick={() => setStep("login")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mx-auto">
+                  <button type="button" onClick={() => setStep("auth")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mx-auto">
                     <ArrowLeft className="w-3 h-3" /> Back to Login
                   </button>
                 </motion.form>
@@ -321,8 +353,22 @@ export default function Landing() {
               {/* New Password after reset OTP */}
               {step === "reset" && (
                 <motion.form key="reset" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleResetPassword} className="space-y-4">
-                  <PasswordInput value={newPassword} onChange={(e: any) => setNewPassword(e.target.value)} placeholder="New password (min 8 chars)" show={showPassword} toggle={() => setShowPassword(v => !v)} />
-                  <PasswordInput value={confirmNewPassword} onChange={(e: any) => setConfirmNewPassword(e.target.value)} placeholder="Confirm new password" show={showConfirm} toggle={() => setShowConfirm(v => !v)} />
+                  <PasswordInput
+                    id="reset-new-password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="New password (min 8 chars)"
+                    show={showNewPassword}
+                    toggle={() => setShowNewPassword(v => !v)}
+                  />
+                  <PasswordInput
+                    id="reset-confirm-password"
+                    value={confirmNewPassword}
+                    onChange={e => setConfirmNewPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    show={showConfirmNew}
+                    toggle={() => setShowConfirmNew(v => !v)}
+                  />
                   {newPassword && confirmNewPassword && newPassword !== confirmNewPassword && (
                     <p className="text-xs text-destructive text-left">⚠ Passwords do not match</p>
                   )}

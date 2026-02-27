@@ -17,24 +17,18 @@ import { Loader2 } from "lucide-react";
 
 // Wrapper for protected routes to handle redirects and layout
 function ProtectedRoute({ component: Component, hideLayout = false }: { component: React.ComponentType, hideLayout?: boolean }) {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        setLocation("/");
-      } else if (isAuthenticated && !user?.role && location !== "/profile/complete") {
-        setLocation("/profile/complete");
-      } else if (isAuthenticated && user?.role && location === "/") {
-        setLocation("/dashboard");
-      }
+    if (!isAuthenticated) {
+      setLocation("/");
+    } else if (isAuthenticated && !user?.role && location !== "/profile/complete") {
+      setLocation("/profile/complete");
+    } else if (isAuthenticated && user?.role && location === "/") {
+      setLocation("/dashboard");
     }
-  }, [isLoading, isAuthenticated, user, location, setLocation]);
-
-  if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-background"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
-  }
+  }, [isAuthenticated, user, location, setLocation]);
 
   if (!isAuthenticated) return null;
   if (!user?.role && location !== "/profile/complete") return null;
