@@ -81,7 +81,7 @@ export default function ProfileComplete() {
           <CardHeader className="text-center pb-8">
             <CardTitle className="text-3xl font-display">Complete Your Profile</CardTitle>
             <CardDescription className="text-base mt-2">
-              Hi {user?.firstName}, let's get you set up to use TrustLayer. Are you looking to hire or find work?
+              Hi {user?.firstName}, let's get you set up to use PAX. Are you looking to hire or find work?
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -100,7 +100,7 @@ export default function ProfileComplete() {
                 >
                   <Briefcase className="w-12 h-12" />
                   <div className="text-center">
-                    <h3 className="font-bold text-lg">I'm a Buyer</h3>
+                    <h3 className="font-bold text-lg">Buyer</h3>
                     <p className="text-sm opacity-80 mt-1">I want to hire freelancers securely</p>
                   </div>
                 </button>
@@ -117,7 +117,7 @@ export default function ProfileComplete() {
                 >
                   <UserCircle2 className="w-12 h-12" />
                   <div className="text-center">
-                    <h3 className="font-bold text-lg">I'm a Freelancer</h3>
+                    <h3 className="font-bold text-lg">Freelancer</h3>
                     <p className="text-sm opacity-80 mt-1">I want to get paid securely</p>
                   </div>
                 </button>

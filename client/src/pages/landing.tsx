@@ -82,7 +82,7 @@ export default function Landing() {
     setLoading(true);
     try {
       await api("/api/auth/verify-otp", { email, otp });
-      toast({ title: "Welcome to TrustLayer! 🎉", description: "Your account is verified." });
+      toast({ title: "Welcome to PAX! 🎉", description: "Your account is verified." });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Invalid OTP", description: err.message });
@@ -147,7 +147,7 @@ export default function Landing() {
   };
 
   const stepConfig: Record<Step, { title: string; subtitle: string }> = {
-    email: { title: "Welcome to TrustLayer", subtitle: "Enter your email to get started." },
+    email: { title: "Welcome to PAX", subtitle: "Enter your email to get started." },
     register: { title: "Create Your Account", subtitle: "Set a secure password for your account." },
     "otp-register": { title: "Verify Your Email", subtitle: `We sent a 6-digit code to ${email}` },
     login: { title: "Welcome Back!", subtitle: "Enter your password to continue." },
@@ -190,7 +190,7 @@ export default function Landing() {
             Secure your freelance deals with absolute trust.
           </h1>
           <p className="text-lg md:text-xl text-white/70 mb-10 leading-relaxed font-light">
-            TrustLayer uses smart escrow milestones to ensure buyers get exactly what they pay for, and freelancers get paid for exactly what they do.
+            PAX uses smart escrow milestones to ensure buyers get exactly what they pay for, and freelancers get paid for exactly what they do.
           </p>
           <div className="space-y-4">
             {["Funds held securely in escrow", "Milestone-based automated payouts", "Dispute resolution guarantees"].map((f, i) => (

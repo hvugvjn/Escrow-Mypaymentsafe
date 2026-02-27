@@ -24,7 +24,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
                 <Shield className="w-5 h-5 text-white" />
               </div>
-              <span className="font-display font-bold text-xl tracking-tight">TrustLayer</span>
+              <span className="font-display font-bold text-xl tracking-tight">PAX</span>
             </div>
 
             <div className="px-6 py-4">

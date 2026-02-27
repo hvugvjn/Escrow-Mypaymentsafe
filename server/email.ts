@@ -13,7 +13,7 @@ export async function sendOtpEmail(to: string, otp: string) {
   const html = `
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>TrustLayer – Verify Your Login</title></head>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>PAX – Verify Your Login</title></head>
 <body style="margin:0;padding:0;background-color:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 0;">
     <tr><td align="center">
@@ -21,7 +21,7 @@ export async function sendOtpEmail(to: string, otp: string) {
         <tr>
           <td style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:40px 40px 32px 40px;text-align:center;">
             <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:16px;padding:12px 16px;margin-bottom:16px;"><span style="font-size:28px;">🔐</span></div><br/>
-            <span style="color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">TrustLayer</span><br/>
+            <span style="color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">PAX</span><br/>
             <span style="color:rgba(255,255,255,0.75);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;display:block;">Secure Escrow Platform</span>
           </td>
         </tr>
@@ -29,7 +29,7 @@ export async function sendOtpEmail(to: string, otp: string) {
           <td style="padding:40px 48px 32px 48px;">
             <p style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#111827;">Verify Your Identity</p>
             <p style="margin:0 0 28px 0;font-size:15px;color:#6b7280;line-height:1.6;">
-              Use the one-time code below to securely access your <strong>TrustLayer</strong> account. Valid for <strong>10 minutes</strong>.
+              Use the one-time code below to securely access your <strong>PAX</strong> account. Valid for <strong>10 minutes</strong>.
             </p>
             <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 28px 0;">
               <tr>
@@ -44,7 +44,7 @@ export async function sendOtpEmail(to: string, otp: string) {
               <tr>
                 <td style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 10px 10px 0;padding:14px 18px;">
                   <p style="margin:0;font-size:13px;color:#92400e;line-height:1.5;">
-                    <strong>⚠️ Security Alert:</strong> TrustLayer will <strong>never</strong> ask you for this code. If you didn't request this, please ignore this email.
+                    <strong>⚠️ Security Alert:</strong> PAX will <strong>never</strong> ask you for this code. If you didn't request this, please ignore this email.
                   </p>
                 </td>
               </tr>
@@ -54,7 +54,7 @@ export async function sendOtpEmail(to: string, otp: string) {
         <tr>
           <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:24px 48px;text-align:center;">
             <p style="margin:0 0 6px 0;font-size:12px;color:#9ca3af;">Sent to <strong>${to}</strong></p>
-            <p style="margin:0;font-size:12px;color:#d1d5db;">© ${new Date().getFullYear()} TrustLayer · Secure Freelance Escrow Platform</p>
+            <p style="margin:0;font-size:12px;color:#d1d5db;">© ${new Date().getFullYear()} PAX · Secure Freelance Escrow Platform</p>
           </td>
         </tr>
       </table>
@@ -63,9 +63,9 @@ export async function sendOtpEmail(to: string, otp: string) {
 </body>
 </html>`.trim();
 
-  const text = `TrustLayer – Your Login Code\n\nYour one-time login code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this code, please ignore this email.\n\n© ${new Date().getFullYear()} TrustLayer`;
+  const text = `PAX – Your Login Code\n\nYour one-time login code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this code, please ignore this email.\n\n© ${new Date().getFullYear()} PAX`;
 
-  const subject = `${otp} is your TrustLayer verification code`;
+  const subject = `${otp} is your PAX verification code`;
 
   // ── Option 1: Resend API (works on Render free tier — uses HTTPS port 443) ──
   if (process.env.RESEND_API_KEY) {
@@ -77,7 +77,7 @@ export async function sendOtpEmail(to: string, otp: string) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'TrustLayer <onboarding@resend.dev>',
+          from: 'PAX <onboarding@resend.dev>',
           to: [to],
           subject,
           html,
@@ -112,7 +112,7 @@ export async function sendOtpEmail(to: string, otp: string) {
       });
 
       await transporter.sendMail({
-        from: `"TrustLayer" <${process.env.SMTP_EMAIL}>`,
+        from: `"PAX" <${process.env.SMTP_EMAIL}>`,
         to,
         subject,
         html,
