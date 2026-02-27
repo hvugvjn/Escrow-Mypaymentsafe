@@ -34,6 +34,7 @@ export default function ProjectDetails() {
   const [chatInput, setChatInput] = useState("");
   const [isSendingMsg, setIsSendingMsg] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const [receipt, setReceipt] = useState<{ type: string; amount: number; date?: string; milestoneTitle?: string } | null>(null);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -563,7 +564,11 @@ export default function ProjectDetails() {
                           <td className="px-4 py-4 font-medium">Initial Escrow Security Deposit</td>
                           <td className="px-4 py-4 font-bold">{formatMoney(escrow.totalAmount)}</td>
                           <td className="px-4 py-4"><span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">Completed</span></td>
-                          <td className="px-4 py-4 text-right"><Button variant="link" className="text-primary h-auto p-0">View Receipt</Button></td>
+                          <td className="px-4 py-4 text-right">
+                            <Button variant="link" className="text-primary h-auto p-0" onClick={() => setReceipt({ type: 'escrow', amount: escrow.totalAmount, date: escrow.fundedAt ? new Date(escrow.fundedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) })}>
+                              View Receipt
+                            </Button>
+                          </td>
                         </tr>
                         {/* Milestone rows */}
                         {milestones.map((m: any, idx: number) => (
@@ -580,7 +585,11 @@ export default function ProjectDetails() {
                               )}
                             </td>
                             <td className="px-4 py-4 text-right">
-                              {m.status === 'APPROVED' ? <Button variant="link" className="text-primary h-auto p-0">View Receipt</Button> : <span className="text-muted-foreground text-xs">Waiting</span>}
+                              {m.status === 'APPROVED' ? (
+                                <Button variant="link" className="text-primary h-auto p-0" onClick={() => setReceipt({ type: 'milestone', amount: m.amount, milestoneTitle: m.title, date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) })}>
+                                  View Receipt
+                                </Button>
+                              ) : <span className="text-muted-foreground text-xs">Waiting</span>}
                             </td>
                           </tr>
                         ))}
@@ -596,6 +605,83 @@ export default function ProjectDetails() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ── Receipt Modal ─────────────────────────────────── */}
+        {receipt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setReceipt(null)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e => e.stopPropagation()} id="receipt-print-area">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-8 py-6 text-white text-center">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-3">
+                  <CreditCard className="w-6 h-6 text-white" />
+                </div>
+                <p className="text-white/80 text-sm tracking-widest uppercase font-medium">PAX Escrow</p>
+                <h2 className="text-2xl font-bold mt-1">Payment Receipt</h2>
+              </div>
+
+              {/* Body */}
+              <div className="px-8 py-6 space-y-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Receipt No.</span>
+                  <span className="font-mono font-semibold text-gray-800">#{project.projectCode}-{receipt.type === 'escrow' ? '001' : receipt.milestoneTitle?.slice(0, 4).toUpperCase()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Date</span>
+                  <span className="font-medium text-gray-800">{receipt.date || new Date().toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Project</span>
+                  <span className="font-medium text-gray-800">{project.title}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Project ID</span>
+                  <span className="font-mono text-xs text-gray-600">{project.projectCode}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Buyer</span>
+                  <span className="font-medium text-gray-800">{buyerName}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Freelancer</span>
+                  <span className="font-medium text-gray-800">{freelancerName}</span>
+                </div>
+                {receipt.milestoneTitle && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Milestone</span>
+                    <span className="font-medium text-gray-800">{receipt.milestoneTitle}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Type</span>
+                  <span className="font-medium text-gray-800">{receipt.type === 'escrow' ? 'Initial Escrow Deposit' : 'Milestone Release'}</span>
+                </div>
+
+                <div className="border-t border-dashed border-gray-200 pt-4 mt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-gray-900 text-lg">Total Amount</span>
+                    <span className="font-bold text-2xl text-indigo-600">{formatMoney(receipt.amount)}</span>
+                  </div>
+                  <div className="mt-2 flex justify-between text-sm">
+                    <span className="text-gray-500">Status</span>
+                    <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">✓ Completed</span>
+                  </div>
+                </div>
+
+                <p className="text-center text-xs text-gray-400 pt-2">This is a system-generated receipt from PAX Escrow Platform.</p>
+              </div>
+
+              {/* Footer Buttons */}
+              <div className="px-8 pb-6 flex gap-3">
+                <Button className="flex-1 gap-2" onClick={() => { const w = window.open('', '_blank'); if (w) { w.document.write('<html><head><title>Receipt</title><style>body{font-family:sans-serif;padding:32px;max-width:480px;margin:auto}</style></head><body>' + document.getElementById('receipt-print-area')!.innerHTML + '</body></html>'); w.document.close(); w.print(); } }}>
+                  🖨️ Print / Save PDF
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => setReceipt(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Chat Tab ──────────────────────────────────── */}
         <TabsContent value="chat" className="mt-0">
