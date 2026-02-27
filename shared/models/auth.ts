@@ -30,6 +30,7 @@ export const users = pgTable("users", {
   resumeUrl: varchar("resume_url"),
   currentOtp: varchar("current_otp"),
   otpExpiresAt: timestamp("otp_expires_at"),
+  passwordHash: varchar("password_hash"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -65,7 +65,9 @@ export async function sendOtpEmail(to: string, otp: string) {
 
   const text = `TrustLayer – Your Login Code\n\nYour one-time login code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this code, please ignore this email.\n\n© ${new Date().getFullYear()} TrustLayer`;
 
-  // Try Resend API first (uses HTTPS/443 — works on Render free tier)
+  const subject = `${otp} is your TrustLayer verification code`;
+
+  // ── Option 1: Resend API (works on Render free tier — uses HTTPS port 443) ──
   if (process.env.RESEND_API_KEY) {
     try {
       const res = await fetch('https://api.resend.com/emails', {
@@ -77,7 +79,7 @@ export async function sendOtpEmail(to: string, otp: string) {
         body: JSON.stringify({
           from: 'TrustLayer <onboarding@resend.dev>',
           to: [to],
-          subject: `${otp} is your TrustLayer verification code`,
+          subject,
           html,
           text,
         }),
@@ -91,7 +93,38 @@ export async function sendOtpEmail(to: string, otp: string) {
     } catch (err) {
       console.error('[EMAIL] Resend fetch failed:', err);
     }
-  } else {
-    console.warn('[EMAIL] RESEND_API_KEY not set — OTP only available in logs above.');
+    return;
   }
+
+  // ── Option 2: Gmail SMTP via nodemailer (works on localhost) ──
+  if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
+    try {
+      const nodemailer = await import('nodemailer');
+      const transporter = nodemailer.default.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_EMAIL,
+          pass: process.env.SMTP_PASSWORD,
+        },
+        tls: { rejectUnauthorized: false },
+      });
+
+      await transporter.sendMail({
+        from: `"TrustLayer" <${process.env.SMTP_EMAIL}>`,
+        to,
+        subject,
+        html,
+        text,
+      });
+
+      console.log(`[EMAIL] OTP sent via Gmail SMTP to ${to}`);
+      return;
+    } catch (err) {
+      console.error('[EMAIL] Gmail SMTP failed:', err);
+    }
+  }
+
+  console.warn('[EMAIL] No email provider configured — OTP only available in logs above.');
 }
