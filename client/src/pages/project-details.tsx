@@ -14,6 +14,7 @@ import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileT
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { format, isPast } from "date-fns";
+import { PaxLogo } from "@/components/pax-logo";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -615,7 +616,7 @@ export default function ProjectDetails() {
                 <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-3">
                   <CreditCard className="w-6 h-6 text-white" />
                 </div>
-                <p className="text-white/80 text-sm tracking-widest uppercase font-medium">PAX Escrow</p>
+                <p className="text-white/80 text-sm tracking-widest font-medium"><PaxLogo white className="text-sm" /> Escrow</p>
                 <h2 className="text-2xl font-bold mt-1">Payment Receipt</h2>
               </div>
 
@@ -667,7 +668,7 @@ export default function ProjectDetails() {
                   </div>
                 </div>
 
-                <p className="text-center text-xs text-gray-400 pt-2">This is a system-generated receipt from PAX Escrow Platform.</p>
+                <p className="text-center text-xs text-gray-400 pt-2">This is a system-generated receipt from <PaxLogo className="text-xs" /> Escrow Platform.</p>
               </div>
 
               {/* Footer Buttons */}

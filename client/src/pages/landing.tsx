@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { PaxLogo } from "@/components/pax-logo";
 
 type Step =
   | "auth"            // Combined: email + password (login or register)
@@ -126,7 +127,7 @@ export default function Landing() {
     setLoading(true);
     try {
       await api("/api/auth/verify-otp", { email, otp });
-      toast({ title: "Welcome to PAX! 🎉", description: "Your account is verified." });
+      toast({ title: "Welcome to pax! 🎉", description: "Your account is verified." });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     } catch (err: any) {
       toast({ variant: "destructive", title: "Invalid OTP", description: err.message });
@@ -177,7 +178,7 @@ export default function Landing() {
   };
 
   const stepConfig: Record<Step, { title: string; subtitle: string }> = {
-    auth: { title: "Welcome to PAX", subtitle: "Sign in or create your account." },
+    auth: { title: "Welcome to", subtitle: "Sign in or create your account." },
     "otp-register": { title: "Verify Your Email", subtitle: `We sent a 6-digit code to ${email}` },
     forgot: { title: "Forgot Password?", subtitle: "We'll send a reset code to your email." },
     "otp-reset": { title: "Enter Reset Code", subtitle: `Check your email at ${email}` },
@@ -200,7 +201,7 @@ export default function Landing() {
             Secure your freelance deals with absolute trust.
           </h1>
           <p className="text-lg md:text-xl text-white/70 mb-10 leading-relaxed font-light">
-            PAX uses smart escrow milestones to ensure buyers get exactly what they pay for, and freelancers get paid for exactly what they do.
+            <PaxLogo white className="text-xl" /> uses smart escrow milestones to ensure buyers get exactly what they pay for, and freelancers get paid for exactly what they do.
           </p>
           <div className="space-y-4">
             {["Funds held securely in escrow", "Milestone-based automated payouts", "Dispute resolution guarantees"].map((f, i) => (
@@ -219,7 +220,12 @@ export default function Landing() {
 
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-2">
-              <h2 className="text-3xl font-display font-bold text-foreground">{stepConfig[step].title}</h2>
+              <h2 className="text-3xl font-display font-bold text-foreground">
+                {step === "auth"
+                  ? <>{stepConfig[step].title} <PaxLogo className="text-3xl" /></>
+                  : stepConfig[step].title
+                }
+              </h2>
               <p className="text-muted-foreground">{stepConfig[step].subtitle}</p>
             </motion.div>
           </AnimatePresence>

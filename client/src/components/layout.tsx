@@ -4,6 +4,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupCon
 import { LayoutDashboard, PlusCircle, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PaxLogo } from "@/components/pax-logo";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -24,7 +25,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
                 <Shield className="w-5 h-5 text-white" />
               </div>
-              <span className="font-display font-bold text-xl tracking-tight">PAX</span>
+              <PaxLogo className="text-2xl" />
             </div>
 
             <div className="px-6 py-4">
