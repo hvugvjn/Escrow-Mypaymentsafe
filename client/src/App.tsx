@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import Home from "@/pages/home";
 import ProfileComplete from "@/pages/profile-complete";
 import Dashboard from "@/pages/dashboard";
 import CreateProject from "@/pages/create-project";
@@ -22,7 +23,7 @@ function ProtectedRoute({ component: Component, hideLayout = false }: { componen
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setLocation("/");
+      setLocation("/login");
     } else if (isAuthenticated && !user?.role && location !== "/profile/complete") {
       setLocation("/profile/complete");
     } else if (isAuthenticated && user?.role && location === "/") {
@@ -45,7 +46,10 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/" component={() => isAuthenticated ? <ProtectedRoute component={Dashboard} /> : <Landing />} />
+      {/* Public home/marketing page */}
+      <Route path="/" component={() => isAuthenticated ? <ProtectedRoute component={Dashboard} /> : <Home />} />
+      {/* Auth page */}
+      <Route path="/login" component={() => isAuthenticated ? <ProtectedRoute component={Dashboard} /> : <Landing />} />
       <Route path="/profile/complete" component={() => <ProtectedRoute component={ProfileComplete} hideLayout />} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/projects/new" component={() => <ProtectedRoute component={CreateProject} />} />
