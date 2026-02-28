@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Lock, CheckCircle2, Loader2, Mail, KeyRound, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Lock, CheckCircle2, Loader2, Mail, KeyRound, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -194,9 +194,7 @@ export default function Landing() {
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         </div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative z-10 max-w-xl">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-2xl shadow-primary/30 mb-8">
-            <Shield className="w-8 h-8 text-white" />
-          </div>
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6">
             Secure your freelance deals with absolute trust.
           </h1>

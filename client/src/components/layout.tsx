@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { LayoutDashboard, PlusCircle, User, LogOut, Shield } from "lucide-react";
+import { LayoutDashboard, PlusCircle, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PaxLogo } from "@/components/pax-logo";
@@ -21,10 +21,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen w-full bg-background overflow-hidden">
         <Sidebar className="border-r border-border/50 bg-sidebar">
           <SidebarContent>
-            <div className="p-6 pb-2 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
+            <div className="p-6 pb-2 flex items-center">
               <PaxLogo className="text-2xl" />
             </div>
 
