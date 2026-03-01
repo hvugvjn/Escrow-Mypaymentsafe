@@ -216,10 +216,15 @@ export default function Home() {
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                     <PaxLogo white className="text-2xl" />
                     <p className="text-white/30 text-sm">© 2025 PAX Escrow. All rights reserved.</p>
-                    <div className="flex gap-6 text-sm text-white/40">
-                        <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                        <a href="#" className="hover:text-white transition-colors">Terms</a>
-                        <a href="#" className="hover:text-white transition-colors">Support</a>
+                    <div className="flex flex-col md:flex-row items-center gap-6 text-sm text-white/40">
+                        <a href="mailto:info@paxdot.com" className="hover:text-white transition-colors flex items-center gap-1">
+                            Contact us: <span className="text-white/70">info@paxdot.com</span>
+                        </a>
+                        <div className="flex gap-6">
+                            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+                            <a href="#" className="hover:text-white transition-colors">Terms</a>
+                            <a href="#" className="hover:text-white transition-colors">Support</a>
+                        </div>
                     </div>
                 </div>
             </footer>
