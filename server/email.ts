@@ -67,6 +67,11 @@ export async function sendOtpEmail(to: string, otp: string) {
 
   const subject = `${otp} is your PAX verification code`;
 
+  await sendEmail(to, subject, html, text);
+}
+
+// ── Shared Transport Helper ──
+async function sendEmail(to: string, subject: string, html: string, text: string) {
   // ── Option 1: Resend API (works on Render free tier — uses HTTPS port 443) ──
   if (process.env.RESEND_API_KEY) {
     try {
@@ -85,7 +90,7 @@ export async function sendOtpEmail(to: string, otp: string) {
         }),
       });
       if (res.ok) {
-        console.log(`[EMAIL] OTP sent via Resend to ${to}`);
+        console.log(`[EMAIL] Sent via Resend to ${to}`);
         return;
       }
       const err = await res.text();
@@ -119,12 +124,101 @@ export async function sendOtpEmail(to: string, otp: string) {
         text,
       });
 
-      console.log(`[EMAIL] OTP sent via Gmail SMTP to ${to}`);
+      console.log(`[EMAIL] Sent via Gmail SMTP to ${to}`);
       return;
     } catch (err) {
       console.error('[EMAIL] Gmail SMTP failed:', err);
     }
   }
 
-  console.warn('[EMAIL] No email provider configured — OTP only available in logs above.');
+  console.warn('[EMAIL] No email provider configured — email not sent. Payload:', { to, subject });
+}
+
+// ── Notification Templates ──
+
+function getBaseTemplate(title: string, contentHtml: string) {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>${title}</title></head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 0;">
+    <tr><td align="center">
+      <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.10);max-width:580px;">
+        <tr>
+          <td style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:40px 40px 32px 40px;text-align:center;">
+             <span style="color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">PAX</span><br/>
+             <span style="color:rgba(255,255,255,0.75);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;display:block;">Secure Escrow Platform</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px 48px 32px 48px;">
+            ${contentHtml}
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:24px 48px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#d1d5db;">© ${new Date().getFullYear()} PAX · Secure Freelance Escrow Platform</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`.trim();
+}
+
+export async function sendProjectCreatedEmail(to: string, projectTitle: string, joinCode: string) {
+  const content = `
+    <h2 style="margin:0 0 16px 0;font-size:22px;color:#111827;">Project Created Successfully</h2>
+    <p style="margin:0 0 20px 0;font-size:15px;color:#4b5563;line-height:1.6;">Your project <strong>${projectTitle}</strong> has been created. Share the code below with your freelancer so they can join.</p>
+    <div style="background:#f8f9ff;border:1.5px dashed #c7d2fe;border-radius:12px;padding:20px;text-align:center;">
+      <span style="font-size:14px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Join Code</span><br/>
+      <span style="display:inline-block;margin-top:8px;font-size:32px;font-weight:800;letter-spacing:4px;color:#4f46e5;font-family:monospace;">${joinCode}</span>
+    </div>
+  `;
+  const subject = `Project Created: ${projectTitle}`;
+  const html = getBaseTemplate(subject, content);
+  const text = `Project Created: ${projectTitle}\n\nJoin Code: ${joinCode}`;
+  await sendEmail(to, subject, html, text);
+}
+
+export async function sendEscrowFundedEmail(to: string, projectTitle: string, amount: number) {
+  const content = `
+    <h2 style="margin:0 0 16px 0;font-size:22px;color:#111827;">Escrow Funded! 🔒</h2>
+    <p style="margin:0 0 20px 0;font-size:15px;color:#4b5563;line-height:1.6;">Great news! The buyer has securely funded the escrow for <strong>${projectTitle}</strong> with <strong>$${(amount / 100).toFixed(2)}</strong>.</p>
+    <p style="margin:0;font-size:15px;color:#4b5563;line-height:1.6;">You can now safely begin working on the milestones. Your payment is secured and guaranteed upon approval.</p>
+  `;
+  const subject = `Escrow Secured: ${projectTitle}`;
+  const html = getBaseTemplate(subject, content);
+  const text = `Escrow Secured for ${projectTitle}\n\nAmount: $${(amount / 100).toFixed(2)}\n\nYou can now safely begin working.`;
+  await sendEmail(to, subject, html, text);
+}
+
+export async function sendWorkSubmittedEmail(to: string, projectTitle: string, milestoneTitle: string) {
+  const content = `
+    <h2 style="margin:0 0 16px 0;font-size:22px;color:#111827;">Review Requested 📝</h2>
+    <p style="margin:0 0 20px 0;font-size:15px;color:#4b5563;line-height:1.6;">Your freelancer has submitted work for the milestone: <strong>${milestoneTitle}</strong> on project <strong>${projectTitle}</strong>.</p>
+    <p style="margin:0;font-size:15px;color:#4b5563;line-height:1.6;">Please log in to PAX Escrow to review the deliverables and approve the payment release, or request a revision if needed.</p>
+  `;
+  const subject = `Review Requested: ${projectTitle}`;
+  const html = getBaseTemplate(subject, content);
+  const text = `Work submitted for milestone: ${milestoneTitle} in project: ${projectTitle}.\nPlease log in to review.`;
+  await sendEmail(to, subject, html, text);
+}
+
+export async function sendPaymentReleasedEmail(to: string, projectTitle: string, amount: number) {
+  const content = `
+    <h2 style="margin:0 0 16px 0;font-size:22px;color:#111827;">Payment Released! 💸</h2>
+    <p style="margin:0 0 20px 0;font-size:15px;color:#4b5563;line-height:1.6;">Congratulations! The buyer has approved your work for <strong>${projectTitle}</strong>.</p>
+    <div style="background:#f0faeb;border:1.5px solid #bbf7d0;border-radius:12px;padding:20px;text-align:center;">
+      <span style="font-size:14px;color:#166534;font-weight:600;">Amount Released</span><br/>
+      <span style="display:inline-block;margin-top:8px;font-size:32px;font-weight:800;color:#15803d;">$${(amount / 100).toFixed(2)}</span>
+    </div>
+    <p style="margin:20px 0 0 0;font-size:15px;color:#4b5563;line-height:1.6;">The funds are currently on their way to your registered bank account.</p>
+  `;
+  const subject = `Payment Released: $${(amount / 100).toFixed(2)}`;
+  const html = getBaseTemplate(subject, content);
+  const text = `Payment Released: $${(amount / 100).toFixed(2)} for ${projectTitle}.\nFunds are on the way.`;
+  await sendEmail(to, subject, html, text);
 }

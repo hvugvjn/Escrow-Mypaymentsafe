@@ -147,7 +147,22 @@ export default function ProjectDetails() {
               <h1 className="text-3xl font-display font-bold tracking-tight">{project.title}</h1>
               <StatusBadge status={project.status} />
             </div>
-            <p className="text-muted-foreground font-medium text-sm">Project ID: <span className="font-mono bg-muted px-2 py-0.5 rounded">{project.projectCode}</span></p>
+            <div className="flex items-center gap-3 mt-2">
+              <p className="text-muted-foreground font-medium text-sm">Join Code:</p>
+              <div className="flex items-center bg-muted/50 border border-border/50 rounded overflow-hidden">
+                <span className="font-mono px-3 py-1 font-bold text-foreground tracking-widest">{project.projectCode}</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(project.projectCode);
+                    toast({ title: "Copied!", description: "Join code copied to clipboard." });
+                  }}
+                  className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 transition-colors border-l border-border/50 flex items-center gap-1 text-sm font-medium"
+                  title="Copy Join Code"
+                >
+                  <Copy className="w-3 h-3" /> Copy
+                </button>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             {isBuyer && project.status === 'WAITING_FOR_FUNDING' && (

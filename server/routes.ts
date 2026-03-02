@@ -5,6 +5,12 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { isAuthenticated } from "./auth";
 import { setupAuth, registerAuthRoutes } from "./auth";
+import {
+  sendProjectCreatedEmail,
+  sendEscrowFundedEmail,
+  sendWorkSubmittedEmail,
+  sendPaymentReleasedEmail
+} from "./email";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -125,6 +131,10 @@ export async function registerRoutes(
         freelancerId: user?.role === 'FREELANCER' ? userId : null,
       });
 
+      if (user?.email) {
+        sendProjectCreatedEmail(user.email, project.title, projectCode).catch(console.error);
+      }
+
       res.status(201).json(project);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -194,6 +204,13 @@ export async function registerRoutes(
 
     await storage.updateProjectStatus(project.id, 'ACTIVE');
 
+    if (project.freelancerId) {
+      const freelancer = await storage.getUser(project.freelancerId);
+      if (freelancer?.email) {
+        sendEscrowFundedEmail(freelancer.email, project.title, escrow.totalAmount).catch(console.error);
+      }
+    }
+
     res.json(updatedEscrow);
   });
 
@@ -223,6 +240,15 @@ export async function registerRoutes(
         submissionUrl: input.submissionUrl
       });
       await storage.updateProjectStatus(milestone.projectId, 'UNDER_REVIEW');
+
+      const project = await storage.getProject(milestone.projectId);
+      if (project?.buyerId) {
+        const buyer = await storage.getUser(project.buyerId);
+        if (buyer?.email) {
+          sendWorkSubmittedEmail(buyer.email, project.title, milestone.title).catch(console.error);
+        }
+      }
+
       res.json(milestone);
     } catch (err) {
       res.status(400).json({ message: "Validation failed" });
@@ -248,6 +274,14 @@ export async function registerRoutes(
       await storage.updateProjectStatus(milestone.projectId, 'COMPLETED');
     } else {
       await storage.updateProjectStatus(milestone.projectId, 'ACTIVE');
+    }
+
+    const project = await storage.getProject(milestone.projectId);
+    if (project?.freelancerId) {
+      const freelancer = await storage.getUser(project.freelancerId);
+      if (freelancer?.email) {
+        sendPaymentReleasedEmail(freelancer.email, project.title, milestone.amount).catch(console.error);
+      }
     }
 
     res.json(milestone);

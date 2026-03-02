@@ -36,7 +36,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-display font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground mt-1">Welcome back, {user?.firstName}. Here's what's happening.</p>
         </div>
-        
+
         {user?.role === 'BUYER' && (
           <Button asChild size="lg" className="hover-elevate bg-primary text-primary-foreground shadow-lg shadow-primary/20">
             <Link href="/projects/new">
@@ -53,8 +53,8 @@ export default function Dashboard() {
             <form onSubmit={handleJoin} className="flex gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <Input 
-                  placeholder="Enter 6-character Project Code..." 
+                <Input
+                  placeholder="Enter 6-character Project Code..."
                   className="pl-10 h-12 text-lg bg-background"
                   value={joinCode}
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
@@ -86,10 +86,35 @@ export default function Dashboard() {
 
       <div className="space-y-4">
         <h2 className="text-xl font-bold font-display">Your Projects</h2>
-        
+
         {projects.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed border-border rounded-2xl bg-muted/20">
-            <p className="text-muted-foreground">You don't have any projects yet.</p>
+            <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
+            <p className="text-muted-foreground mb-6">Get started by creating or joining a project.</p>
+            {user?.role === 'BUYER' ? (
+              <Button asChild size="lg" className="bg-primary hover-elevate">
+                <Link href="/projects/new">
+                  <PlusCircle className="w-5 h-5 mr-2" />
+                  Create Your First Project
+                </Link>
+              </Button>
+            ) : (
+              <div className="max-w-sm mx-auto p-4 bg-background rounded-xl border border-border shadow-sm">
+                <div className="text-sm font-medium mb-3 text-left">Got a code from your client?</div>
+                <form onSubmit={handleJoin} className="flex gap-2">
+                  <Input
+                    placeholder="Enter 6-char Code"
+                    className="h-10 text-base"
+                    value={joinCode}
+                    onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                    maxLength={6}
+                  />
+                  <Button type="submit" className="h-10" disabled={joinProject.isPending || joinCode.length < 6}>
+                    Join
+                  </Button>
+                </form>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid gap-4">
