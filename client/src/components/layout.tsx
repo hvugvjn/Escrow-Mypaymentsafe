@@ -25,12 +25,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-x-hidden w-full">
 
       {/* ═══════════════════════════════════════════
           MOBILE TOP HEADER (visible on < md)
       ═══════════════════════════════════════════ */}
-      <header className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border/50 bg-background sticky top-0 z-40">
+      <header className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border/50 bg-background sticky top-0 z-40 w-full">
         <PaxLogo className="text-2xl" />
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8 border border-border">
@@ -148,8 +148,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ═══════════════════════════════════════════
           MAIN CONTENT
       ═══════════════════════════════════════════ */}
-      <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
-        <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-10">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 min-w-0 w-full">
+        <div className="max-w-6xl mx-auto p-3 sm:p-4 md:p-6 lg:p-10 w-full">
           {children}
         </div>
       </main>
@@ -158,7 +158,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           MOBILE BOTTOM NAV BAR (visible on < md)
           Shows ALL options always — no hiding
       ═══════════════════════════════════════════ */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/50 safe-area-pb">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex items-stretch">
           {navItems.map((item) => {
             const isActive = location === item.url;

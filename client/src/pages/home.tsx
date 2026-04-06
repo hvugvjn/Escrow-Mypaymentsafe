@@ -14,7 +14,7 @@ export default function Home() {
         <div className="min-h-screen bg-[#0a0f1e] text-white font-sans overflow-x-hidden">
 
             {/* ── NAV ── */}
-            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-16 py-4 bg-[#0a0f1e]/80 backdrop-blur-md border-b border-white/5">
+            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 md:py-4 bg-[#0a0f1e]/80 backdrop-blur-md border-b border-white/5">
                 <PaxLogo className="text-3xl" white />
                 <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
                     <a href="#how" className="hover:text-white transition-colors">How it works</a>
@@ -43,13 +43,13 @@ export default function Home() {
                         Trusted escrow for the digital economy
                     </motion.div>
 
-                    <motion.h1 custom={1} variants={fadeUp} className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+                    <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
                         Stop getting scammed.<br />
                         <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Start using </span>
                         <PaxLogo white className="text-5xl md:text-7xl" />.
                     </motion.h1>
 
-                    <motion.p custom={2} variants={fadeUp} className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed">
+                    <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed">
                         <PaxLogo white className="text-lg" /> is a secure escrow platform that holds your money safely until the work is done — protecting both buyers and freelancers from fraud.
                     </motion.p>
 
@@ -197,9 +197,9 @@ export default function Home() {
             </section>
 
             {/* ── CTA ── */}
-            <section className="py-24 px-6">
+            <section className="py-24 px-4 md:px-6">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                    className="max-w-3xl mx-auto text-center bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/20 rounded-3xl p-12">
+                    className="max-w-3xl mx-auto text-center bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/20 rounded-3xl p-8 md:p-12">
                     <h2 className="text-3xl md:text-5xl font-bold mb-4">Ready to transact with confidence?</h2>
                     <p className="text-white/60 text-lg mb-8">Join <PaxLogo white className="text-lg" /> today — it's free to get started.</p>
                     <Link href="/login">
@@ -212,11 +212,11 @@ export default function Home() {
             </section>
 
             {/* ── FOOTER ── */}
-            <footer className="border-t border-white/10 py-8 px-6">
-                <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <footer className="border-t border-white/10 py-6 md:py-8 px-4 md:px-6">
+                <div className="max-w-6xl mx-auto flex flex-col items-center justify-between gap-4 text-center md:text-left md:flex-row">
                     <PaxLogo white className="text-2xl" />
                     <p className="text-white/30 text-sm">© 2025 PAX Escrow. All rights reserved.</p>
-                    <div className="flex flex-col md:flex-row items-center gap-6 text-sm text-white/40">
+                    <div className="flex flex-col items-center gap-3 md:flex-row md:gap-6 text-sm text-white/40">
                         <a href="mailto:info@paxdot.com" className="hover:text-white transition-colors flex items-center gap-1">
                             Contact us: <span className="text-white/70">info@paxdot.com</span>
                         </a>

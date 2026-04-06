@@ -137,34 +137,35 @@ export default function ProjectDetails() {
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500">
+    <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500 overflow-x-hidden">
 
       {/* Top Header Section */}
       <Card className="border-border/50 shadow-sm overflow-hidden">
-        <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-background border-b border-border/50">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-display font-bold tracking-tight">{project.title}</h1>
-              <StatusBadge status={project.status} />
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <p className="text-muted-foreground font-medium text-sm">Join Code:</p>
-              <div className="flex items-center bg-muted/50 border border-border/50 rounded overflow-hidden">
-                <span className="font-mono px-3 py-1 font-bold text-foreground tracking-widest">{project.projectCode}</span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(project.projectCode);
-                    toast({ title: "Copied!", description: "Join code copied to clipboard." });
-                  }}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 transition-colors border-l border-border/50 flex items-center gap-1 text-sm font-medium"
-                  title="Copy Join Code"
-                >
-                  <Copy className="w-3 h-3" /> Copy
-                </button>
+        <div className="p-4 md:p-8 flex flex-col gap-4 bg-background border-b border-border/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight">{project.title}</h1>
+                <StatusBadge status={project.status} />
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-muted-foreground font-medium text-sm">Join Code:</p>
+                <div className="flex items-center bg-muted/50 border border-border/50 rounded overflow-hidden">
+                  <span className="font-mono px-2 py-1 font-bold text-foreground tracking-widest text-sm">{project.projectCode}</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(project.projectCode);
+                      toast({ title: "Copied!", description: "Join code copied to clipboard." });
+                    }}
+                    className="bg-primary/10 hover:bg-primary/20 text-primary px-2 py-1 transition-colors border-l border-border/50 flex items-center gap-1 text-xs font-medium"
+                    title="Copy Join Code"
+                  >
+                    <Copy className="w-3 h-3" /> Copy
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
             {isBuyer && project.status === 'WAITING_FOR_FUNDING' && (
               <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
                 <DialogTrigger asChild>
@@ -234,11 +235,12 @@ export default function ProjectDetails() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </div>
         </div>
 
         {/* Metadata Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 md:p-8 bg-muted/5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 md:p-8 bg-muted/5">
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Company</p>
             <div className="flex items-center gap-2 font-medium">
@@ -268,42 +270,46 @@ export default function ProjectDetails() {
       </Card>
 
       {/* Visual Workflow Stages */}
-      <Card className="border-border/50 shadow-sm p-8">
-        <h3 className="font-display font-semibold text-lg mb-8">Workflow Stages</h3>
-        <div className="flex items-center justify-between relative max-w-4xl mx-auto">
-          {/* Connector Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted -translate-y-1/2 z-0 rounded-full"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 z-0 rounded-full transition-all duration-1000" style={{ width: `${(currentStep / 5) * 100}%` }}></div>
+      <Card className="border-border/50 shadow-sm p-4 md:p-8">
+        <h3 className="font-display font-semibold text-base md:text-lg mb-5 md:mb-8">Workflow Stages</h3>
+        <div className="overflow-x-auto -mx-1 px-1 pb-2">
+          <div className="flex items-center justify-between relative min-w-[400px] max-w-4xl mx-auto">
+            {/* Connector Line */}
+            <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted -translate-y-[28px] z-0 rounded-full"></div>
+            <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-[28px] z-0 rounded-full transition-all duration-1000" style={{ width: `${(currentStep / 5) * 100}%` }}></div>
 
-          {flowSteps.map((step, idx) => {
-            const isCompleted = idx < currentStep;
-            const isCurrent = idx === currentStep;
-            return (
-              <div key={idx} className="relative z-10 flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-sm transition-all shadow-md ${isCompleted ? "bg-emerald-500 text-white" :
-                  isCurrent ? "bg-primary text-primary-foreground ring-4 ring-primary/20" :
-                    "bg-muted text-muted-foreground border-2 border-border/50"
-                  }`}>
-                  {isCompleted ? <Check className="w-6 h-6" /> : step.num}
+            {flowSteps.map((step, idx) => {
+              const isCompleted = idx < currentStep;
+              const isCurrent = idx === currentStep;
+              return (
+                <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold shadow-sm transition-all shadow-md text-sm ${isCompleted ? "bg-emerald-500 text-white" :
+                    isCurrent ? "bg-primary text-primary-foreground ring-4 ring-primary/20" :
+                      "bg-muted text-muted-foreground border-2 border-border/50"
+                    }`}>
+                    {isCompleted ? <Check className="w-4 h-4 md:w-6 md:h-6" /> : step.num}
+                  </div>
+                  <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${isCurrent ? "text-primary" : "text-muted-foreground"}`}>{step.label}</span>
                 </div>
-                <span className={`text-sm font-medium ${isCurrent ? "text-primary" : "text-muted-foreground"}`}>{step.label}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </Card>
 
       {/* Tabbed Interface */}
       <Tabs defaultValue="milestones" className="w-full">
-        <TabsList className="w-full justify-start h-auto p-1 bg-transparent border-b rounded-none gap-6 mb-8">
-          <TabsTrigger value="details" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1">Details</TabsTrigger>
-          <TabsTrigger value="milestones" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1">Milestones & Tracking</TabsTrigger>
-          <TabsTrigger value="activity" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1">Activity</TabsTrigger>
-          <TabsTrigger value="payments" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1">Payments</TabsTrigger>
-          <TabsTrigger value="chat" className="text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-1 flex items-center gap-1.5">
-            <MessageCircle className="w-4 h-4" /> Chat
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 sm:mx-0">
+          <TabsList className="w-max min-w-full justify-start h-auto p-0 bg-transparent border-b rounded-none gap-2 sm:gap-4 mb-6 md:mb-8 px-3 sm:px-0">
+            <TabsTrigger value="details" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Details</TabsTrigger>
+            <TabsTrigger value="milestones" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Milestones & Tracking</TabsTrigger>
+            <TabsTrigger value="activity" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Activity</TabsTrigger>
+            <TabsTrigger value="payments" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Payments</TabsTrigger>
+            <TabsTrigger value="chat" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4" /> Chat
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="details" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <Card className="border-border/50">
@@ -339,7 +345,7 @@ export default function ProjectDetails() {
             return (
               <Card key={m.id} className={`overflow-hidden transition-all ${isOverdue ? "border-destructive/50 shadow-destructive/10 shadow-lg" : "border-border/50 hover:border-primary/20 shadow-sm"}`}>
                 <div className="p-6">
-                  <div className="flex flex-col md:flex-row gap-6 justify-between items-start">
+                  <div className="flex flex-col gap-4 md:flex-row md:gap-6 justify-between items-start">
 
                     {/* Left Side Info */}
                     <div className="flex gap-4">
@@ -395,7 +401,7 @@ export default function ProjectDetails() {
                     </div>
 
                     {/* Right Side Actions */}
-                    <div className="flex flex-col gap-2 min-w-[160px] md:items-end w-full md:w-auto">
+                    <div className="flex flex-col gap-2 sm:flex-row md:flex-col md:min-w-[160px] md:items-end w-full md:w-auto">
                       {isFreelancer && (m.status === 'PENDING' || m.status === 'REVISION_REQUESTED') && project.status === 'ACTIVE' && (
                         <Dialog open={isSubmitOpen && selectedMilestoneId === m.id} onOpenChange={(open) => {
                           setIsSubmitOpen(open);
@@ -450,7 +456,7 @@ export default function ProjectDetails() {
             </CardHeader>
             <CardContent className="p-0">
               {/* Mock timeline for dashboard effect */}
-              <div className="p-6 md:p-8 space-y-8">
+              <div className="p-4 md:p-8 space-y-6 md:space-y-8">
 
                 {/* Activity Iterations based on milestones */}
                 {milestones.filter((m: any) => m.status === 'APPROVED').map((m: any, i: number) => (
@@ -531,10 +537,10 @@ export default function ProjectDetails() {
 
               {/* Summary Metrics */}
               {escrow ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x border-b">
-                  <div className="p-8">
-                    <p className="text-muted-foreground mb-2 font-medium">Total Escrow Vaulted</p>
-                    <p className="text-4xl font-display font-bold text-foreground">
+                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x border-b">
+                  <div className="p-5 md:p-8">
+                    <p className="text-muted-foreground mb-2 font-medium text-sm">Total Escrow Vaulted</p>
+                    <p className="text-3xl md:text-4xl font-display font-bold text-foreground">
                       {escrow.funded ? formatMoney(escrow.totalAmount) : "$0.00"}
                     </p>
                     {escrow.funded ? (
@@ -547,13 +553,13 @@ export default function ProjectDetails() {
                       </span>
                     )}
                   </div>
-                  <div className="p-8">
-                    <p className="text-muted-foreground mb-2 font-medium">Released to Freelancer</p>
-                    <p className="text-4xl font-display font-bold text-emerald-600">{formatMoney(escrow.releasedAmount)}</p>
+                  <div className="p-5 md:p-8">
+                    <p className="text-muted-foreground mb-2 font-medium text-sm">Released to Freelancer</p>
+                    <p className="text-3xl md:text-4xl font-display font-bold text-emerald-600">{formatMoney(escrow.releasedAmount)}</p>
                   </div>
-                  <div className="p-8">
-                    <p className="text-muted-foreground mb-2 font-medium">Remaining Locked</p>
-                    <p className="text-4xl font-display font-bold text-amber-500">{formatMoney(escrow.remainingAmount)}</p>
+                  <div className="p-5 md:p-8">
+                    <p className="text-muted-foreground mb-2 font-medium text-sm">Remaining Locked</p>
+                    <p className="text-3xl md:text-4xl font-display font-bold text-amber-500">{formatMoney(escrow.remainingAmount)}</p>
                   </div>
                 </div>
               ) : (
@@ -561,7 +567,7 @@ export default function ProjectDetails() {
               )}
 
               {/* Transactions Table */}
-              <div className="p-8">
+              <div className="p-4 md:p-8">
                 <h4 className="font-semibold text-lg mb-6">Payment Transaction History</h4>
                 {escrow && escrow.funded ? (
                   <div className="overflow-x-auto">
@@ -702,7 +708,7 @@ export default function ProjectDetails() {
         {/* ── Chat Tab ──────────────────────────────────── */}
         <TabsContent value="chat" className="mt-0">
           <Card className="border-0 shadow-none">
-            <CardHeader className="px-8 py-6 border-b">
+            <CardHeader className="px-4 md:px-8 py-4 md:py-6 border-b">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <MessageCircle className="w-5 h-5 text-primary" /> Project Chat
                 <span className="ml-auto text-xs font-normal text-muted-foreground">Messages refresh every 5 seconds</span>
@@ -710,7 +716,7 @@ export default function ProjectDetails() {
             </CardHeader>
             <CardContent className="p-0">
               {/* Messages Area */}
-              <div className="h-[420px] overflow-y-auto px-8 py-6 space-y-4 bg-muted/10">
+              <div className="h-[320px] md:h-[420px] overflow-y-auto px-4 md:px-8 py-4 md:py-6 space-y-4 bg-muted/10">
                 {chatMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center gap-3">
                     <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
@@ -753,8 +759,8 @@ export default function ProjectDetails() {
               </div>
 
               {/* Input Area */}
-              <div className="px-8 py-5 border-t bg-background">
-                <div className="flex gap-3 items-center">
+              <div className="px-4 md:px-8 py-4 md:py-5 border-t bg-background">
+                <div className="flex gap-2 md:gap-3 items-center">
                   <Input
                     value={chatInput}
                     onChange={e => setChatInput(e.target.value)}

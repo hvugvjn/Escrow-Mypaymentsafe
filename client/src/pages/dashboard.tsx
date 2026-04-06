@@ -33,7 +33,7 @@ export default function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground mt-1">Welcome back, {user?.firstName}. Here's what's happening.</p>
         </div>
 
@@ -50,7 +50,7 @@ export default function Dashboard() {
       {user?.role === 'FREELANCER' && (
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="pt-6">
-            <form onSubmit={handleJoin} className="flex gap-4">
+            <form onSubmit={handleJoin} className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -61,7 +61,7 @@ export default function Dashboard() {
                   maxLength={6}
                 />
               </div>
-              <Button type="submit" size="lg" className="h-12" disabled={joinProject.isPending || joinCode.length < 6}>
+              <Button type="submit" size="lg" className="h-12 sm:w-auto w-full" disabled={joinProject.isPending || joinCode.length < 6}>
                 Join Project
               </Button>
             </form>
@@ -121,10 +121,10 @@ export default function Dashboard() {
             {projects.map((project) => (
               <Link key={project.id} href={`/projects/${project.id}`}>
                 <Card className="hover:border-primary/50 transition-colors cursor-pointer hover-elevate">
-                  <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-lg">{project.title}</h3>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h3 className="font-semibold text-base md:text-lg">{project.title}</h3>
                         <StatusBadge status={project.status} />
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-1">{project.description}</p>

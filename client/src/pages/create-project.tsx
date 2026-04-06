@@ -98,7 +98,7 @@ export default function CreateProject() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-display font-bold">Create New Project</h1>
+        <h1 className="text-2xl md:text-3xl font-display font-bold">Create New Project</h1>
         <p className="text-muted-foreground">Set up escrow details and milestones.</p>
       </div>
 
@@ -120,7 +120,7 @@ export default function CreateProject() {
               <Label>Invite Expires At</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-[240px] justify-start text-left font-normal", !expiresAt && "text-muted-foreground")}>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !expiresAt && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {expiresAt ? format(expiresAt, "PPP") : <span>Pick a date</span>}
                   </Button>
@@ -212,7 +212,7 @@ export default function CreateProject() {
         </div>
 
         <div className="flex justify-end pt-4">
-          <Button type="submit" size="lg" className="w-full md:w-auto px-8 hover-elevate" disabled={createProject.isPending || createMilestone.isPending || isUploading}>
+          <Button type="submit" size="lg" className="w-full px-8 hover-elevate" disabled={createProject.isPending || createMilestone.isPending || isUploading}>
             {createProject.isPending || isUploading ? "Creating..." : "Create Project & Escrow"}
           </Button>
         </div>

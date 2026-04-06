@@ -6,6 +6,8 @@ import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 import { sendOtpEmail } from "../email";
 import bcrypt from "bcryptjs";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -36,6 +38,72 @@ function generateOtp() {
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
+
+  // ── Google OAuth ──────────────────────────────────────────────────────────
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback",
+      },
+      async (_accessToken, _refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value?.toLowerCase();
+          if (!email) return done(new Error("No email from Google"), undefined);
+
+          const firstName = profile.name?.givenName || profile.displayName?.split(" ")[0] || "";
+          const lastName = profile.name?.familyName || profile.displayName?.split(" ").slice(1).join(" ") || "";
+          const profileImageUrl = profile.photos?.[0]?.value || null;
+
+          const [existing] = await db.select().from(users).where(eq(users.email, email));
+
+          let user;
+          if (existing) {
+            // Update profile image if changed, but keep existing data
+            [user] = await db.update(users)
+              .set({ profileImageUrl: profileImageUrl || existing.profileImageUrl, updatedAt: new Date() })
+              .where(eq(users.id, existing.id))
+              .returning();
+          } else {
+            [user] = await db.insert(users)
+              .values({ email, firstName, lastName, profileImageUrl })
+              .returning();
+          }
+
+          return done(null, user);
+        } catch (err) {
+          return done(err as Error, undefined);
+        }
+      }
+    ));
+
+    passport.serializeUser((user: any, done) => done(null, user.id));
+    passport.deserializeUser(async (id: string, done) => {
+      try {
+        const [user] = await db.select().from(users).where(eq(users.id, id));
+        done(null, user || null);
+      } catch (err) {
+        done(err, null);
+      }
+    });
+
+    app.use(passport.initialize());
+    app.use(passport.session());
+
+    app.get("/api/auth/google",
+      passport.authenticate("google", { scope: ["profile", "email"] })
+    );
+
+    app.get("/api/auth/google/callback",
+      passport.authenticate("google", { failureRedirect: "/login?error=google_failed" }),
+      (req: any, res) => {
+        // Set our own session userId so isAuthenticated middleware works
+        (req.session as any).userId = req.user.id;
+        res.redirect("/dashboard");
+      }
+    );
+  }
 
   // ── Check if email already exists (new vs returning user) ──────────────────
   app.post("/api/auth/check-email", async (req, res) => {
