@@ -39,6 +39,16 @@ export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
 
+  // ── Temporary debug endpoint — remove after fixing Google OAuth ───────────
+  app.get("/api/debug/oauth", (req, res) => {
+    res.json({
+      hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+      clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.slice(0, 20) + "...",
+      hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+      callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+    });
+  });
+
   // ── Google OAuth ──────────────────────────────────────────────────────────
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy(
