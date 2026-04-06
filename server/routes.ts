@@ -126,10 +126,11 @@ export async function registerRoutes(
         projectCode,
         createdBy: userId,
         status: 'WAITING_FOR_ACCEPTANCE',
-        expiresAt,
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        currency: input.currency || 'USD',
         buyerId: user?.role === 'BUYER' ? userId : null,
         freelancerId: user?.role === 'FREELANCER' ? userId : null,
-      });
+      } as any);
 
       if (user?.email) {
         sendProjectCreatedEmail(user.email, project.title, projectCode).catch(console.error);

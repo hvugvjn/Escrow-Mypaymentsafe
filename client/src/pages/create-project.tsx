@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CURRENCIES, getCurrencySymbol } from "@/lib/currencies";
 
 export default function CreateProject() {
   const [, setLocation] = useLocation();
@@ -20,6 +22,7 @@ export default function CreateProject() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [expiresAt, setExpiresAt] = useState<Date>(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -71,6 +74,7 @@ export default function CreateProject() {
       const project = await createProject.mutateAsync({
         title,
         description,
+        currency,
         expiresAt,
         ...(documentUrl && { documentUrl }),
       });
@@ -115,6 +119,27 @@ export default function CreateProject() {
             <div className="space-y-2">
               <Label>Description</Label>
               <Textarea required value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the overall scope of work" rows={4} />
+            </div>
+            <div className="space-y-2">
+              <Label>Project Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {CURRENCIES.map(c => (
+                    <SelectItem key={c.code} value={c.code}>
+                      <span className="flex items-center gap-2">
+                        <span>{c.flag}</span>
+                        <span className="font-mono font-semibold">{c.code}</span>
+                        <span className="text-muted-foreground">– {c.name}</span>
+                        <span className="ml-auto text-muted-foreground font-mono">{c.symbol}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">All milestone amounts will use this currency.</p>
             </div>
             <div className="space-y-2 flex flex-col">
               <Label>Invite Expires At</Label>
@@ -195,10 +220,10 @@ export default function CreateProject() {
                     }} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Amount (USD)</Label>
+                    <Label>Amount ({currency})</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                      <Input type="number" step="0.01" min="1" required className="pl-7" value={milestone.amountInput} onChange={e => {
+                      <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">{getCurrencySymbol(currency)}</span>
+                      <Input type="number" step="0.01" min="0.01" required className="pl-8" value={milestone.amountInput} onChange={e => {
                         const newM = [...milestones];
                         newM[index].amountInput = e.target.value;
                         setMilestones(newM);

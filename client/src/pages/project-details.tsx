@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
 import { PaxLogo } from "@/components/pax-logo";
 
@@ -91,7 +92,7 @@ export default function ProjectDetails() {
   const isBuyer = user?.role === 'BUYER';
   const isFreelancer = user?.role === 'FREELANCER';
 
-  const formatMoney = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+  const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
 
   const handleDummyPayment = (e: React.FormEvent) => {
     e.preventDefault();

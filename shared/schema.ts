@@ -10,6 +10,7 @@ export const projects = pgTable("projects", {
   projectCode: varchar("project_code", { length: 6 }).notNull().unique(),
   title: text("title").notNull(),
   description: text("description").notNull(),
+  currency: varchar("currency", { length: 10 }).notNull().default("USD"),
   createdBy: varchar("created_by").notNull(),
   buyerId: varchar("buyer_id"),
   freelancerId: varchar("freelancer_id"),
@@ -61,7 +62,11 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, projectCode: true, createdBy: true, status: true, expiresAt: true, buyerId: true, freelancerId: true });
+export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, projectCode: true, createdBy: true, status: true, expiresAt: true, buyerId: true, freelancerId: true }).extend({
+  currency: z.string().min(1).max(10).default("USD").optional(),
+  expiresAt: z.coerce.date().optional(),
+});
+
 export const insertMilestoneSchema = createInsertSchema(milestones).omit({ id: true, createdAt: true, status: true, submissionUrl: true });
 export const insertEscrowSchema = createInsertSchema(escrows).omit({ id: true });
 export const insertRatingSchema = createInsertSchema(ratings).omit({ id: true, createdAt: true, reviewerId: true });
