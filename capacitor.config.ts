@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.paxdot.app',
-  appName: 'Paxdot',
+  appName: 'Pax',
   webDir: 'dist/public',          // Vite builds here
   server: {
     // All API calls go to your live production server
