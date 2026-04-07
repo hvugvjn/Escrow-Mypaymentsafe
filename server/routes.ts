@@ -5,6 +5,7 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { isAuthenticated } from "./auth";
 import { setupAuth, registerAuthRoutes } from "./auth";
+import { registerAdminRoutes } from "./admin";
 import {
   sendProjectCreatedEmail,
   sendEscrowFundedEmail,
@@ -36,6 +37,7 @@ export async function registerRoutes(
   // Set up Replit Auth
   await setupAuth(app);
   registerAuthRoutes(app);
+  registerAdminRoutes(app);
 
   app.post("/api/upload", isAuthenticated, upload.single("document"), (req, res) => {
     if (!req.file) {

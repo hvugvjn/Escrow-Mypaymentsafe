@@ -12,9 +12,12 @@ import Dashboard from "@/pages/dashboard";
 import CreateProject from "@/pages/create-project";
 import ProjectDetails from "@/pages/project-details";
 import Profile from "@/pages/profile";
+import AdminDashboard from "@/pages/admin";
 import { AppLayout } from "@/components/layout";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+
+const ADMIN_EMAIL = "vishal.sankar12345@gmail.com";
 
 // Wrapper for protected routes to handle redirects and layout
 function ProtectedRoute({ component: Component, hideLayout = false }: { component: React.ComponentType, hideLayout?: boolean }) {
@@ -24,17 +27,33 @@ function ProtectedRoute({ component: Component, hideLayout = false }: { componen
   useEffect(() => {
     if (!isAuthenticated) {
       setLocation("/login");
-    } else if (isAuthenticated && !user?.role && location !== "/profile/complete") {
+    } else if (isAuthenticated && user?.email === ADMIN_EMAIL && location !== "/admin") {
+      setLocation("/admin");
+    } else if (isAuthenticated && !user?.role && location !== "/profile/complete" && user?.email !== ADMIN_EMAIL) {
       setLocation("/profile/complete");
-    } else if (isAuthenticated && user?.role && location === "/") {
+    } else if (isAuthenticated && user?.role && location === "/" && user?.email !== ADMIN_EMAIL) {
       setLocation("/dashboard");
     }
   }, [isAuthenticated, user, location, setLocation]);
 
   if (!isAuthenticated) return null;
-  if (!user?.role && location !== "/profile/complete") return null;
+  if (!user?.role && location !== "/profile/complete" && user?.email !== ADMIN_EMAIL) return null;
 
   return hideLayout ? <Component /> : <AppLayout><Component /></AppLayout>;
+}
+
+// Admin-specific route — no AppLayout wrapper, own full-page layout
+function AdminRoute() {
+  const { isAuthenticated, user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isAuthenticated) setLocation("/login");
+    else if (user && user.email !== ADMIN_EMAIL) setLocation("/dashboard");
+  }, [isAuthenticated, user]);
+
+  if (!isAuthenticated || !user || user.email !== ADMIN_EMAIL) return null;
+  return <AdminDashboard />;
 }
 
 function Router() {
@@ -56,6 +75,9 @@ function Router() {
       <Route path="/projects/:id" component={() => <ProtectedRoute component={ProjectDetails} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
 
+      {/* Admin panel */}
+      <Route path="/admin" component={AdminRoute} />
+
       {/* Fallback */}
       <Route component={NotFound} />
     </Switch>
@@ -74,3 +96,4 @@ function App() {
 }
 
 export default App;
+

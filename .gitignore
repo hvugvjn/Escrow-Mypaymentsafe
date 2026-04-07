@@ -5,3 +5,7 @@ server/public
 vite.config.ts.*
 *.tar.gz
 .env
+
+# Mobile — Android Studio project (not needed on Render server)
+android/
+ios/
