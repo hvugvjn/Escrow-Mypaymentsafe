@@ -17,7 +17,7 @@ import { AppLayout } from "@/components/layout";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
-const ADMIN_EMAIL = "vishal.sankar12345@gmail.com";
+const ADMIN_EMAIL = "info@paxdot.com";
 
 // Wrapper for protected routes to handle redirects and layout
 function ProtectedRoute({ component: Component, hideLayout = false }: { component: React.ComponentType, hideLayout?: boolean }) {

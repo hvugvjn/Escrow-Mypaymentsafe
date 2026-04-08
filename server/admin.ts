@@ -3,7 +3,7 @@ import { db } from "./db";
 import { users, projects, milestones, escrows, messages } from "@shared/schema";
 import { desc, count, sum, eq } from "drizzle-orm";
 
-const ADMIN_EMAIL = "vishal.sankar12345@gmail.com"; // ← your admin Gmail
+const ADMIN_EMAIL = "info@paxdot.com"; // ← your admin Gmail
 
 function isAdmin(req: any, res: any, next: any) {
   const sessionAny = req.session as any;
