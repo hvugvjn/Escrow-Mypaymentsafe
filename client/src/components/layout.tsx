@@ -74,7 +74,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link key={item.url} href={item.url} onClick={() => setMobileMenuOpen(false)}>
                   <div className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
-                    isActive ? "bg-primary text-primary-foreground" : "hover:bg-secondary text-foreground"
+                    isActive ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-secondary text-foreground"
                   )}>
                     <item.icon className="w-5 h-5" />
                     {item.title}
@@ -126,9 +126,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             return (
               <Link key={item.url} href={item.url}>
                 <div title={item.title} className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 justify-center lg:justify-start",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 justify-center lg:justify-start",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20 font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}>
                   <item.icon className="w-5 h-5 shrink-0" />
@@ -144,7 +144,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <button
             title="Log out"
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors justify-center lg:justify-start"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors justify-center lg:justify-start"
           >
             <LogOut className="w-5 h-5 shrink-0" />
             <span className="hidden lg:block">Log out</span>

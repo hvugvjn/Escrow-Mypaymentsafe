@@ -15,7 +15,7 @@ export default function Home() {
 
             {/* ── NAV ── */}
             <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 md:py-4 bg-[#0a0f1e]/80 backdrop-blur-md border-b border-white/5">
-                <PaxLogo className="text-3xl" white textOnly />
+                <PaxLogo className="text-3xl" white />
                 <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
                     <a href="#how" className="hover:text-white transition-colors">How it works</a>
                     <a href="#why" className="hover:text-white transition-colors">Why PAX</a>
@@ -40,7 +40,7 @@ export default function Home() {
                 <motion.div className="relative z-10 max-w-4xl mx-auto" initial="hidden" animate="visible" variants={fadeUp}>
                     <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white/70 mb-8">
                         <BadgeCheck className="w-4 h-4 text-blue-400" />
-                        Escrow completely managed for you
+                        Escrow managed for you
                     </motion.div>
 
                     <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
@@ -272,7 +272,7 @@ export default function Home() {
 
                     <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-6">
-                            <PaxLogo className="text-2xl" white textOnly />
+                            <PaxLogo className="text-2xl" white />
                             <p className="text-white/20 text-xs tracking-wide">© 2025 PAX Escrow. Designed for absolute trust.</p>
                         </div>
                         <div className="flex gap-8">

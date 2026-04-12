@@ -21,8 +21,8 @@ interface AdminStats {
   totalReleased: number;
   fundedEscrows: number;
   statusCounts: Record<string, number>;
-  buyers: number;
-  freelancers: number;
+  clients: number;
+  talents: number;
 }
 
 interface AdminUser {
@@ -44,8 +44,8 @@ interface AdminProject {
   projectCode: string;
   status: string;
   currency: string;
-  buyerName: string;
-  freelancerName: string;
+  clientName: string;
+  talentName: string;
   createdAt: string | null;
   escrow: {
     totalAmount: number;
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
           <section>
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Platform Overview</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub={`${stats.buyers} buyers · ${stats.freelancers} freelancers`} color="bg-violet-500" />
+              <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub={`${stats.clients} clients · ${stats.talents} talents`} color="bg-violet-500" />
               <StatCard icon={FolderOpen} label="All Projects" value={stats.totalProjects} sub={`${stats.statusCounts["ACTIVE"] || 0} active`} color="bg-blue-500" />
               <StatCard icon={DollarSign} label="Total Escrow Value" value={fmt(stats.totalEscrowValue)} sub={`${stats.fundedEscrows} funded`} color="bg-emerald-500" />
               <StatCard icon={TrendingUp} label="Total Released" value={fmt(stats.totalReleased)} sub="across all projects" color="bg-orange-500" />
@@ -234,8 +234,8 @@ export default function AdminDashboard() {
                     <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Project</th>
                     <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Code</th>
                     <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Status</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Buyer</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Freelancer</th>
+                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Client</th>
+                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Talent</th>
                     <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Escrow</th>
                     <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Milestones</th>
                     <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Created</th>
@@ -262,8 +262,8 @@ export default function AdminDashboard() {
                           {project.status.replace(/_/g, " ")}
                         </span>
                       </td>
-                      <td className="p-4 text-sm max-w-[120px] truncate">{project.buyerName}</td>
-                      <td className="p-4 text-sm max-w-[120px] truncate">{project.freelancerName}</td>
+                      <td className="p-4 text-sm max-w-[120px] truncate">{project.clientName}</td>
+                      <td className="p-4 text-sm max-w-[120px] truncate">{project.talentName}</td>
                       <td className="p-4">
                         {project.escrow ? (
                           <div>
@@ -333,7 +333,7 @@ export default function AdminDashboard() {
                       <td className="p-4">
                         {u.role ? (
                           <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${u.role === "BUYER" ? "bg-blue-100 text-blue-800" : u.role === "FREELANCER" ? "bg-purple-100 text-purple-800" : "bg-red-100 text-red-800"}`}>
-                            {u.role}
+                            {u.role === "BUYER" ? "CLIENT" : u.role === "FREELANCER" ? "TALENT" : u.role}
                           </span>
                         ) : <span className="text-xs text-muted-foreground">—</span>}
                       </td>
@@ -406,7 +406,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Buyer: <span className="font-medium text-foreground">{project.buyerName}</span></span>
+                      <span className="text-muted-foreground">Client: <span className="font-medium text-foreground">{project.clientName}</span></span>
                       <span className={`font-semibold ${project.escrow!.funded ? "text-emerald-600" : "text-amber-600"}`}>
                         {project.escrow!.funded ? "✅ Funded" : "⏳ Unfunded"}
                       </span>

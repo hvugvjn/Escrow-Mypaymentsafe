@@ -225,7 +225,7 @@ export default function Landing() {
           </h1>
           
           <p className="text-lg md:text-xl text-white/60 mb-12 leading-relaxed font-normal max-w-lg">
-            <PaxLogo white textOnly className="text-2xl" /> leverages intelligent escrow milestones to guarantee that buyers receive exactly what they pay for, and freelancers get rewarded for excellence.
+            <PaxLogo white className="text-2xl" /> leverages intelligent escrow milestones to guarantee that clients receive exactly what they pay for, and talents get rewarded for excellence.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
@@ -262,7 +262,7 @@ export default function Landing() {
                 {step === "auth" ? (
                   <>
                     <span>{stepConfig[step].title}</span>
-                    <PaxLogo className="text-4xl md:text-5xl" textOnly />
+                    <PaxLogo className="text-4xl md:text-5xl" />
                   </>
                 ) : (
                   stepConfig[step].title

@@ -88,9 +88,9 @@ export default function ProjectDetails() {
   if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading project details...</div>;
   if (!data || !data.project) return <div className="p-8 text-center text-destructive">Project not found.</div>;
 
-  const { project, milestones, escrow, buyerName, freelancerName } = data;
-  const isBuyer = user?.role === 'BUYER';
-  const isFreelancer = user?.role === 'FREELANCER';
+  const { project, milestones, escrow, clientName, talentName } = data;
+  const isClient = user?.role === 'BUYER';
+  const isTalent = user?.role === 'FREELANCER';
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
 
@@ -245,13 +245,13 @@ export default function ProjectDetails() {
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Company</p>
             <div className="flex items-center gap-2 font-medium">
-              <Users className="w-4 h-4 text-muted-foreground" /> {buyerName}
+              <Users className="w-4 h-4 text-muted-foreground" /> {clientName}
             </div>
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Talent</p>
             <div className="flex items-center gap-2 font-medium">
-              <User className="w-4 h-4 text-muted-foreground" /> {freelancerName}
+              <User className="w-4 h-4 text-muted-foreground" /> {talentName}
             </div>
           </div>
           <div className="space-y-1">
@@ -467,7 +467,7 @@ export default function ProjectDetails() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">{buyerName}</span>
+                        <span className="font-semibold text-foreground">{clientName}</span>
                         <span className="text-muted-foreground text-sm">approved UAT & released funds</span>
                       </div>
                       <div className="mt-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg font-medium inline-block">
@@ -484,7 +484,7 @@ export default function ProjectDetails() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">{freelancerName}</span>
+                        <span className="font-semibold text-foreground">{talentName}</span>
                         <span className="text-muted-foreground text-sm">submitted UAT for {m.title}</span>
                       </div>
                       <p className="mt-1 text-muted-foreground bg-muted/30 p-3 rounded-lg border inline-block mt-2">All deliverables completed and ready for review.</p>
@@ -662,11 +662,11 @@ export default function ProjectDetails() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Client</span>
-                  <span className="font-medium text-gray-800">{buyerName}</span>
+                  <span className="font-medium text-gray-800">{clientName}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Talent</span>
-                  <span className="font-medium text-gray-800">{freelancerName}</span>
+                  <span className="font-medium text-gray-800">{talentName}</span>
                 </div>
                 {receipt.milestoneTitle && (
                   <div className="flex justify-between text-sm">

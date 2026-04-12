@@ -34,7 +34,9 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome back, {user?.firstName}. Here's what's happening.</p>
+          <p className="text-muted-foreground mt-1">
+            {user?.firstName ? `Welcome back, ${user.firstName}.` : "Welcome back."} Here's what's happening.
+          </p>
         </div>
 
         {user?.role === 'BUYER' && (
@@ -100,7 +102,7 @@ export default function Dashboard() {
               </Button>
             ) : (
               <div className="max-w-sm mx-auto p-4 bg-background rounded-xl border border-border shadow-sm">
-                <div className="text-sm font-medium mb-3 text-left">Got a code from your client?</div>
+                <div className="text-sm font-medium mb-3 text-left">Got a project code from your client?</div>
                 <form onSubmit={handleJoin} className="flex gap-2">
                   <Input
                     placeholder="Enter 6-char Code"
