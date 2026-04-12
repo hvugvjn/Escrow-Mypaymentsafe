@@ -16,6 +16,12 @@ const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Côte d'Ivoire", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine State", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States of America", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
+const POPULAR_SKILLS = [
+  "React", "Node.js", "UI/UX Design", "Python", "SEO",
+  "Tailwind CSS", "TypeScript", ".NET", "Copywriting", "Figma",
+  "WordPress", "AWS", "SQL", "Logo Design", "Marketing"
+];
+
 export default function ProfileComplete() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
@@ -34,10 +40,30 @@ export default function ProfileComplete() {
     companyName: "",
     phone: "",
     country: "",
-    skills: "",
     portfolioLink: "",
     bio: ""
   });
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [customSkill, setCustomSkill] = useState("");
+
+  const toggleSkill = (skill: string) => {
+    if (selectedSkills.includes(skill)) {
+      setSelectedSkills(selectedSkills.filter(s => s !== skill));
+    } else {
+      setSelectedSkills([...selectedSkills, skill]);
+    }
+  };
+
+  const handleAddCustomSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = customSkill.trim();
+      if (val && !selectedSkills.includes(val)) {
+        setSelectedSkills([...selectedSkills, val]);
+      }
+      setCustomSkill("");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +91,7 @@ export default function ProfileComplete() {
       bio: formData.bio,
       ...(role === 'BUYER'
         ? { companyName: formData.companyName, phone: formData.phone }
-        : { skills: formData.skills, portfolioLink: formData.portfolioLink || undefined, resumeUrl })
+        : { skills: selectedSkills.join(", "), portfolioLink: formData.portfolioLink || undefined, resumeUrl })
     });
 
     setLocation("/dashboard");
@@ -187,16 +213,47 @@ export default function ProfileComplete() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="skills">Key Skills (comma separated)</Label>
-                    <Input
-                      id="skills"
-                      className="bg-muted/50"
-                      placeholder="e.g. React, Node.js, Design"
-                      value={formData.skills}
-                      onChange={e => setFormData({ ...formData, skills: e.target.value })}
-                      required
-                    />
+                  <div className="space-y-4">
+                    <Label>Key Skills</Label>
+                    <div className="flex flex-wrap gap-2">
+                       {POPULAR_SKILLS.map(skill => {
+                         const isSelected = selectedSkills.includes(skill);
+                         return (
+                           <button
+                             type="button"
+                             key={skill}
+                             onClick={() => toggleSkill(skill)}
+                             className={cn(
+                               "px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm",
+                               isSelected 
+                                ? "bg-gradient-to-r from-blue-600 to-primary text-white border-transparent" 
+                                : "bg-card border border-border text-foreground hover:border-primary/50"
+                             )}
+                           >
+                             {skill}
+                           </button>
+                         );
+                       })}
+                       {selectedSkills.filter(s => !POPULAR_SKILLS.includes(s)).map(skill => (
+                          <button
+                            type="button"
+                            key={skill}
+                            onClick={() => toggleSkill(skill)}
+                            className="px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent"
+                          >
+                            {skill} &times;
+                          </button>
+                       ))}
+                    </div>
+                    <div className="pt-2">
+                      <Input
+                        placeholder="Don't see your skill? Type it here and press Enter"
+                        className="bg-muted/50 border-dashed border-2"
+                        value={customSkill}
+                        onChange={(e) => setCustomSkill(e.target.value)}
+                        onKeyDown={handleAddCustomSkill}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="portfolioLink">Portfolio URL (Optional)</Label>
@@ -240,7 +297,7 @@ export default function ProfileComplete() {
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={!role || updateProfile.isPending || isUploading}
+                disabled={!role || updateProfile.isPending || isUploading || (role === 'FREELANCER' && selectedSkills.length === 0)}
               >
                 {updateProfile.isPending || isUploading ? "Saving..." : "Complete Profile"}
               </Button>

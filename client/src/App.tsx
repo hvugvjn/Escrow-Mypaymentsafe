@@ -12,6 +12,7 @@ import Dashboard from "@/pages/dashboard";
 import CreateProject from "@/pages/create-project";
 import ProjectDetails from "@/pages/project-details";
 import Profile from "@/pages/profile";
+import TalentSearch from "@/pages/talent-search";
 import AdminDashboard from "@/pages/admin";
 import { Privacy, Terms, Support } from "@/pages/legal";
 import { AppLayout } from "@/components/layout";
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/projects/new" component={() => <ProtectedRoute component={CreateProject} />} />
       <Route path="/projects/:id" component={() => <ProtectedRoute component={ProjectDetails} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
+      <Route path="/talent" component={() => <ProtectedRoute component={TalentSearch} />} />
 
       {/* Admin panel */}
       <Route path="/admin" component={AdminRoute} />

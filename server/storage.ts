@@ -1,10 +1,11 @@
 import { db } from "./db";
 import { users, projects, milestones, escrows, ratings, messages, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow, type Message } from "@shared/schema";
-import { eq, or, asc } from "drizzle-orm";
+import { eq, or, asc, ilike, and } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   updateUser(id: string, user: Partial<User>): Promise<User>;
+  searchFreelancers(query: string): Promise<User[]>;
 
   getProject(id: string): Promise<Project | undefined>;
   getProjectByCode(code: string): Promise<Project | undefined>;
@@ -29,6 +30,14 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
+  }
+
+  async searchFreelancers(query: string): Promise<User[]> {
+    if (!query) {
+      return await db.select().from(users).where(eq(users.role, 'FREELANCER'));
+    }
+    return await db.select().from(users)
+      .where(and(eq(users.role, 'FREELANCER'), ilike(users.skills, `%${query}%`)));
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User> {

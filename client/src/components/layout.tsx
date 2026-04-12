@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { LayoutDashboard, PlusCircle, User, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, PlusCircle, User, LogOut, Menu, X, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PaxLogo } from "@/components/pax-logo";
 import { useState } from "react";
@@ -15,7 +15,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     ...(user?.role === "BUYER"
-      ? [{ title: "New Project", url: "/projects/new", icon: PlusCircle }]
+      ? [
+          { title: "Find Talent", url: "/talent", icon: Search },
+          { title: "New Project", url: "/projects/new", icon: PlusCircle }
+        ]
       : []),
     { title: "Profile", url: "/profile", icon: User },
   ];

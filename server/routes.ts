@@ -46,6 +46,21 @@ export async function registerRoutes(
     res.json({ url: `/uploads/${req.file.filename}` });
   });
 
+  app.get("/api/freelancers", isAuthenticated, async (req: any, res) => {
+    try {
+      const search = req.query.search as string || "";
+      const freelancers = await storage.searchFreelancers(search);
+      // Remove sensitive data before sending
+      const safeFreelancers = freelancers.map(f => {
+        const { password, ...rest } = f as any;
+        return rest;
+      });
+      res.json(safeFreelancers);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to search freelancers" });
+    }
+  });
+
   // Profile update
   app.put(api.profile.update.path, isAuthenticated, async (req: any, res) => {
     try {
