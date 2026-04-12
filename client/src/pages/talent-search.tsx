@@ -54,18 +54,19 @@ export default function TalentSearch() {
           <p className="text-blue-100/80 text-lg">
             Search our curated network of highly-skilled VIP freelancers, ready to execute your project under the secure PAX managed vault.
           </p>
-          <form onSubmit={handleSearch} className="relative flex items-center justify-center pt-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground z-20" />
-            <Input 
-              className="w-full text-foreground bg-white text-lg pl-14 pr-32 py-8 rounded-full shadow-2xl border-0 focus-visible:ring-4 focus-visible:ring-amber-500/50 transition-all"
-              placeholder="E.g., React, .NET, UI Design..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-3 mt-8 max-w-3xl mx-auto">
+            <div className="relative w-full">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input 
+                className="w-full text-foreground bg-white text-lg pl-14 pr-6 h-16 rounded-full shadow-lg border-2 border-transparent focus-visible:ring-0 focus-visible:border-amber-400 transition-all"
+                placeholder="E.g., React, .NET, UI Design..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             <Button 
                 type="submit" 
-                size="lg" 
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-8 py-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md font-bold text-base"
+                className="w-full sm:w-auto rounded-full px-10 h-16 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl font-bold text-lg transition-transform hover:scale-105"
             >
               Search
             </Button>
