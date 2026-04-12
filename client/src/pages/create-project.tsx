@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useCreateProject } from "@/hooks/use-projects";
 import { useCreateMilestone } from "@/hooks/use-milestones";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus, Trash2, Crown, ShieldCheck, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CURRENCIES, getCurrencySymbol } from "@/lib/currencies";
 
@@ -24,6 +25,9 @@ export default function CreateProject() {
   const [description, setDescription] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [expiresAt, setExpiresAt] = useState<Date>(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+  const [paymentModel, setPaymentModel] = useState<"standard" | "delivery">("standard");
+  const isVip = false; // TODO: Implement VIP checking mechanism from auth context
+  const { toast } = useToast();
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -234,6 +238,90 @@ export default function CreateProject() {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        <div className="space-y-4 pt-4">
+          <h2 className="text-2xl font-display font-bold">Payment & Escrow Model</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Standard Mode */}
+            <Label 
+                htmlFor="model-standard" 
+                className={cn(
+                  "relative flex flex-col p-6 rounded-2xl border-2 cursor-pointer transition-all disabled:opacity-50",
+                  paymentModel === "standard" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 bg-card"
+                )}
+                onClick={() => setPaymentModel("standard")}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", paymentModel === "standard" ? "border-primary" : "border-muted")}>
+                  {paymentModel === "standard" && <div className="w-2.5 h-2.5 bg-primary rounded-full" />}
+                </div>
+              </div>
+              <h3 className="font-semibold text-lg mb-1">Standard Escrow</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Fund the project upfront into a secure PAX vault. Escrow funds are only released to the freelancer when milestones are fully approved.
+              </p>
+            </Label>
+
+            {/* Pay on Delivery Mode */}
+            <Label 
+                htmlFor="model-delivery" 
+                className={cn(
+                  "relative flex flex-col p-6 rounded-2xl border-2 transition-all overflow-hidden",
+                  isVip 
+                     ? (paymentModel === "delivery" ? "border-primary bg-primary/5 cursor-pointer" : "border-border hover:border-primary/50 bg-card cursor-pointer")
+                     : "cursor-not-allowed border-border/50 bg-muted/30 opacity-90"
+                )}
+                onClick={() => {
+                  if (isVip) setPaymentModel("delivery");
+                }}
+            >
+              {!isVip && (
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl">
+                  <div className="bg-background border border-amber-500/20 shadow-xl rounded-xl p-5 flex flex-col items-center text-center max-w-[85%]">
+                    <Crown className="w-7 h-7 text-amber-500 mb-2" />
+                    <span className="font-semibold text-sm mb-1 text-foreground">VIP Exclusive Access</span>
+                    <span className="text-xs text-muted-foreground mb-4 leading-relaxed">The "Pay on Delivery" vault is reserved exclusively for VIP corporate members.</span>
+                    <Button 
+                        type="button" 
+                        size="sm" 
+                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-md font-semibold" 
+                        onClick={(e) => {
+                           e.preventDefault();
+                           toast({
+                             title: "VIP Upgrade",
+                             description: "Redirecting to checkout... (₹2000 Integration pending)",
+                           });
+                        }}
+                    >
+                        Upgrade Access (₹2000)
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-start mb-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", paymentModel === "delivery" ? "border-primary" : "border-muted")}>
+                  {paymentModel === "delivery" && <div className="w-2.5 h-2.5 bg-primary rounded-full" />}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-lg text-foreground">Pay on Delivery</h3>
+                <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-400 text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <Crown className="w-3 h-3" /> VIP
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Sign a digital MOU. PAX manages execution and holds deliverables in our secure Digital Vault. You pay absolutely zero upfront.
+              </p>
+            </Label>
+          </div>
         </div>
 
         <div className="flex justify-end pt-4">
