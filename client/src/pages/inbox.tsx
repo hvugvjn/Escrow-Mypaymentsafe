@@ -66,7 +66,7 @@ export default function Inbox() {
             <div className="p-8 text-center text-muted-foreground text-sm">Loading chats...</div>
           ) : chats?.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground text-sm">
-              No conversations yet. {user?.role === 'BUYER' ? "Find talent to start connecting!" : "Buyers will contact you here."}
+              No conversations yet. {user?.role === 'BUYER' ? "Find talent to start connecting!" : "Clients will contact you here."}
             </div>
           ) : (
             <div className="p-2 space-y-1">
@@ -85,7 +85,7 @@ export default function Inbox() {
                       {chat.otherUser?.firstName || chat.otherUser?.companyName || chat.otherUser?.email?.split('@')[0]}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
-                       {chat.otherUser?.role === 'FREELANCER' ? 'Freelancer' : 'Buyer'}
+                       {chat.otherUser?.role === 'FREELANCER' ? 'Talent' : 'Client'}
                     </div>
                   </div>
                 </button>
@@ -140,8 +140,8 @@ export default function Inbox() {
               ) : messages?.length === 0 ? (
                  <div className="text-center text-muted-foreground text-sm my-auto bg-muted/20 p-8 rounded-2xl mx-auto max-w-sm">
                     {user?.role === 'BUYER' 
-                      ? "Start the conversation! Discuss project requirements, budget, and timeline here."
-                      : "A buyer has connected with you! Reply quickly to secure the contract."}
+                       ? "Start the conversation! Discuss project requirements, budget, and timeline here."
+                       : "A client has connected with you! Reply quickly to secure the contract."}
                  </div>
               ) : (
                 messages?.map((msg) => {

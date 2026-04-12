@@ -249,7 +249,7 @@ export default function ProjectDetails() {
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Freelancer</p>
+            <p className="text-sm font-medium text-muted-foreground">Talent</p>
             <div className="flex items-center gap-2 font-medium">
               <User className="w-4 h-4 text-muted-foreground" /> {freelancerName}
             </div>
@@ -555,7 +555,7 @@ export default function ProjectDetails() {
                     )}
                   </div>
                   <div className="p-5 md:p-8">
-                    <p className="text-muted-foreground mb-2 font-medium text-sm">Released to Freelancer</p>
+                    <p className="text-muted-foreground mb-2 font-medium text-sm">Released to Talent</p>
                     <p className="text-3xl md:text-4xl font-display font-bold text-emerald-600">{formatMoney(escrow.releasedAmount)}</p>
                   </div>
                   <div className="p-5 md:p-8">
@@ -661,11 +661,11 @@ export default function ProjectDetails() {
                   <span className="font-mono text-xs text-gray-600">{project.projectCode}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Buyer</span>
+                  <span className="text-gray-500">Client</span>
                   <span className="font-medium text-gray-800">{buyerName}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Freelancer</span>
+                  <span className="text-gray-500">Talent</span>
                   <span className="font-medium text-gray-800">{freelancerName}</span>
                 </div>
                 {receipt.milestoneTitle && (
@@ -739,7 +739,7 @@ export default function ProjectDetails() {
                           <div className="flex items-center gap-2">
                             {!isMe && <span className="text-xs font-semibold text-foreground">{msg.senderName}</span>}
                             <span className="text-xs text-muted-foreground">
-                              {msg.senderRole === 'BUYER' ? '🏢 Buyer' : '💼 Freelancer'}
+                              {msg.senderRole === 'BUYER' ? '🏢 Client' : '💼 Talent'}
                             </span>
                           </div>
                           <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMe
