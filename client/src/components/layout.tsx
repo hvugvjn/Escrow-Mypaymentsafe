@@ -162,30 +162,51 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ═══════════════════════════════════════════
           MOBILE BOTTOM NAV BAR (visible on < md)
-          Shows ALL options always — no hiding
+          Redesigned for a premium, spacious app-like feel
       ═══════════════════════════════════════════ */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="flex items-stretch">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-xl border-t border-border/40 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.1)]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex items-center justify-around h-16 px-2">
           {navItems.map((item) => {
             const isActive = location === item.url;
             return (
-              <Link key={item.url} href={item.url} className="flex-1">
+              <Link key={item.url} href={item.url} className="flex-1 max-w-[70px]">
                 <div className={cn(
-                  "flex flex-col items-center justify-center py-2 px-1 gap-1 text-xs font-medium transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  "flex flex-col items-center justify-center gap-1.5 py-1 px-1 transition-all duration-300 relative",
+                  isActive ? "text-primary scale-105" : "text-muted-foreground/70 hover:text-foreground"
                 )}>
-                  <item.icon className={cn("w-5 h-5", isActive && "stroke-[2.5]")} />
-                  <span className="truncate">{item.title}</span>
+                  <div className={cn(
+                    "p-1.5 rounded-xl transition-colors",
+                    isActive ? "bg-primary/10" : "bg-transparent"
+                  )}>
+                    <item.icon className={cn("w-5 h-5", isActive ? "stroke-[2.5]" : "stroke-[1.8]")} />
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-bold tracking-tight uppercase leading-none truncate w-full text-center",
+                    isActive ? "opacity-100" : "opacity-70"
+                  )}>
+                    {item.title.split(' ')[0]}
+                  </span>
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeTabDot"
+                      className="absolute -bottom-1 w-1 h-1 bg-primary rounded-full"
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
                 </div>
               </Link>
             );
           })}
-          {/* Logout always in bottom nav */}
-          <button onClick={handleLogout} className="flex-1">
-            <div className="flex flex-col items-center justify-center py-2 px-1 gap-1 text-xs font-medium text-muted-foreground hover:text-destructive transition-colors">
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
+          
+          {/* Logout Button */}
+          <button 
+            onClick={handleLogout} 
+            className="flex-1 max-w-[70px] flex flex-col items-center justify-center gap-1.5 py-1 px-1 text-muted-foreground/70 hover:text-destructive transition-all"
+          >
+            <div className="p-1.5 rounded-xl">
+              <LogOut className="w-5 h-5 stroke-[1.8]" />
             </div>
+            <span className="text-[10px] font-bold tracking-tight uppercase leading-none">Logout</span>
           </button>
         </div>
       </nav>
