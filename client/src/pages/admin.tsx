@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Users, FolderOpen, ShieldCheck, TrendingUp, MessageSquare,
   DollarSign, Activity, AlertTriangle, CheckCircle2, Clock,
-  BarChart3, Layers, ArrowUpRight, Globe, BadgeCheck, Loader2
+  BarChart3, Layers, ArrowUpRight, Globe, BadgeCheck, Loader2, LogOut
 } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -170,9 +170,15 @@ export default function AdminDashboard() {
               <p className="text-xs text-muted-foreground">Paxdot Platform — Full Visibility</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs text-muted-foreground font-medium">Live</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs text-muted-foreground font-medium">Live</span>
+            </div>
+            <a href="/api/logout" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted text-sm font-medium transition-colors">
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </a>
           </div>
         </div>
       </div>
