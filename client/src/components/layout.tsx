@@ -6,6 +6,7 @@ import { PaxLogo } from "@/components/pax-logo";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
