@@ -14,15 +14,28 @@ interface PaxLogoProps {
     className?: string;
     /** When true, renders in white (for use on dark/coloured backgrounds) */
     white?: boolean;
+    /** When true, renders as text-only (Inter font) instead of an image */
+    textOnly?: boolean;
 }
 
-export function PaxLogo({ className = "", white = false }: PaxLogoProps) {
+export function PaxLogo({ className = "", white = false, textOnly = false }: PaxLogoProps) {
+    if (textOnly) {
+        return (
+            <span 
+                className={`font-["Inter"] font-black lowercase tracking-tighter ${className}`}
+                style={{ color: white ? "#ffffff" : "#122b5e" }}
+            >
+                pax
+            </span>
+        );
+    }
+
     return (
         <img 
             src={white ? "/logo-white.jpg" : "/logo-dark.jpg"} 
             alt="Pax Logo"
-            className={`h-12 w-auto object-contain mix-blend-multiply ${white ? 'mix-blend-normal' : ''} ${className}`}
-            style={{ mixBlendMode: white ? 'normal' : 'multiply' }}
+            className={`h-12 w-auto object-contain ${!white ? 'mix-blend-multiply' : ''} ${className}`}
+            style={{ mixBlendMode: !white ? 'multiply' : 'normal' }}
         />
     );
 }
