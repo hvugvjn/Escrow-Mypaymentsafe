@@ -348,5 +348,54 @@ export async function registerRoutes(
     res.json(msg);
   });
 
+  // ── Inbox / Direct Messaging Routes ──────────────────────────────────────────
+  app.get('/api/chats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const chats = await storage.getDirectChats(userId);
+      res.json(chats);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal error fetching chats" });
+    }
+  });
+
+  app.post('/api/chats', isAuthenticated, async (req: any, res) => {
+    try {
+      const { freelancerId } = req.body;
+      const userId = req.user.claims.sub; // buyerId
+      const chat = await storage.getOrCreateDirectChat(userId, freelancerId);
+      res.json(chat);
+    } catch (err) {
+      res.status(500).json({ message: "Internal error creating chat" });
+    }
+  });
+
+  app.get('/api/chats/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const msgs = await storage.getDirectMessages(req.params.id);
+      res.json(msgs);
+    } catch (err) {
+      res.status(500).json({ message: "Internal error fetching messages" });
+    }
+  });
+
+  app.post('/api/chats/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const { content } = req.body;
+      if (!content?.trim()) return res.status(400).json({ message: 'Message cannot be empty' });
+
+      const userId = req.user.claims.sub;
+      const msg = await storage.createDirectMessage({
+        chatId: req.params.id,
+        senderId: userId,
+        content: content.trim(),
+      });
+      res.json(msg);
+    } catch (err) {
+      res.status(500).json({ message: "Internal error sending message" });
+    }
+  });
+
   return httpServer;
 }

@@ -62,6 +62,21 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const directChats = pgTable("direct_chats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  buyerId: varchar("buyer_id").notNull(),
+  freelancerId: varchar("freelancer_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const directMessages = pgTable("direct_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatId: varchar("chat_id").notNull(), // reference to directChats.id
+  senderId: varchar("sender_id").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, projectCode: true, createdBy: true, status: true, expiresAt: true, buyerId: true, freelancerId: true }).extend({
   currency: z.string().min(1).max(10).default("USD").optional(),
   expiresAt: z.coerce.date().optional(),
@@ -70,6 +85,8 @@ export const insertProjectSchema = createInsertSchema(projects).omit({ id: true,
 export const insertMilestoneSchema = createInsertSchema(milestones).omit({ id: true, createdAt: true, status: true, submissionUrl: true });
 export const insertEscrowSchema = createInsertSchema(escrows).omit({ id: true });
 export const insertRatingSchema = createInsertSchema(ratings).omit({ id: true, createdAt: true, reviewerId: true });
+export const insertDirectChatSchema = createInsertSchema(directChats).omit({ id: true, createdAt: true });
+export const insertDirectMessageSchema = createInsertSchema(directMessages).omit({ id: true, createdAt: true });
 
 // Types
 export type Project = typeof projects.$inferSelect;
@@ -81,6 +98,10 @@ export type InsertEscrow = z.infer<typeof insertEscrowSchema>;
 export type Rating = typeof ratings.$inferSelect;
 export type InsertRating = z.infer<typeof insertRatingSchema>;
 export type Message = typeof messages.$inferSelect;
+export type DirectChat = typeof directChats.$inferSelect;
+export type InsertDirectChat = z.infer<typeof insertDirectChatSchema>;
+export type DirectMessage = typeof directMessages.$inferSelect;
+export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
 
 // API Request/Response Types
 export type UpdateProfileRequest = {

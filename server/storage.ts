@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { users, projects, milestones, escrows, ratings, messages, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow, type Message } from "@shared/schema";
+import { users, projects, milestones, escrows, ratings, messages, directChats, directMessages, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow, type Message, type DirectChat, type DirectMessage, type InsertDirectMessage } from "@shared/schema";
 import { eq, or, asc, ilike, and } from "drizzle-orm";
 
 export interface IStorage {
@@ -24,6 +24,12 @@ export interface IStorage {
 
   getMessages(projectId: string): Promise<Message[]>;
   createMessage(msg: { projectId: string; senderId: string; senderName: string; senderRole: string; content: string }): Promise<Message>;
+
+  getDirectChats(userId: string): Promise<(DirectChat & { otherUser?: Omit<User, "password"> })[]>;
+  getDirectChat(chatId: string): Promise<DirectChat | undefined>;
+  getOrCreateDirectChat(buyerId: string, freelancerId: string): Promise<DirectChat>;
+  getDirectMessages(chatId: string): Promise<DirectMessage[]>;
+  createDirectMessage(msg: InsertDirectMessage): Promise<DirectMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -113,6 +119,50 @@ export class DatabaseStorage implements IStorage {
 
   async createMessage(msg: { projectId: string; senderId: string; senderName: string; senderRole: string; content: string }): Promise<Message> {
     const [newMsg] = await db.insert(messages).values(msg).returning();
+    return newMsg;
+  }
+
+  async getDirectChats(userId: string): Promise<(DirectChat & { otherUser?: Omit<User, "password"> })[]> {
+    const rawChats = await db.select().from(directChats)
+      .where(or(eq(directChats.buyerId, userId), eq(directChats.freelancerId, userId)))
+      .orderBy(asc(directChats.createdAt));
+      
+    const chatsWithUsers = await Promise.all(rawChats.map(async chat => {
+      const otherId = chat.buyerId === userId ? chat.freelancerId : chat.buyerId;
+      const otherUser = await this.getUser(otherId);
+      if (otherUser) {
+        const { password, ...safeUser } = otherUser as any;
+        return { ...chat, otherUser: safeUser };
+      }
+      return chat;
+    }));
+    return chatsWithUsers as any;
+  }
+
+  async getDirectChat(chatId: string): Promise<DirectChat | undefined> {
+    const [chat] = await db.select().from(directChats).where(eq(directChats.id, chatId));
+    return chat;
+  }
+
+  async getOrCreateDirectChat(buyerId: string, freelancerId: string): Promise<DirectChat> {
+    const [existing] = await db.select().from(directChats)
+      .where(and(eq(directChats.buyerId, buyerId), eq(directChats.freelancerId, freelancerId)));
+    if (existing) return existing;
+    
+    const [existingReverse] = await db.select().from(directChats)
+      .where(and(eq(directChats.buyerId, freelancerId), eq(directChats.freelancerId, buyerId)));
+    if (existingReverse) return existingReverse;
+
+    const [newChat] = await db.insert(directChats).values({ buyerId, freelancerId }).returning();
+    return newChat;
+  }
+
+  async getDirectMessages(chatId: string): Promise<DirectMessage[]> {
+    return await db.select().from(directMessages).where(eq(directMessages.chatId, chatId)).orderBy(asc(directMessages.createdAt));
+  }
+
+  async createDirectMessage(msg: InsertDirectMessage): Promise<DirectMessage> {
+    const [newMsg] = await db.insert(directMessages).values(msg).returning();
     return newMsg;
   }
 }

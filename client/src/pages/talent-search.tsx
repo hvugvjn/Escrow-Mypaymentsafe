@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -9,6 +10,25 @@ import { Badge } from "@/components/ui/badge";
 export default function TalentSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [queryTerm, setQueryTerm] = useState("");
+  const [, setLocation] = useLocation();
+  const [connectingId, setConnectingId] = useState<string | null>(null);
+
+  const handleConnect = async (freelancerId: string) => {
+    try {
+      setConnectingId(freelancerId);
+      const res = await fetch('/api/chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ freelancerId })
+      });
+      if (!res.ok) throw new Error("Failed to create chat");
+      const chat = await res.json();
+      setLocation(`/inbox/${chat.id}`);
+    } catch (err) {
+      console.error(err);
+      setConnectingId(null);
+    }
+  };
 
   const { data: freelancers, isLoading } = useQuery<any[]>({
     queryKey: ["/api/freelancers", queryTerm],
@@ -158,9 +178,10 @@ export default function TalentSearch() {
                            )}
                            <Button 
                               className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white" 
-                              onClick={() => window.location.href = '/projects/new'}
+                              disabled={connectingId === freelancer.id}
+                              onClick={() => handleConnect(freelancer.id)}
                            >
-                             Hire Talent
+                             {connectingId === freelancer.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Connect"}
                            </Button>
                         </CardFooter>
                       </Card>
