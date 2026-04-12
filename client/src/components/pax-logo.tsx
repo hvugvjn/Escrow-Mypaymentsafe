@@ -18,21 +18,19 @@ interface PaxLogoProps {
 
 export function PaxLogo({ className = "", white = false }: PaxLogoProps) {
     return (
-        <img 
-            src="/pax-logo.png" 
-            alt="pax logo" 
-            className={className} 
-            style={{ 
-                height: "1.2em", 
-                width: "auto", 
-                display: "inline-block", 
-                verticalAlign: "middle",
-                transform: "translateY(-0.05em)",
-                // If it's a dark logo and needs to be white for dark backgrounds:
-                filter: white ? "brightness(0) invert(1)" : "none",
-                // Mix blend mode ensures solid white backgrounds disappear on dark headers
-                mixBlendMode: white ? "screen" : "multiply"
-            }} 
-        />
+        <span
+            className={className}
+            style={{
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 900,
+                color: white ? "#ffffff" : "#122b5e",
+                letterSpacing: "-0.04em",
+                lineHeight: 1,
+                paddingBottom: "0.05em",
+                display: "inline-block"
+            }}
+        >
+            pa<span style={{ fontSize: "1.15em", marginLeft: "0.02em" }}>x</span>
+        </span>
     );
 }
