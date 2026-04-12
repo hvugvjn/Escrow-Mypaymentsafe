@@ -51,7 +51,7 @@ export default function Home() {
 
                     <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-3xl mx-auto mb-8 md:mb-10 leading-relaxed">
                         PAX is the only platform that combines <strong>secure financial escrow</strong> with <strong>full-service project management</strong>.
-                        We hold your money safely, structure your milestones, and actively oversee exactly what the freelancer delivers — so you never have to worry about fraud or missed deadlines again.
+                        We hold your money safely, structure your milestones, and actively oversee exactly what the talent delivers — so you never have to worry about fraud or missed deadlines again.
                     </motion.p>
 
                     <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -82,15 +82,15 @@ export default function Home() {
             {/* ── PROBLEM ── */}
             <section id="why" className="py-24 px-6 max-w-6xl mx-auto">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Freelance chaos is everywhere. <br /><span className="text-red-400">This stops now.</span></h2>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Project execution chaos is everywhere. <br /><span className="text-red-400">This stops now.</span></h2>
                     <p className="text-white/50 text-lg max-w-2xl mx-auto">Whether you're buying an app, a website, or digital content — you've probably been burned by bad communication or scams. PAX fixes that.</p>
                 </motion.div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                     {[
-                        { icon: AlertTriangle, color: "text-red-400 bg-red-400/10", title: "Paid & never delivered", desc: "You send money upfront and the freelancer disappears. With PAX, funds are held securely until the work is actually done." },
+                        { icon: AlertTriangle, color: "text-red-400 bg-red-400/10", title: "Paid & never delivered", desc: "You send money upfront and the talent disappears. With PAX, funds are held securely until the work is actually done." },
                         { icon: AlertTriangle, color: "text-orange-400 bg-orange-400/10", title: "Missed Deadlines & Chaos", desc: "Projects drag on forever without proper oversight. PAX's Project Managers step in to enforce deadlines and track daily progress." },
-                        { icon: AlertTriangle, color: "text-yellow-400 bg-yellow-400/10", title: "Worked & never paid", desc: "Freelancers complete the project but the client refuses to pay. PAX strictly guarantees payouts upon approved milestones." },
+                        { icon: AlertTriangle, color: "text-yellow-400 bg-yellow-400/10", title: "Worked & never paid", desc: "Talents complete the project but the client refuses to pay. PAX strictly guarantees payouts upon approved milestones." },
                     ].map(({ icon: Icon, color, title, desc }, i) => (
                         <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                             className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors">
@@ -115,7 +115,7 @@ export default function Home() {
                     <div className="grid md:grid-cols-4 gap-6 relative">
                         <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
                         {[
-                            { icon: Users, step: "01", title: "Scope & Agreements", desc: "Buyer and freelancer define the project. PAX structures clear, actionable milestones for the work." },
+                            { icon: Users, step: "01", title: "Scope & Agreements", desc: "Client and talent define the project. PAX structures clear, actionable milestones for the work." },
                             { icon: Lock, step: "02", title: "Secure Funding", desc: "Money is locked securely in PAX escrow so work can confidently begin with guaranteed payment." },
                             { icon: Zap, step: "03", title: "Managed Execution", desc: "Our team actively oversees the deliverables, tracking progress to ensure work is delivered on time." },
                             { icon: CheckCircle2, step: "04", title: "Approval & Payout", desc: "You review and approve the specific milestone. PAX instantly releases the exact payment." },
@@ -145,7 +145,7 @@ export default function Home() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
                         { icon: Shield, title: "Automated Escrow", desc: "We securely hold your project capital in a verified vault, releasing funds only when both parties agree the work is completed." },
-                        { icon: Users, title: "Dedicated Project Managers", desc: "Don't have time to chase freelancers? Our team actively oversees your timelines, reviews deliverables, and ensures everything stays completely on track." },
+                        { icon: Users, title: "Dedicated Project Managers", desc: "Don't have time to chase talents? Our team actively oversees your timelines, reviews deliverables, and ensures everything stays completely on track." },
                         { icon: Zap, title: "Milestone-Based Payouts", desc: "Large projects are safely broken into bite-sized stages. You comfortably pay bit by bit as actual progress is properly approved." },
                         { icon: Handshake, title: "Fair Dispute Resolution", desc: "If things go wrong or communication breaks down, PAX instantly steps in to fairly review the project and resolve disagreements." },
                         { icon: CreditCard, title: "Bank-Grade Transactions", desc: "State-of-the-art encryption strictly protects every single rupee effectively flowing through the platform infrastructure." },
@@ -213,18 +213,73 @@ export default function Home() {
             </section>
 
             {/* ── FOOTER ── */}
-            <footer className="border-t border-white/10 py-6 md:py-8 px-4 md:px-6">
-                <div className="max-w-6xl mx-auto flex flex-col items-center justify-between gap-4 text-center md:text-left md:flex-row">
-                    <PaxLogo className="text-2xl" white textOnly />
-                    <p className="text-white/30 text-sm">© 2025 PAX Escrow. All rights reserved.</p>
-                    <div className="flex flex-col items-center gap-3 md:flex-row md:gap-6 text-sm text-white/40">
-                        <a href="mailto:info@paxdot.com" className="hover:text-white transition-colors flex items-center gap-1">
-                            Contact us: <span className="text-white/70">info@paxdot.com</span>
-                        </a>
-                        <div className="flex gap-6">
-                            <Link href="/privacy"><a className="hover:text-white transition-colors">Privacy</a></Link>
-                            <Link href="/terms"><a className="hover:text-white transition-colors">Terms</a></Link>
-                            <Link href="/support"><a className="hover:text-white transition-colors">Support</a></Link>
+            <footer className="bg-[#050810] border-t border-white/5 pt-16 pb-8 px-6 md:px-12">
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
+                        {/* For Clients */}
+                        <div className="space-y-4">
+                            <h4 className="text-white font-bold text-sm tracking-widest uppercase">For Clients</h4>
+                            <ul className="space-y-3 text-sm text-white/40">
+                                <li className="hover:text-white transition-colors cursor-default">How to hire</li>
+                                <li className="hover:text-white transition-colors cursor-default">Managed Escrow</li>
+                                <li className="hover:text-white transition-colors cursor-default">Project Oversight</li>
+                                <li className="hover:text-white transition-colors cursor-default">Find Top Talents</li>
+                                <li className="hover:text-white transition-colors cursor-default">Secure Payouts</li>
+                                <li className="hover:text-white transition-colors cursor-default">VIP Pay-on-Delivery</li>
+                                <li className="hover:text-white transition-colors cursor-default">Post a Project</li>
+                            </ul>
+                        </div>
+
+                        {/* For Talents */}
+                        <div className="space-y-4">
+                            <h4 className="text-white font-bold text-sm tracking-widest uppercase">For Talents</h4>
+                            <ul className="space-y-3 text-sm text-white/40">
+                                <li className="hover:text-white transition-colors cursor-default">How it works</li>
+                                <li className="hover:text-white transition-colors cursor-default">Guaranteed Payments</li>
+                                <li className="hover:text-white transition-colors cursor-default">Secure Invoicing</li>
+                                <li className="hover:text-white transition-colors cursor-default">Direct Contracts</li>
+                                <li className="hover:text-white transition-colors cursor-default">Success Stories</li>
+                                <li className="hover:text-white transition-colors cursor-default">Managed Milestones</li>
+                            </ul>
+                        </div>
+
+                        {/* Resources */}
+                        <div className="space-y-4">
+                            <h4 className="text-white font-bold text-sm tracking-widest uppercase">Resources</h4>
+                            <ul className="space-y-3 text-sm text-white/40">
+                                <li className="hover:text-white transition-colors cursor-default">Help & Support</li>
+                                <li className="hover:text-white transition-colors cursor-default">Trust & Safety</li>
+                                <li className="hover:text-white transition-colors cursor-default">Dispute Resolution</li>
+                                <li className="hover:text-white transition-colors cursor-default">PAX for Enterprise</li>
+                                <li className="hover:text-white transition-colors cursor-default">Blog</li>
+                                <li className="hover:text-white transition-colors cursor-default">Press & Media</li>
+                            </ul>
+                        </div>
+
+                        {/* Company */}
+                        <div className="space-y-4">
+                            <h4 className="text-white font-bold text-sm tracking-widest uppercase">Company</h4>
+                            <ul className="space-y-3 text-sm text-white/40">
+                                <li className="hover:text-white transition-colors cursor-default">About PAX</li>
+                                <li className="hover:text-white transition-colors cursor-default">Why Choose Us</li>
+                                <li className="hover:text-white transition-colors cursor-default">Security</li>
+                                <li className="hover:text-white transition-colors cursor-default">Contact Us</li>
+                                <li className="hover:text-white transition-colors cursor-default">Privacy Policy</li>
+                                <li className="hover:text-white transition-colors cursor-default">Terms of Service</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex items-center gap-6">
+                            <PaxLogo className="text-2xl" white textOnly />
+                            <p className="text-white/20 text-xs tracking-wide">© 2025 PAX Escrow. Designed for absolute trust.</p>
+                        </div>
+                        <div className="flex gap-8">
+                             {/* Social Icons Placeholder Labels */}
+                            <span className="text-white/30 hover:text-white text-xs font-medium cursor-default transition-colors">Twitter</span>
+                            <span className="text-white/30 hover:text-white text-xs font-medium cursor-default transition-colors">LinkedIn</span>
+                            <span className="text-white/30 hover:text-white text-xs font-medium cursor-default transition-colors">Instagram</span>
                         </div>
                     </div>
                 </div>

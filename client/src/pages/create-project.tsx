@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useCreateProject } from "@/hooks/use-projects";
 import { useCreateMilestone } from "@/hooks/use-milestones";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { CalendarIcon, Plus, Trash2, Crown, ShieldCheck, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,8 +20,22 @@ import { CURRENCIES, getCurrencySymbol } from "@/lib/currencies";
 
 export default function CreateProject() {
   const [, setLocation] = useLocation();
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  const preSelectedFreelancerId = searchParams.get("freelancerId");
+
   const createProject = useCreateProject();
   const createMilestone = useCreateMilestone();
+
+  const { data: preSelectedFreelancer } = useQuery<any>({
+    queryKey: [`/api/users/${preSelectedFreelancerId}`],
+    enabled: !!preSelectedFreelancerId,
+    queryFn: async () => {
+      const res = await fetch(`/api/users/${preSelectedFreelancerId}`);
+      if (!res.ok) return null;
+      return res.json();
+    }
+  });
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -81,6 +96,7 @@ export default function CreateProject() {
         description,
         currency,
         expiresAt,
+        freelancerId: preSelectedFreelancerId || undefined,
         ...(documentUrl && { documentUrl }),
       });
 
@@ -111,6 +127,25 @@ export default function CreateProject() {
         <p className="text-muted-foreground">Select your escrow model and set up your project.</p>
       </div>
 
+      {preSelectedFreelancer && (
+        <Card className="bg-blue-50/50 border-blue-200 shadow-sm border-dashed">
+          <CardContent className="py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                <Plus className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-blue-900">Assigning to Talent</p>
+                <p className="text-xs text-blue-700/70 font-medium">
+                  {preSelectedFreelancer.firstName || preSelectedFreelancer.companyName || preSelectedFreelancer.email}
+                </p>
+              </div>
+            </div>
+            <Badge variant="outline" className="bg-white border-blue-200 text-blue-700">PRE-SELECTED</Badge>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="space-y-4">
         <h2 className="text-xl font-display font-bold mb-2">1. Choose Payment & Escrow Model</h2>
         <div className="grid md:grid-cols-2 gap-4">
@@ -133,7 +168,7 @@ export default function CreateProject() {
             </div>
             <h3 className="font-semibold text-lg mb-1">Standard Escrow</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Fund the project upfront into a secure PAX vault. Escrow funds are only released to the freelancer when milestones are fully approved.
+              Fund the project upfront into a secure PAX vault. Escrow funds are only released to the talent when milestones are fully approved.
             </p>
           </Label>
 

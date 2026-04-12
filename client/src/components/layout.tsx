@@ -29,7 +29,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-x-hidden w-full">
+    <div className="h-[100dvh] bg-background flex flex-col md:flex-row overflow-hidden w-full">
 
       {/* ═══════════════════════════════════════════
           MOBILE TOP HEADER (visible on < md)
@@ -110,7 +110,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </Avatar>
             <div className="hidden lg:flex flex-col min-w-0">
               <span className="text-sm font-semibold truncate">{user?.firstName} {user?.lastName}</span>
-              <span className="text-xs text-muted-foreground truncate">{user?.role || "Guest"}</span>
+              <span className="text-xs text-muted-foreground truncate">
+                {user?.role === "BUYER" ? "Client" : user?.role === "FREELANCER" ? "Talent" : user?.role || "Guest"}
+              </span>
             </div>
           </div>
         </div>

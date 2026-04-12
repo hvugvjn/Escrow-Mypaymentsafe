@@ -145,8 +145,8 @@ export async function registerRoutes(
         status: 'WAITING_FOR_ACCEPTANCE',
         expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
         currency: input.currency || 'USD',
-        buyerId: user?.role === 'BUYER' ? userId : null,
-        freelancerId: user?.role === 'FREELANCER' ? userId : null,
+        buyerId: user?.role === 'BUYER' ? userId : (input as any).buyerId || null,
+        freelancerId: user?.role === 'FREELANCER' ? userId : (input as any).freelancerId || null,
       } as any);
 
       if (user?.email) {

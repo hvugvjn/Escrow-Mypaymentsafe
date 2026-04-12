@@ -52,7 +52,7 @@ export default function TalentSearch() {
         <div className="relative z-10 space-y-6 max-w-2xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-display font-bold">Find the Perfect Talent</h1>
           <p className="text-blue-100/80 text-lg">
-            Search our curated network of highly-skilled VIP freelancers, ready to execute your project under the secure PAX managed vault.
+            Search our curated network of highly-skilled VIP talents, ready to execute your project under the secure PAX managed vault.
           </p>
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-3 mt-8 max-w-3xl mx-auto">
             <div className="relative w-full">
@@ -73,7 +73,28 @@ export default function TalentSearch() {
           </form>
            <div className="flex flex-wrap justify-center gap-2 pt-2">
             <span className="text-sm text-blue-200 mr-2">Popular:</span>
-            {["React", "Node.js", "Design", "Python"].map(skill => (
+            {[
+              "Full-Stack Development",
+              "React.js",
+              "Next.js",
+              "Python",
+              "API Integration",
+              "Mobile App Development",
+              "Shopify Development",
+              "UI/UX Design",
+              "Figma",
+              "Adobe Creative Suite",
+              "Motion Graphics",
+              "Brand Identity Design",
+              "SEO",
+              "Direct Response Copywriting",
+              "Social Media Management",
+              "Performance Marketing",
+              "Data Analytics",
+              "AI Prompt Engineering",
+              "Project Management",
+              "Virtual Assistance"
+            ].map(skill => (
               <button 
                 key={skill} 
                 type="button" 
@@ -95,16 +116,24 @@ export default function TalentSearch() {
           </div>
         ) : (
            <>
-             <h2 className="text-xl font-bold font-display px-2">
-               {queryTerm ? `Search Results for "${queryTerm}"` : 'Top Available Freelancers'}
-               <span className="text-muted-foreground ml-2 text-sm font-normal">({freelancers?.length || 0} found)</span>
-             </h2>
+             <div className="flex items-center justify-between px-2">
+               <h2 className="text-xl font-bold font-display">
+                 {queryTerm ? `Search Results for "${queryTerm}"` : 'Top Available Freelancers'}
+                 <span className="text-muted-foreground ml-2 text-sm font-normal">({freelancers?.length || 0} found)</span>
+               </h2>
+               <Button variant="outline" size="sm" className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50">
+                 Request Sourcing
+               </Button>
+             </div>
 
              {freelancers?.length === 0 ? (
-               <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed border-border/60">
+               <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed border-border/60 p-8">
                  <User className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                  <h3 className="text-xl font-semibold mb-2">No freelancers found</h3>
-                 <p className="text-muted-foreground max-w-md mx-auto">We couldn't find any talent matching that specific skill. Try a different keyword or contact our support for white-glove sourcing.</p>
+                 <p className="text-muted-foreground max-w-md mx-auto mb-6">We couldn't find any talent matching that specific skill. Try a different keyword or let our specialized team find them for you.</p>
+                 <Button size="lg" className="rounded-full px-8 bg-blue-600">
+                   Request White-Glove Sourcing
+                 </Button>
                </div>
              ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -142,7 +171,7 @@ export default function TalentSearch() {
                         </CardHeader>
                         <CardContent className="pt-6 space-y-5">
                           <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3">
-                            {freelancer.bio || "This freelancer hasn't added a bio yet."}
+                            {freelancer.bio || "This talent hasn't added a bio yet."}
                           </p>
                           
                           <div className="space-y-3">

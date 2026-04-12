@@ -18,9 +18,26 @@ const COUNTRY_DIAL_CODES: Record<string, string> = {
 const COUNTRIES = Object.keys(COUNTRY_DIAL_CODES);
 
 const POPULAR_SKILLS = [
-  "React", "Node.js", "UI/UX Design", "Python", "SEO",
-  "Tailwind CSS", "TypeScript", ".NET", "Copywriting", "Figma",
-  "WordPress", "AWS", "SQL", "Logo Design", "Marketing"
+  "Full-Stack Development",
+  "React.js",
+  "Next.js",
+  "Python",
+  "API Integration",
+  "Mobile App Development (Flutter/React Native)",
+  "Shopify Development",
+  "UI/UX Design",
+  "Figma",
+  "Adobe Creative Suite",
+  "Motion Graphics",
+  "Brand Identity Design",
+  "SEO (Search Engine Optimization)",
+  "Direct Response Copywriting",
+  "Social Media Management",
+  "Performance Marketing (Meta/Google Ads)",
+  "Data Analytics",
+  "AI Prompt Engineering",
+  "Project Management (Agile/Scrum)",
+  "Virtual Assistance"
 ];
 
 export default function ProfileComplete() {
@@ -136,8 +153,8 @@ export default function ProfileComplete() {
                 >
                   <Briefcase className="w-12 h-12" />
                   <div className="text-center">
-                    <h3 className="font-bold text-lg">Buyer</h3>
-                    <p className="text-sm opacity-80 mt-1">I want to hire freelancers securely</p>
+                    <h3 className="font-bold text-lg">For Clients</h3>
+                    <p className="text-sm opacity-80 mt-1">I want to hire elite talents securely</p>
                   </div>
                 </button>
 
@@ -153,8 +170,8 @@ export default function ProfileComplete() {
                 >
                   <UserCircle2 className="w-12 h-12" />
                   <div className="text-center">
-                    <h3 className="font-bold text-lg">Freelancer</h3>
-                    <p className="text-sm opacity-80 mt-1">I want to get paid securely</p>
+                    <h3 className="font-bold text-lg">For Talents</h3>
+                    <p className="text-sm opacity-80 mt-1">I want to get paid for excellence securely</p>
                   </div>
                 </button>
               </div>

@@ -90,10 +90,6 @@ export default function Landing() {
   // Combined auth: try login first; if no account, register
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!acceptTerms) {
-      toast({ variant: "destructive", title: "Action Required", description: "You must accept the Terms and Conditions to login." });
-      return;
-    }
     if (!email || !password) return;
 
     setLoading(true);
@@ -124,6 +120,11 @@ export default function Landing() {
         }
         if (password !== confirmPassword) {
           toast({ variant: "destructive", title: "Error", description: "Passwords do not match" });
+          setLoading(false);
+          return;
+        }
+        if (!acceptTerms) {
+          toast({ variant: "destructive", title: "Terms Check Required", description: "Please accept the Terms and Conditions to create your account." });
           setLoading(false);
           return;
         }
@@ -203,25 +204,48 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
-      {/* Left: Branding */}
-      <div className="relative flex-1 bg-foreground overflow-hidden text-white flex items-center justify-center p-8 lg:p-16">
+      {/* Left: Branding — Premium Modern Dark Side */}
+      <div className="relative flex-1 bg-[#0a0f1e] overflow-hidden text-white flex items-center justify-center p-8 lg:p-16">
+        {/* Animated background elements */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-transparent opacity-80 mix-blend-overlay" />
-          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/15 rounded-full blur-[100px]" />
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
         </div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative z-10 max-w-xl">
+        
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="relative z-10 max-w-xl">
+          <div className="mb-8 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold tracking-wider uppercase text-blue-400">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            Next Gen Escrow Platform
+          </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6">
-            Secure your freelance deals with absolute trust.
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold leading-[1.1] mb-8 tracking-tight">
+            Transact with <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">absolute trust.</span>
           </h1>
-          <p className="text-lg md:text-xl text-white/70 mb-10 leading-relaxed font-light">
-            <PaxLogo white className="text-xl" /> uses smart escrow milestones to ensure buyers get exactly what they pay for, and freelancers get paid for exactly what they do.
+          
+          <p className="text-lg md:text-xl text-white/60 mb-12 leading-relaxed font-normal max-w-lg">
+            <PaxLogo white textOnly className="text-2xl" /> leverages intelligent escrow milestones to guarantee that buyers receive exactly what they pay for, and freelancers get rewarded for excellence.
           </p>
-          <div className="space-y-4">
-            {["Funds held securely in escrow", "Milestone-based automated payouts", "Dispute resolution guarantees"].map((f, i) => (
-              <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }} className="flex items-center gap-3 text-white/80">
-                <CheckCircle2 className="w-5 h-5 text-primary" />
-                <span className="font-medium">{f}</span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
+            {[
+              "Triple-Layer Fund Security",
+              "Automated Milestone Payouts",
+              "Expert Dispute Resolution",
+              "Active Project Oversight"
+            ].map((f, i) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: -10 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }} 
+                className="flex items-center gap-3 text-white/70"
+              >
+                <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                  <CheckCircle2 className="w-3 h-3 text-blue-400" />
+                </div>
+                <span className="text-sm font-medium">{f}</span>
               </motion.div>
             ))}
           </div>
@@ -233,18 +257,22 @@ export default function Landing() {
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-full max-w-md space-y-8 text-center">
 
           <AnimatePresence mode="wait">
-            <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-2">
-              <h2 className="text-3xl font-display font-bold text-foreground">
-                {step === "auth"
-                  ? <>{stepConfig[step].title} <PaxLogo className="text-3xl" /></>
-                  : stepConfig[step].title
-                }
+            <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="space-y-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground flex items-center justify-center gap-3 tracking-tight">
+                {step === "auth" ? (
+                  <>
+                    <span>{stepConfig[step].title}</span>
+                    <PaxLogo className="text-4xl md:text-5xl" textOnly />
+                  </>
+                ) : (
+                  stepConfig[step].title
+                )}
               </h2>
-              <p className="text-muted-foreground">{stepConfig[step].subtitle}</p>
+              <p className="text-muted-foreground font-medium text-base">{stepConfig[step].subtitle}</p>
             </motion.div>
           </AnimatePresence>
 
-          <div className="bg-background border border-border p-6 md:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-panel p-6 md:p-10 rounded-3xl transition-all duration-500">
             <AnimatePresence mode="wait">
 
               {/* COMBINED AUTH: Email + Password (+ optional Confirm for new users) */}
@@ -255,10 +283,6 @@ export default function Landing() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (!acceptTerms) {
-                        toast({ variant: "destructive", title: "Action Required", description: "You must accept the Terms and Conditions to continue with Google." });
-                        return;
-                      }
                       window.location.href = "/api/auth/google";
                     }}
                     className="flex items-center justify-center gap-3 w-full h-12 rounded-xl border border-border bg-white hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 transition-colors shadow-sm text-sm font-semibold text-gray-700 dark:text-gray-200"
@@ -315,6 +339,14 @@ export default function Landing() {
                       {password && confirmPassword && password !== confirmPassword && (
                         <p className="text-xs text-destructive text-left mt-1">⚠ Passwords do not match</p>
                       )}
+                      
+                      {/* Terms and Conditions — Only shown for new users during registration */}
+                      <div className="mt-4 flex items-start gap-4 bg-secondary/20 p-4 rounded-xl border border-border/50 text-left">
+                        <Checkbox id="terms" checked={acceptTerms} onCheckedChange={(c) => setAcceptTerms(Boolean(c))} className="mt-1 w-5 h-5" />
+                        <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed cursor-pointer select-none">
+                          I have read and agree to the <a href="/terms" target="_blank" className="text-foreground underline hover:text-primary transition-colors font-medium">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-foreground underline hover:text-primary transition-colors font-medium">Privacy Policy</a>.
+                        </label>
+                      </div>
                     </motion.div>
                   )}
                   <Button
@@ -430,12 +462,6 @@ export default function Landing() {
 
             </AnimatePresence>
 
-            <div className="mt-8 flex items-start gap-4 bg-secondary/20 p-5 rounded-xl border border-border/50 text-left">
-              <Checkbox id="terms" checked={acceptTerms} onCheckedChange={(c) => setAcceptTerms(Boolean(c))} className="mt-1 w-5 h-5" />
-              <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed cursor-pointer select-none">
-                I have read and agree to the <a href="/terms" target="_blank" className="text-foreground underline hover:text-primary transition-colors font-medium">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-foreground underline hover:text-primary transition-colors font-medium">Privacy Policy</a>. I understand this is mandatory for accessing the platform.
-              </label>
-            </div>
           </div>
         </motion.div>
       </div>

@@ -9,6 +9,34 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Briefcase, MapPin, Phone, Building2, Link as LinkIcon, FileText, Pencil, X, Save, Upload } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const COUNTRY_DIAL_CODES: Record<string, string> = {
+  "Afghanistan": "+93", "Albania": "+355", "Algeria": "+213", "Andorra": "+376", "Angola": "+244", "Antigua and Barbuda": "+1", "Argentina": "+54", "Armenia": "+374", "Australia": "+61", "Austria": "+43", "Azerbaijan": "+994", "Bahamas": "+1", "Bahrain": "+973", "Bangladesh": "+880", "Barbados": "+1", "Belarus": "+375", "Belgium": "+32", "Belize": "+501", "Benin": "+229", "Bhutan": "+975", "Bolivia": "+591", "Bosnia and Herzegovina": "+387", "Botswana": "+267", "Brazil": "+55", "Brunei": "+673", "Bulgaria": "+359", "Burkina Faso": "+226", "Burundi": "+257", "Côte d'Ivoire": "+225", "Cabo Verde": "+238", "Cambodia": "+855", "Cameroon": "+237", "Canada": "+1", "Central African Republic": "+236", "Chad": "+235", "Chile": "+56", "China": "+86", "Colombia": "+57", "Comoros": "+269", "Congo": "+242", "Costa Rica": "+506", "Croatia": "+385", "Cuba": "+53", "Cyprus": "+357", "Czechia": "+420", "Denmark": "+45", "Djibouti": "+253", "Dominica": "+1", "Dominican Republic": "+1", "Ecuador": "+593", "Egypt": "+20", "El Salvador": "+503", "Equatorial Guinea": "+240", "Eritrea": "+291", "Estonia": "+372", "Eswatini": "+268", "Ethiopia": "+251", "Fiji": "+679", "Finland": "+358", "France": "+33", "Gabon": "+241", "Gambia": "+220", "Georgia": "+995", "Germany": "+49", "Ghana": "+233", "Greece": "+30", "Grenada": "+1", "Guatemala": "+502", "Guinea": "+224", "Guinea-Bissau": "+245", "Guyana": "+592", "Haiti": "+509", "Holy See": "+379", "Honduras": "+504", "Hungary": "+36", "Iceland": "+354", "India": "+91", "Indonesia": "+62", "Iran": "+98", "Iraq": "+964", "Ireland": "+353", "Israel": "+972", "Italy": "+39", "Jamaica": "+1", "Japan": "+81", "Jordan": "+962", "Kazakhstan": "+7", "Kenya": "+254", "Kiribati": "+686", "Kuwait": "+965", "Kyrgyzstan": "+996", "Laos": "+856", "Latvia": "+371", "Lebanon": "+961", "Lesotho": "+266", "Liberia": "+231", "Libya": "+218", "Liechtenstein": "+423", "Lithuania": "+370", "Luxembourg": "+352", "Madagascar": "+261", "Malawi": "+265", "Malaysia": "+60", "Maldives": "+960", "Mali": "+223", "Malta": "+356", "Marshall Islands": "+692", "Mauritania": "+222", "Mauritius": "+230", "Mexico": "+52", "Micronesia": "+691", "Moldova": "+373", "Monaco": "+377", "Mongolia": "+976", "Montenegro": "+382", "Morocco": "+212", "Mozambique": "+258", "Myanmar": "+95", "Namibia": "+264", "Nauru": "+674", "Nepal": "+977", "Netherlands": "+31", "New Zealand": "+64", "Nicaragua": "+505", "Niger": "+227", "Nigeria": "+234", "North Korea": "+850", "North Macedonia": "+389", "Norway": "+47", "Oman": "+968", "Pakistan": "+92", "Palau": "+680", "Palestine State": "+970", "Panama": "+507", "Papua New Guinea": "+675", "Paraguay": "+595", "Peru": "+51", "Philippines": "+63", "Poland": "+48", "Portugal": "+351", "Qatar": "+974", "Romania": "+40", "Russia": "+7", "Rwanda": "+250", "Saint Kitts and Nevis": "+1", "Saint Lucia": "+1", "Saint Vincent and the Grenadines": "+1", "Samoa": "+685", "San Marino": "+378", "Sao Tome and Principe": "+239", "Saudi Arabia": "+966", "Senegal": "+221", "Serbia": "+381", "Seychelles": "+248", "Sierra Leone": "+232", "Singapore": "+65", "Slovakia": "+421", "Slovenia": "+386", "Solomon Islands": "+677", "Somalia": "+252", "South Africa": "+27", "South Korea": "+82", "South Sudan": "+211", "Spain": "+34", "Sri Lanka": "+94", "Sudan": "+249", "Suriname": "+597", "Sweden": "+46", "Switzerland": "+41", "Syria": "+963", "Tajikistan": "+992", "Tanzania": "+255", "Thailand": "+66", "Timor-Leste": "+670", "Togo": "+228", "Tonga": "+676", "Trinidad and Tobago": "+1", "Tunisia": "+216", "Turkey": "+90", "Turkmenistan": "+993", "Tuvalu": "+688", "Uganda": "+256", "Ukraine": "+380", "United Arab Emirates": "+971", "United Kingdom": "+44", "United States of America": "+1", "Uruguay": "+598", "Uzbekistan": "+998", "Vanuatu": "+678", "Venezuela": "+58", "Vietnam": "+84", "Yemen": "+967", "Zambia": "+260", "Zimbabwe": "+263"
+};
+
+const POPULAR_SKILLS = [
+  "Full-Stack Development",
+  "React.js",
+  "Next.js",
+  "Python",
+  "API Integration",
+  "Mobile App Development (Flutter/React Native)",
+  "Shopify Development",
+  "UI/UX Design",
+  "Figma",
+  "Adobe Creative Suite",
+  "Motion Graphics",
+  "Brand Identity Design",
+  "SEO (Search Engine Optimization)",
+  "Direct Response Copywriting",
+  "Social Media Management",
+  "Performance Marketing (Meta/Google Ads)",
+  "Data Analytics",
+  "AI Prompt Engineering",
+  "Project Management (Agile/Scrum)",
+  "Virtual Assistance"
+];
 
 const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -54,9 +82,17 @@ export default function Profile() {
 
   const handleEdit = () => {
     // Reset form to current user values when opening edit
+    let initialPhone = user.phone ?? "";
+    if (user.role === "BUYER" && user.country && initialPhone) {
+      const dialCode = COUNTRY_DIAL_CODES[user.country] || "";
+      if (dialCode && initialPhone.startsWith(dialCode)) {
+        initialPhone = initialPhone.substring(dialCode.length).trim();
+      }
+    }
+
     setFormData({
       companyName: user.companyName ?? "",
-      phone: user.phone ?? "",
+      phone: initialPhone,
       country: user.country ?? "",
       skills: user.skills ?? "",
       portfolioLink: user.portfolioLink ?? "",
@@ -88,12 +124,16 @@ export default function Profile() {
       }
     }
 
+    const finalPhone = isBuyer && formData.country && formData.phone 
+      ? `${COUNTRY_DIAL_CODES[formData.country] || ''} ${formData.phone}`.trim() 
+      : formData.phone;
+
     await updateProfile.mutateAsync({
       role: user.role as "BUYER" | "FREELANCER",
       country: formData.country,
       bio: formData.bio,
       ...(isBuyer
-        ? { companyName: formData.companyName, phone: formData.phone }
+        ? { companyName: formData.companyName, phone: finalPhone }
         : {
             skills: formData.skills,
             portfolioLink: formData.portfolioLink || undefined,
@@ -148,7 +188,7 @@ export default function Profile() {
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge variant="secondary" className="font-semibold px-3 py-1">
                 {isBuyer ? <Briefcase className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
-                {isBuyer ? "Buyer" : "Freelancer"}
+                {isBuyer ? "Client" : "Talent"}
               </Badge>
               {user.country && !isEditing && (
                 <Badge variant="outline" className="font-medium text-muted-foreground border-border/60">
@@ -223,7 +263,7 @@ export default function Profile() {
                 {/* Freelancer Skills */}
                 {!isBuyer && user.skills && (
                   <div className="space-y-4">
-                    <h3 className="text-base font-semibold border-b pb-2">Top Skills</h3>
+                    <h3 className="text-base font-semibold border-b pb-2">Talent Expertise</h3>
                     <div className="flex flex-wrap gap-2">
                       {user.skills.split(",").map((skill, idx) => (
                         <Badge key={idx} variant="secondary" className="px-3 py-1 bg-muted font-medium hover:bg-muted/80">
@@ -294,14 +334,18 @@ export default function Profile() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+1 234 567 8900"
-                      value={formData.phone}
-                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                      className="bg-muted/40"
-                    />
+                    <div className="flex">
+                      <div className="bg-muted/50 border border-border border-r-0 rounded-l-md px-3 flex items-center justify-center text-sm text-foreground/80 font-medium whitespace-nowrap">
+                        {formData.country ? COUNTRY_DIAL_CODES[formData.country] || '+' : '+'}
+                      </div>
+                      <Input
+                        id="phone"
+                        className="bg-muted/40 rounded-l-none"
+                        value={formData.phone}
+                        onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
+                        placeholder="Enter phone number"
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -309,15 +353,68 @@ export default function Profile() {
               {/* Freelancer-specific fields */}
               {!isBuyer && (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="skills">Skills (comma separated)</Label>
-                    <Input
-                      id="skills"
-                      placeholder="e.g. React, Node.js, Figma"
-                      value={formData.skills}
-                      onChange={e => setFormData({ ...formData, skills: e.target.value })}
-                      className="bg-muted/40"
-                    />
+                  <div className="space-y-3">
+                    <Label htmlFor="skills">Skills</Label>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {formData.skills.split(",").filter(s => s.trim() !== "").map((skill, idx) => (
+                        <Badge key={idx} variant="secondary" className="px-3 py-1 bg-primary text-primary-foreground gap-1">
+                          {skill.trim()}
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              const currentSkills = formData.skills.split(",").map(s => s.trim()).filter(s => s !== "" && s !== skill.trim());
+                              setFormData({ ...formData, skills: currentSkills.join(", ") });
+                            }}
+                            className="hover:text-red-200"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    <div className="p-4 border rounded-xl bg-muted/20">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Common Skills</p>
+                      <div className="flex flex-wrap gap-2">
+                        {POPULAR_SKILLS.map(skill => {
+                          const isSelected = formData.skills.split(",").map(s => s.trim()).includes(skill);
+                          return (
+                            <button
+                              type="button"
+                              key={skill}
+                              onClick={() => {
+                                let currentSkills = formData.skills.split(",").map(s => s.trim()).filter(s => s !== "");
+                                if (isSelected) {
+                                  currentSkills = currentSkills.filter(s => s !== skill);
+                                } else {
+                                  currentSkills.push(skill);
+                                }
+                                setFormData({ ...formData, skills: currentSkills.join(", ") });
+                              }}
+                              className={cn(
+                                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                                isSelected 
+                                  ? "bg-primary border-primary text-primary-foreground" 
+                                  : "bg-background border-border text-foreground hover:border-primary/50"
+                              )}
+                            >
+                              {skill}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="mt-2">
+                      <Label htmlFor="custom-skill" className="text-xs">Add other skills (comma separated)</Label>
+                      <Input
+                        id="skills"
+                        placeholder="e.g. Docker, Kubernetes, etc."
+                        value={formData.skills}
+                        onChange={e => setFormData({ ...formData, skills: e.target.value })}
+                        className="bg-muted/40 mt-1"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="portfolioLink">Portfolio URL (Optional)</Label>
