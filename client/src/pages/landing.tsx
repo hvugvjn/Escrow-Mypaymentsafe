@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Lock, CheckCircle2, Loader2, Mail, KeyRound, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -60,6 +61,7 @@ export default function Landing() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNew, setShowConfirmNew] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -88,6 +90,10 @@ export default function Landing() {
   // Combined auth: try login first; if no account, register
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptTerms) {
+      toast({ variant: "destructive", title: "Action Required", description: "You must accept the Terms and Conditions to login." });
+      return;
+    }
     if (!email || !password) return;
 
     setLoading(true);
@@ -246,8 +252,15 @@ export default function Landing() {
                 <motion.form key="auth" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleAuth} className="space-y-4">
 
                   {/* ── Google Sign-In Button ── */}
-                  <a
-                    href="/api/auth/google"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!acceptTerms) {
+                        toast({ variant: "destructive", title: "Action Required", description: "You must accept the Terms and Conditions to continue with Google." });
+                        return;
+                      }
+                      window.location.href = "/api/auth/google";
+                    }}
                     className="flex items-center justify-center gap-3 w-full h-12 rounded-xl border border-border bg-white hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 transition-colors shadow-sm text-sm font-semibold text-gray-700 dark:text-gray-200"
                   >
                     {/* Google SVG logo */}
@@ -259,7 +272,7 @@ export default function Landing() {
                       <path fill="none" d="M0 0h48v48H0z"/>
                     </svg>
                     Continue with Google
-                  </a>
+                  </button>
 
                   {/* Divider */}
                   <div className="flex items-center gap-3 py-1">
@@ -417,11 +430,12 @@ export default function Landing() {
 
             </AnimatePresence>
 
-            <p className="mt-8 text-sm text-muted-foreground text-center">
-              By continuing, you agree to our{" "}
-              <span className="underline cursor-pointer hover:text-foreground">Terms of Service</span> and{" "}
-              <span className="underline cursor-pointer hover:text-foreground">Privacy Policy</span>.
-            </p>
+            <div className="mt-8 flex items-start gap-4 bg-secondary/20 p-5 rounded-xl border border-border/50 text-left">
+              <Checkbox id="terms" checked={acceptTerms} onCheckedChange={(c) => setAcceptTerms(Boolean(c))} className="mt-1 w-5 h-5" />
+              <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed cursor-pointer select-none">
+                I have read and agree to the <a href="/terms" target="_blank" className="text-foreground underline hover:text-primary transition-colors font-medium">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-foreground underline hover:text-primary transition-colors font-medium">Privacy Policy</a>. I understand this is mandatory for accessing the platform.
+              </label>
+            </div>
           </div>
         </motion.div>
       </div>

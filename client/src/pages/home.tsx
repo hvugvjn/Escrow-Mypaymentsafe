@@ -49,8 +49,10 @@ export default function Home() {
                         <PaxLogo white className="text-5xl md:text-7xl" />.
                     </motion.h1>
 
-                    <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed">
+                    <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-3xl mx-auto mb-8 md:mb-10 leading-relaxed">
                         <PaxLogo white className="text-lg" /> is a secure escrow platform that holds your money safely until the work is done — protecting both buyers and freelancers from fraud.
+                        <br/><br/>
+                        <span className="text-blue-300 font-medium">✨ We don't just do escrow — we also do <strong>Full Project Management!</strong></span><br/> We oversee deliverables and plan payouts strictly according to your milestones, so your company never has to worry about execution.
                     </motion.p>
 
                     <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -143,7 +145,7 @@ export default function Home() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
-                        { icon: Shield, title: "Escrow Protection", desc: "Money stays locked until both parties are satisfied. No early release possible." },
+                        { icon: Shield, title: "Escrow & Project Management", desc: "We securely hold funds while actively managing the project. You don't need to worry about deliverables; we plan payouts according to strict milestones." },
                         { icon: Zap, title: "Milestone Payments", desc: "Break projects into stages. Pay bit by bit as work gets done and approved." },
                         { icon: Handshake, title: "Dispute Resolution", desc: "If things go wrong, PAX steps in to fairly resolve disagreements." },
                         { icon: CreditCard, title: "Secure Transactions", desc: "Bank-grade encryption protects every rupee flowing through the platform." },
@@ -221,9 +223,9 @@ export default function Home() {
                             Contact us: <span className="text-white/70">info@paxdot.com</span>
                         </a>
                         <div className="flex gap-6">
-                            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                            <a href="#" className="hover:text-white transition-colors">Terms</a>
-                            <a href="#" className="hover:text-white transition-colors">Support</a>
+                            <Link href="/privacy"><a className="hover:text-white transition-colors">Privacy</a></Link>
+                            <Link href="/terms"><a className="hover:text-white transition-colors">Terms</a></Link>
+                            <Link href="/support"><a className="hover:text-white transition-colors">Support</a></Link>
                         </div>
                     </div>
                 </div>

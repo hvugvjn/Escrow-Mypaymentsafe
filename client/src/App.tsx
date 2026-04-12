@@ -13,6 +13,7 @@ import CreateProject from "@/pages/create-project";
 import ProjectDetails from "@/pages/project-details";
 import Profile from "@/pages/profile";
 import AdminDashboard from "@/pages/admin";
+import { Privacy, Terms, Support } from "@/pages/legal";
 import { AppLayout } from "@/components/layout";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -77,6 +78,11 @@ function Router() {
 
       {/* Admin panel */}
       <Route path="/admin" component={AdminRoute} />
+
+      {/* Legal & Support */}
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/support" component={Support} />
 
       {/* Fallback */}
       <Route component={NotFound} />
