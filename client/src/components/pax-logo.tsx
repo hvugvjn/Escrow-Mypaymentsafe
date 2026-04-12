@@ -21,11 +21,12 @@ export function PaxLogo({ className = "", white = false }: PaxLogoProps) {
         <span
             className={className}
             style={{
-                fontFamily: "'Nunito', sans-serif",
-                fontWeight: 800,
-                color: white ? "#ffffff" : "#1e3a6e",
-                letterSpacing: "-0.02em",
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 900,
+                color: white ? "#ffffff" : "#122b5e",
+                letterSpacing: "-0.04em",
                 lineHeight: 1,
+                paddingBottom: "0.05em",
             }}
         >
             pax
