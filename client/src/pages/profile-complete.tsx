@@ -69,6 +69,14 @@ export default function ProfileComplete() {
     e.preventDefault();
     if (!role) return;
 
+    let finalSkills = [...selectedSkills];
+    const val = customSkill.trim();
+    if (val && !finalSkills.includes(val)) {
+      finalSkills.push(val);
+      setSelectedSkills(finalSkills);
+      setCustomSkill("");
+    }
+
     let resumeUrl = undefined;
     if (role === 'FREELANCER' && resumeFile) {
       setIsUploading(true);
@@ -91,7 +99,7 @@ export default function ProfileComplete() {
       bio: formData.bio,
       ...(role === 'BUYER'
         ? { companyName: formData.companyName, phone: formData.phone }
-        : { skills: selectedSkills.join(", "), portfolioLink: formData.portfolioLink || undefined, resumeUrl })
+        : { skills: finalSkills.join(", "), portfolioLink: formData.portfolioLink || undefined, resumeUrl })
     });
 
     setLocation("/dashboard");
@@ -245,14 +253,22 @@ export default function ProfileComplete() {
                           </button>
                        ))}
                     </div>
-                    <div className="pt-2">
+                    <div className="pt-2 flex gap-2">
                       <Input
-                        placeholder="Don't see your skill? Type it here and press Enter"
-                        className="bg-muted/50 border-dashed border-2"
+                        placeholder="Don't see your skill? Type it here"
+                        className="flex-1 bg-muted/50 border-dashed border-2"
                         value={customSkill}
                         onChange={(e) => setCustomSkill(e.target.value)}
                         onKeyDown={handleAddCustomSkill}
                       />
+                      <Button 
+                        type="button" 
+                        variant="secondary"
+                        disabled={!customSkill.trim()}
+                        onClick={(e) => handleAddCustomSkill({ key: 'Enter', preventDefault: () => {} } as any)}
+                      >
+                        Add
+                      </Button>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -277,10 +293,11 @@ export default function ProfileComplete() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="resume">Resume Document (Optional)</Label>
+                    <Label htmlFor="resume">Resume Document (Required)</Label>
                     <Input
                       id="resume"
                       type="file"
+                      required={role === 'FREELANCER'}
                       accept=".pdf,.doc,.docx"
                       className="bg-muted/50 pt-2"
                       onChange={e => {
@@ -297,7 +314,13 @@ export default function ProfileComplete() {
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={!role || updateProfile.isPending || isUploading || (role === 'FREELANCER' && selectedSkills.length === 0)}
+                disabled={
+                  !role || 
+                  updateProfile.isPending || 
+                  isUploading || 
+                  (role === 'FREELANCER' && selectedSkills.length === 0 && customSkill.trim() === "") ||
+                  (role === 'FREELANCER' && !resumeFile)
+                }
               >
                 {updateProfile.isPending || isUploading ? "Saving..." : "Complete Profile"}
               </Button>
