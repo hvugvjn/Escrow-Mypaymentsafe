@@ -40,19 +40,18 @@ export default function Home() {
                 <motion.div className="relative z-10 max-w-4xl mx-auto" initial="hidden" animate="visible" variants={fadeUp}>
                     <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white/70 mb-8">
                         <BadgeCheck className="w-4 h-4 text-blue-400" />
-                        Trusted escrow for the digital economy
+                        Escrow completely managed for you
                     </motion.div>
 
                     <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
-                        Stop getting scammed.<br />
+                        Stop stressing over execution.<br />
                         <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Start using </span>
                         <PaxLogo white className="text-5xl md:text-7xl" />.
                     </motion.h1>
 
                     <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-3xl mx-auto mb-8 md:mb-10 leading-relaxed">
-                        <PaxLogo white className="text-lg" /> is a secure escrow platform that holds your money safely until the work is done — protecting both buyers and freelancers from fraud.
-                        <br/><br/>
-                        <span className="text-blue-300 font-medium">✨ We don't just do escrow — we also do <strong>Full Project Management!</strong></span><br/> We oversee deliverables and plan payouts strictly according to your milestones, so your company never has to worry about execution.
+                        <PaxLogo white className="text-lg" /> is the only platform that combines <strong>secure financial escrow</strong> with <strong>full-service project management</strong>.
+                        We hold your money safely, structure your milestones, and actively oversee exactly what the freelancer delivers — so you never have to worry about fraud or missed deadlines again.
                     </motion.p>
 
                     <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -70,7 +69,7 @@ export default function Home() {
                     </motion.div>
 
                     <motion.div custom={4} variants={fadeUp} className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-white/40">
-                        {["No hidden fees", "Milestone-based payments", "Dispute resolution", "100% secure"].map((t) => (
+                        {["No hidden fees", "Actively Managed Projects", "Dispute resolution", "100% secure"].map((t) => (
                             <div key={t} className="flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-green-400" />
                                 {t}
@@ -83,15 +82,15 @@ export default function Home() {
             {/* ── PROBLEM ── */}
             <section id="why" className="py-24 px-6 max-w-6xl mx-auto">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Online scams are everywhere. <br /><span className="text-red-400">This stops now.</span></h2>
-                    <p className="text-white/50 text-lg max-w-2xl mx-auto">Whether you're buying a logo, a website, or digital content — you've probably been burned before. PAX fixes that.</p>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Freelance chaos is everywhere. <br /><span className="text-red-400">This stops now.</span></h2>
+                    <p className="text-white/50 text-lg max-w-2xl mx-auto">Whether you're buying an app, a website, or digital content — you've probably been burned by bad communication or scams. PAX fixes that.</p>
                 </motion.div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                     {[
-                        { icon: AlertTriangle, color: "text-red-400 bg-red-400/10", title: "Paid & never delivered", desc: "You send money upfront and the freelancer disappears. You lose everything." },
-                        { icon: AlertTriangle, color: "text-orange-400 bg-orange-400/10", title: "Worked & never paid", desc: "You complete the project but the client refuses to pay or ghosts you." },
-                        { icon: AlertTriangle, color: "text-yellow-400 bg-yellow-400/10", title: "No proof, no recourse", desc: "No contract, no platform, no way to get your money back. Forever gone." },
+                        { icon: AlertTriangle, color: "text-red-400 bg-red-400/10", title: "Paid & never delivered", desc: "You send money upfront and the freelancer disappears. With PAX, funds are held securely until the work is actually done." },
+                        { icon: AlertTriangle, color: "text-orange-400 bg-orange-400/10", title: "Missed Deadlines & Chaos", desc: "Projects drag on forever without proper oversight. PAX's Project Managers step in to enforce deadlines and track daily progress." },
+                        { icon: AlertTriangle, color: "text-yellow-400 bg-yellow-400/10", title: "Worked & never paid", desc: "Freelancers complete the project but the client refuses to pay. PAX strictly guarantees payouts upon approved milestones." },
                     ].map(({ icon: Icon, color, title, desc }, i) => (
                         <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                             className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors">
@@ -110,16 +109,16 @@ export default function Home() {
                 <div className="max-w-6xl mx-auto">
                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
                         <h2 className="text-3xl md:text-5xl font-bold mb-4">How <PaxLogo white className="text-3xl md:text-5xl" /> works</h2>
-                        <p className="text-white/50 text-lg">Simple, transparent, and secure — in 4 steps</p>
+                        <p className="text-white/50 text-lg">Escrow protection meets seamless project management.</p>
                     </motion.div>
 
                     <div className="grid md:grid-cols-4 gap-6 relative">
                         <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
                         {[
-                            { icon: Users, step: "01", title: "Buyer & freelancer agree", desc: "Both parties create a project and agree on milestones and payment terms." },
-                            { icon: Lock, step: "02", title: "Buyer funds escrow", desc: "Money is locked securely in PAX escrow — not released until work is approved." },
-                            { icon: Zap, step: "03", title: "Freelancer completes work", desc: "Work is delivered milestone by milestone. PAX tracks everything." },
-                            { icon: CheckCircle2, step: "04", title: "Payment released", desc: "Buyer approves the work → PAX instantly releases payment to the freelancer." },
+                            { icon: Users, step: "01", title: "Scope & Agreements", desc: "Buyer and freelancer define the project. PAX structures clear, actionable milestones for the work." },
+                            { icon: Lock, step: "02", title: "Secure Funding", desc: "Money is locked securely in PAX escrow so work can confidently begin with guaranteed payment." },
+                            { icon: Zap, step: "03", title: "Managed Execution", desc: "Our team actively oversees the deliverables, tracking progress to ensure work is delivered on time." },
+                            { icon: CheckCircle2, step: "04", title: "Approval & Payout", desc: "You review and approve the specific milestone. PAX instantly releases the exact payment." },
                         ].map(({ icon: Icon, step, title, desc }, i) => (
                             <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                                 className="flex flex-col items-center text-center">
@@ -140,17 +139,17 @@ export default function Home() {
             {/* ── FEATURES ── */}
             <section id="features" className="py-24 px-6 max-w-6xl mx-auto">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Everything you need to <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">transact safely</span></h2>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Everything you need to <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">execute safely</span></h2>
                 </motion.div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
-                        { icon: Shield, title: "Escrow & Project Management", desc: "We securely hold funds while actively managing the project. You don't need to worry about deliverables; we plan payouts according to strict milestones." },
-                        { icon: Zap, title: "Milestone Payments", desc: "Break projects into stages. Pay bit by bit as work gets done and approved." },
-                        { icon: Handshake, title: "Dispute Resolution", desc: "If things go wrong, PAX steps in to fairly resolve disagreements." },
-                        { icon: CreditCard, title: "Secure Transactions", desc: "Bank-grade encryption protects every rupee flowing through the platform." },
-                        { icon: Globe, title: "Works for Everything", desc: "Freelance work, digital products, online services — PAX covers it all." },
-                        { icon: BadgeCheck, title: "Full Transparency", desc: "Both parties see every transaction, milestone, and status in real-time." },
+                        { icon: Shield, title: "Automated Escrow", desc: "We securely hold your project capital in a verified vault, releasing funds only when both parties agree the work is completed." },
+                        { icon: Users, title: "Dedicated Project Managers", desc: "Don't have time to chase freelancers? Our team actively oversees your timelines, reviews deliverables, and ensures everything stays completely on track." },
+                        { icon: Zap, title: "Milestone-Based Payouts", desc: "Large projects are safely broken into bite-sized stages. You comfortably pay bit by bit as actual progress is properly approved." },
+                        { icon: Handshake, title: "Fair Dispute Resolution", desc: "If things go wrong or communication breaks down, PAX instantly steps in to fairly review the project and resolve disagreements." },
+                        { icon: CreditCard, title: "Bank-Grade Transactions", desc: "State-of-the-art encryption strictly protects every single rupee effectively flowing through the platform infrastructure." },
+                        { icon: BadgeCheck, title: "Total Transparency", desc: "Log in anytime. Both parties see every transaction, detailed milestone, and execution status updated in real-time." },
                     ].map(({ icon: Icon, title, desc }, i) => (
                         <motion.div key={i} custom={i % 3} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                             className="group bg-white/5 hover:bg-gradient-to-br hover:from-blue-600/10 hover:to-purple-600/10 border border-white/10 hover:border-blue-500/30 rounded-2xl p-6 transition-all duration-300">
