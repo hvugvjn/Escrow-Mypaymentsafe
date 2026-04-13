@@ -167,7 +167,7 @@ export default function ProjectDetails() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-            {isBuyer && project.status === 'WAITING_FOR_FUNDING' && (
+            {isClient && project.status === 'WAITING_FOR_FUNDING' && (
               <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
                 <DialogTrigger asChild>
                   <Button className="hover-elevate bg-primary text-white shadow-lg shadow-primary/20">
@@ -403,7 +403,7 @@ export default function ProjectDetails() {
 
                     {/* Right Side Actions */}
                     <div className="flex flex-col gap-2 sm:flex-row md:flex-col md:min-w-[160px] md:items-end w-full md:w-auto">
-                      {isFreelancer && (m.status === 'PENDING' || m.status === 'REVISION_REQUESTED') && project.status === 'ACTIVE' && (
+                      {isTalent && (m.status === 'PENDING' || m.status === 'REVISION_REQUESTED') && project.status === 'ACTIVE' && (
                         <Dialog open={isSubmitOpen && selectedMilestoneId === m.id} onOpenChange={(open) => {
                           setIsSubmitOpen(open);
                           if (open) setSelectedMilestoneId(m.id);
@@ -431,7 +431,7 @@ export default function ProjectDetails() {
                         </Dialog>
                       )}
 
-                      {isBuyer && m.status === 'SUBMITTED' && (
+                      {isClient && m.status === 'SUBMITTED' && (
                         <div className="space-y-2 w-full">
                           <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg" onClick={() => approveMilestone.mutate(m.id)} disabled={approveMilestone.isPending}>
                             <CheckCircle2 className="w-4 h-4 mr-2" /> Approve & Pay
@@ -471,7 +471,7 @@ export default function ProjectDetails() {
                         <span className="text-muted-foreground text-sm">approved UAT & released funds</span>
                       </div>
                       <div className="mt-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg font-medium inline-block">
-                        ✓ Payment of {formatMoney(m.amount)} released to {freelancerName}
+                        ✓ Payment of {formatMoney(m.amount)} released to {talentName}
                       </div>
                     </div>
                   </div>

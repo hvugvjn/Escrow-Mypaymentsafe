@@ -104,7 +104,7 @@ export function registerAdminRoutes(app: Express) {
         }
         const [escrow] = await db.select().from(escrows).where(eq(escrows.projectId, p.id));
         const mstones = await db.select().from(milestones).where(eq(milestones.projectId, p.id));
-        return { ...p, buyerName, freelancerName, escrow: escrow || null, milestones: mstones };
+        return { ...p, clientName: buyerName, talentName: freelancerName, escrow: escrow || null, milestones: mstones };
       }));
       res.json(enriched);
     } catch (err) {

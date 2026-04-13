@@ -118,7 +118,7 @@ export async function registerRoutes(
       }
     }
 
-    res.json({ project, milestones, escrow, buyerName, freelancerName });
+    res.json({ project, milestones, escrow, clientName: buyerName, talentName: freelancerName });
   });
 
   app.get(api.projects.getByCode.path, isAuthenticated, async (req: any, res) => {
