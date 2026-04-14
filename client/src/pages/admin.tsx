@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   BarChart3, Layers, ArrowUpRight, Globe, BadgeCheck, Loader2, LogOut,
-  Target, Zap, Mail, Share, Download, Image as ImageIcon, Briefcase, MapPin, Search, Filter, Plus, FileJson
+  Target, Zap, Mail, Share, Download, Image as ImageIcon, Briefcase, MapPin, Search, Filter, Plus, FileJson,
+  Users, FolderOpen, ShieldCheck, TrendingUp, MessageSquare, DollarSign, Activity, AlertTriangle, CheckCircle2, Clock
 } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
