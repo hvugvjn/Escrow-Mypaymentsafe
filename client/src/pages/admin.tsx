@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface AdminStats {
