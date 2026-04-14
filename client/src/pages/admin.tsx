@@ -243,7 +243,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight">Admin Control Panel</h1>
-              <p className="text-xs text-muted-foreground">Paxdot Platform — Full Visibility</p>
+              <p className="text-xs text-muted-foreground">Pax Platform — Full Visibility</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -286,10 +286,13 @@ export default function AdminDashboard() {
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-xs text-muted-foreground font-medium">Live</span>
             </div>
-            <a href="/api/logout" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted text-sm font-medium transition-colors">
+            <button 
+              onClick={() => { if(window.confirm("Are you sure you want to logout?")) window.location.href = "/api/logout"; }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted text-sm font-medium transition-colors"
+            >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -334,100 +337,174 @@ export default function AdminDashboard() {
           </section>
         )}
 
-        {/* ── All Projects Table ─────────────────────────────────────────── */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">All Projects ({projects.length})</h2>
+        {activeTab === "projects" && (
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             {/* ── All Projects Table ─────────────────────────────────────────── */}
+             <section>
+               <div className="flex items-center justify-between mb-4">
+                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">All Projects ({projects.length})</h2>
+               </div>
+               <Card className="border-0 shadow-sm overflow-hidden">
+                 <div className="overflow-x-auto">
+                   <table className="w-full text-sm">
+                     <thead>
+                       <tr className="border-b bg-muted/40">
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Project</th>
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Code</th>
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Status</th>
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Client</th>
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Talent</th>
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Escrow</th>
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Milestones</th>
+                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Created</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {projects.map((project, i) => (
+                         <motion.tr
+                           key={project.id}
+                           initial={{ opacity: 0, x: -10 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           transition={{ delay: i * 0.03 }}
+                           className="border-b hover:bg-muted/30 transition-colors"
+                         >
+                           <td className="p-4">
+                             <div className="font-semibold max-w-[180px] truncate">{project.title}</div>
+                             <div className="text-xs text-muted-foreground max-w-[180px] truncate">{project.description}</div>
+                           </td>
+                           <td className="p-4">
+                             <code className="bg-muted px-2 py-1 rounded font-mono text-xs font-bold">{project.projectCode}</code>
+                           </td>
+                           <td className="p-4">
+                             <span className={`text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COLOR[project.status] || "bg-gray-100 text-gray-600"}`}>
+                               {project.status.replace(/_/g, " ")}
+                             </span>
+                           </td>
+                           <td className="p-4 text-sm max-w-[120px] truncate">{project.clientName}</td>
+                           <td className="p-4 text-sm max-w-[120px] truncate">{project.talentName}</td>
+                           <td className="p-4">
+                             {project.escrow ? (
+                               <div>
+                                 <p className="font-semibold">{fmt(project.escrow.totalAmount, project.currency)}</p>
+                                 <p className="text-xs text-muted-foreground">
+                                   {project.escrow.funded ? "✅ Funded" : "⏳ Pending"} · Released: {fmt(project.escrow.releasedAmount, project.currency)}
+                                 </p>
+                               </div>
+                             ) : <span className="text-muted-foreground text-xs">—</span>}
+                           </td>
+                           <td className="p-4">
+                             <div className="flex flex-wrap gap-1">
+                               {project.milestones.map(m => (
+                                 <span key={m.id} className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${STATUS_COLOR[m.status] || "bg-gray-100"}`}>
+                                   {m.status}
+                                 </span>
+                               ))}
+                               {project.milestones.length === 0 && <span className="text-xs text-muted-foreground">None</span>}
+                             </div>
+                           </td>
+                           <td className="p-4 text-xs text-muted-foreground whitespace-nowrap">
+                             {project.createdAt ? format(new Date(project.createdAt), "MMM d, yyyy") : "—"}
+                           </td>
+                         </motion.tr>
+                       ))}
+                       {projects.length === 0 && (
+                         <tr><td colSpan={8} className="p-10 text-center text-muted-foreground">No projects yet.</td></tr>
+                       )}
+                     </tbody>
+                   </table>
+                 </div>
+               </Card>
+             </section>
+             
+             {/* ── Escrow Summary per Project ──────────────────────────────────── */}
+             <section>
+               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Escrow Summary</h2>
+               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                 {projects.filter(p => p.escrow).map((project, i) => (
+                   <motion.div key={project.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.04 }}>
+                     <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                       <CardHeader className="pb-2 pt-4 px-5">
+                         <div className="flex items-start justify-between">
+                           <div>
+                             <CardTitle className="text-sm font-semibold truncate max-w-[180px]">{project.title}</CardTitle>
+                             <p className="text-xs text-muted-foreground font-mono">{project.projectCode}</p>
+                           </div>
+                           <span className={`text-[9px] font-bold px-2 py-1 rounded-full ${STATUS_COLOR[project.status]}`}>
+                             {project.status.replace(/_/g, " ")}
+                           </span>
+                         </div>
+                       </CardHeader>
+                       <CardContent className="px-5 pb-5 space-y-3">
+                         <div className="grid grid-cols-3 gap-2 text-center">
+                           <div className="bg-muted/50 rounded-lg p-2">
+                             <p className="text-xs text-muted-foreground">Total</p>
+                             <p className="font-bold text-sm">{fmt(project.escrow!.totalAmount, project.currency)}</p>
+                           </div>
+                           <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2">
+                             <p className="text-xs text-muted-foreground">Released</p>
+                             <p className="font-bold text-sm text-emerald-600">{fmt(project.escrow!.releasedAmount, project.currency)}</p>
+                           </div>
+                           <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2">
+                             <p className="text-xs text-muted-foreground">Remaining</p>
+                             <p className="font-bold text-sm text-orange-600">{fmt(project.escrow!.remainingAmount, project.currency)}</p>
+                           </div>
+                         </div>
+                         {/* Progress bar */}
+                         <div>
+                           <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                             <span>Release progress</span>
+                             <span>{project.escrow!.totalAmount > 0 ? Math.round((project.escrow!.releasedAmount / project.escrow!.totalAmount) * 100) : 0}%</span>
+                           </div>
+                           <div className="h-2 bg-muted rounded-full overflow-hidden">
+                             <div
+                               className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all"
+                               style={{ width: `${project.escrow!.totalAmount > 0 ? (project.escrow!.releasedAmount / project.escrow!.totalAmount) * 100 : 0}%` }}
+                             />
+                           </div>
+                         </div>
+                         <div className="flex items-center justify-between text-xs">
+                           <span className="text-muted-foreground">Client: <span className="font-medium text-foreground">{project.clientName}</span></span>
+                           <span className={`font-semibold ${project.escrow!.funded ? "text-emerald-600" : "text-amber-600"}`}>
+                             {project.escrow!.funded ? "✅ Funded" : "⏳ Unfunded"}
+                           </span>
+                         </div>
+                       </CardContent>
+                     </Card>
+                   </motion.div>
+                 ))}
+                 {projects.filter(p => p.escrow).length === 0 && (
+                   <div className="col-span-3 text-center py-8 text-muted-foreground text-sm">No funded escrows yet.</div>
+                 )}
+               </div>
+             </section>
           </div>
-          <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Project</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Code</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Status</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Client</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Talent</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Escrow</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Milestones</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projects.map((project, i) => (
-                    <motion.tr
-                      key={project.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="border-b hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="p-4">
-                        <div className="font-semibold max-w-[180px] truncate">{project.title}</div>
-                        <div className="text-xs text-muted-foreground max-w-[180px] truncate">{project.description}</div>
-                      </td>
-                      <td className="p-4">
-                        <code className="bg-muted px-2 py-1 rounded font-mono text-xs font-bold">{project.projectCode}</code>
-                      </td>
-                      <td className="p-4">
-                        <span className={`text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COLOR[project.status] || "bg-gray-100 text-gray-600"}`}>
-                          {project.status.replace(/_/g, " ")}
-                        </span>
-                      </td>
-                      <td className="p-4 text-sm max-w-[120px] truncate">{project.clientName}</td>
-                      <td className="p-4 text-sm max-w-[120px] truncate">{project.talentName}</td>
-                      <td className="p-4">
-                        {project.escrow ? (
-                          <div>
-                            <p className="font-semibold">{fmt(project.escrow.totalAmount, project.currency)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {project.escrow.funded ? "✅ Funded" : "⏳ Pending"} · Released: {fmt(project.escrow.releasedAmount, project.currency)}
-                            </p>
-                          </div>
-                        ) : <span className="text-muted-foreground text-xs">—</span>}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-1">
-                          {project.milestones.map(m => (
-                            <span key={m.id} className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${STATUS_COLOR[m.status] || "bg-gray-100"}`}>
-                              {m.status}
-                            </span>
-                          ))}
-                          {project.milestones.length === 0 && <span className="text-xs text-muted-foreground">None</span>}
-                        </div>
-                      </td>
-                      <td className="p-4 text-xs text-muted-foreground whitespace-nowrap">
-                        {project.createdAt ? format(new Date(project.createdAt), "MMM d, yyyy") : "—"}
-                      </td>
-                    </motion.tr>
-                  ))}
-                  {projects.length === 0 && (
-                    <tr><td colSpan={8} className="p-10 text-center text-muted-foreground">No projects yet.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </section>
+        )}
 
+        <div className="pb-8 text-center text-xs text-muted-foreground">
+          Auto-refreshes every 30 seconds · Admin view only · Pax Platform
+        </div>
+      </div>
+    )}
+
+    {activeTab === "users" && (
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* ── All Users Table ────────────────────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">All Users ({users.length})</h2>
           </div>
-          <Card className="border-0 shadow-sm overflow-hidden">
+          <Card className="border-0 shadow-sm overflow-hidden text-black">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-muted/40">
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Name</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Email</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Role</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Company</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Country</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Profile</th>
-                    <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Joined</th>
+                  <tr className="border-b bg-muted/40 font-bold">
+                    <th className="text-left p-4">Name</th>
+                    <th className="text-left p-4">Email</th>
+                    <th className="text-left p-4">Role</th>
+                    <th className="text-left p-4">Company</th>
+                    <th className="text-left p-4">Country</th>
+                    <th className="text-left p-4">Profile</th>
+                    <th className="text-left p-4">Joined</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -454,8 +531,8 @@ export default function AdminDashboard() {
                       <td className="p-4 text-sm">{u.country || "—"}</td>
                       <td className="p-4">
                         {u.profileCompleted
-                          ? <span className="flex items-center gap-1 text-xs text-emerald-600"><BadgeCheck className="w-3.5 h-3.5" />Complete</span>
-                          : <span className="text-xs text-amber-600">Incomplete</span>
+                          ? <span className="flex items-center gap-1 text-xs text-emerald-600 font-bold"><BadgeCheck className="w-3.5 h-3.5" />Complete</span>
+                          : <span className="text-xs text-amber-600 font-bold">Incomplete</span>
                         }
                       </td>
                       <td className="p-4 text-xs text-muted-foreground whitespace-nowrap">
@@ -463,80 +540,11 @@ export default function AdminDashboard() {
                       </td>
                     </motion.tr>
                   ))}
-                  {users.length === 0 && (
-                    <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">No users yet.</td></tr>
-                  )}
                 </tbody>
               </table>
             </div>
           </Card>
         </section>
-
-        {/* ── Escrow Summary per Project ──────────────────────────────────── */}
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Escrow Summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {projects.filter(p => p.escrow).map((project, i) => (
-              <motion.div key={project.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.04 }}>
-                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-2 pt-4 px-5">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-sm font-semibold truncate max-w-[180px]">{project.title}</CardTitle>
-                        <p className="text-xs text-muted-foreground font-mono">{project.projectCode}</p>
-                      </div>
-                      <span className={`text-[9px] font-bold px-2 py-1 rounded-full ${STATUS_COLOR[project.status]}`}>
-                        {project.status.replace(/_/g, " ")}
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="px-5 pb-5 space-y-3">
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="bg-muted/50 rounded-lg p-2">
-                        <p className="text-xs text-muted-foreground">Total</p>
-                        <p className="font-bold text-sm">{fmt(project.escrow!.totalAmount, project.currency)}</p>
-                      </div>
-                      <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2">
-                        <p className="text-xs text-muted-foreground">Released</p>
-                        <p className="font-bold text-sm text-emerald-600">{fmt(project.escrow!.releasedAmount, project.currency)}</p>
-                      </div>
-                      <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2">
-                        <p className="text-xs text-muted-foreground">Remaining</p>
-                        <p className="font-bold text-sm text-orange-600">{fmt(project.escrow!.remainingAmount, project.currency)}</p>
-                      </div>
-                    </div>
-                    {/* Progress bar */}
-                    <div>
-                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                        <span>Release progress</span>
-                        <span>{project.escrow!.totalAmount > 0 ? Math.round((project.escrow!.releasedAmount / project.escrow!.totalAmount) * 100) : 0}%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all"
-                          style={{ width: `${project.escrow!.totalAmount > 0 ? (project.escrow!.releasedAmount / project.escrow!.totalAmount) * 100 : 0}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Client: <span className="font-medium text-foreground">{project.clientName}</span></span>
-                      <span className={`font-semibold ${project.escrow!.funded ? "text-emerald-600" : "text-amber-600"}`}>
-                        {project.escrow!.funded ? "✅ Funded" : "⏳ Unfunded"}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-            {projects.filter(p => p.escrow).length === 0 && (
-              <div className="col-span-3 text-center py-8 text-muted-foreground text-sm">No funded escrows yet.</div>
-            )}
-          </div>
-        </section>
-
-        <div className="pb-8 text-center text-xs text-muted-foreground">
-          Auto-refreshes every 30 seconds · Admin view only · Paxdot Platform
-        </div>
       </div>
     )}
         {activeTab === "growth" && (
@@ -576,7 +584,7 @@ export default function AdminDashboard() {
                       disabled={outreachLoading}
                     >
                       {outreachLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
-                      Start London Outreach ({leads.filter(l => l.location?.includes('London')).length})
+                      Start Outreach ({leads.filter(l => l.location?.includes('London')).length})
                     </Button>
                     <Button className="w-full justify-start bg-white/10 hover:bg-white/20 border-white/20 text-white">
                       <Target className="w-4 h-4 mr-2" />
@@ -597,7 +605,7 @@ export default function AdminDashboard() {
                       <div className="w-10 h-10 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                         <Plus className="w-5 h-5" />
                       </div>
-                      <p className="text-xs font-semibold">Drop Apollo CSV here</p>
+                      <p className="text-xs font-semibold">Drop CSV here</p>
                       <p className="text-[10px] text-muted-foreground mt-1">Accepts export.csv format</p>
                     </div>
                   </CardContent>
@@ -782,11 +790,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {(activeTab === "overview" || activeTab === "projects") && (
-          <div className="space-y-10">
-            {/* The rest of your existing project logic would go here if you decide to hide it behind tabs */}
-          </div>
-        )}
+        {/* Tab checks removed as they are integrated above */}
       </div>
     </div>
   );

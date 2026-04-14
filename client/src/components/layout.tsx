@@ -26,7 +26,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    if (window.confirm("Are you sure you want to logout?")) {
+      window.location.href = "/api/logout";
+    }
   };
 
   return (
