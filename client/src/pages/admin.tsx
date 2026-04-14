@@ -299,14 +299,14 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {activeTab === "overview" && (
-          <div className="space-y-10">
+          <div className="space-y-10 animate-in fade-in duration-500">
 
         {/* ── Stat Cards ─────────────────────────────────────────────────── */}
         {stats && (
           <section>
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Platform Overview</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub={`${stats.clients} clients · ${stats.talents} talents`} color="bg-violet-500" />
+              <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub={`${stats.buyers} clients · ${stats.freelancers} talents`} color="bg-violet-500" />
               <StatCard icon={FolderOpen} label="All Projects" value={stats.totalProjects} sub={`${stats.statusCounts["ACTIVE"] || 0} active`} color="bg-blue-500" />
               <StatCard icon={DollarSign} label="Total Escrow Value" value={fmt(stats.totalEscrowValue)} sub={`${stats.fundedEscrows} funded`} color="bg-emerald-500" />
               <StatCard icon={TrendingUp} label="Total Released" value={fmt(stats.totalReleased)} sub="across all projects" color="bg-orange-500" />
@@ -336,8 +336,10 @@ export default function AdminDashboard() {
             </div>
           </section>
         )}
+          </div>
+        )}
 
-        {activeTab === "projects" && (
+        {(activeTab === "overview" || activeTab === "projects") && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
              {/* ── All Projects Table ─────────────────────────────────────────── */}
              <section>
@@ -480,11 +482,11 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="pb-8 text-center text-xs text-muted-foreground">
-          Auto-refreshes every 30 seconds · Admin view only · Pax Platform
-        </div>
-      </div>
-    )}
+        {activeTab === "overview" && (
+          <div className="pb-8 mt-10 text-center text-xs text-muted-foreground border-t pt-8">
+            Auto-refreshes every 30 seconds · Admin view only · Pax Platform
+          </div>
+        )}
 
     {activeTab === "users" && (
       <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
