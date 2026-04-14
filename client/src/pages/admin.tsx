@@ -525,6 +525,8 @@ export default function AdminDashboard() {
         <div className="pb-8 text-center text-xs text-muted-foreground">
           Auto-refreshes every 30 seconds · Admin view only · Paxdot Platform
         </div>
+      </div>
+    )}
         {activeTab === "growth" && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* ── Growth Stats ─────────────────────────────────────────── */}
@@ -709,7 +711,6 @@ export default function AdminDashboard() {
                 </Card>
               </div>
             </div>
-          </div>
           </div>
         )}
 
