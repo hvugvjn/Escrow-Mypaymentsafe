@@ -6,9 +6,60 @@ import { PaxLogo } from "@/components/pax-logo";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [startY, setStartY] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Only allow pull to refresh if we are at the very top of the scroll
+    const scrollContainer = document.querySelector('main');
+    if (scrollContainer && scrollContainer.scrollTop === 0) {
+      setStartY(e.touches[0].pageY);
+    } else {
+      setStartY(0);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (startY === 0 || isRefreshing) return;
+    
+    const y = e.touches[0].pageY;
+    const diff = y - startY;
+    
+    if (diff > 0 && diff < 150) {
+      setPullDistance(diff);
+      // Prevent browser default scroll behaviors
+      if (diff > 10) {
+         if (e.cancelable) e.preventDefault();
+      }
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (pullDistance > 80) {
+      setIsRefreshing(true);
+      setPullDistance(40); // Snap to loading position
+      
+      try {
+        // Refetch all active queries to "Refresh" the data
+        await queryClient.refetchQueries();
+        // Give a small delay for feel
+        await new Promise(r => setTimeout(r, 600));
+      } finally {
+        setIsRefreshing(false);
+        setPullDistance(0);
+      }
+    } else {
+      setPullDistance(0);
+    }
+    setStartY(0);
+  };
   const { user } = useAuth();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -155,9 +206,43 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ═══════════════════════════════════════════
-          MAIN CONTENT
+          MAIN CONTENT with Pull-to-Refresh
       ═══════════════════════════════════════════ */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 min-w-0 w-full">
+      <main 
+        className="flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 min-w-0 w-full relative"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Pull to Refresh Indicator */}
+        <AnimatePresence>
+          {(pullDistance > 0 || isRefreshing) && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.5, y: -20 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1, 
+                y: Math.min(pullDistance - 40, 40)
+              }}
+              exit={{ opacity: 0, scale: 0.5, y: -20 }}
+              className="absolute left-0 right-0 flex justify-center z-50 pointer-events-none"
+            >
+              <div className="bg-white dark:bg-zinc-900 rounded-full shadow-lg p-2 border border-border">
+                {isRefreshing ? (
+                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                ) : (
+                  <motion.div 
+                    style={{ rotate: (pullDistance / 80) * 180 }}
+                    className="text-primary"
+                  >
+                    <PlusCircle className="w-5 h-5" />
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="max-w-6xl mx-auto p-3 sm:p-4 md:p-6 lg:p-10 w-full">
           {children}
         </div>

@@ -13,6 +13,19 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
     captureInput: true,
     webContentsDebuggingEnabled: false,
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 3000,
+      launchAutoHide: true,
+      backgroundColor: "#0a0a0c",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: true,
+      androidSpinnerStyle: "large",
+      iosSpinnerStyle: "small",
+      spinnerColor: "#6366f1",
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
   },
 };
 
