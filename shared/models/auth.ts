@@ -31,6 +31,8 @@ export const users = pgTable("users", {
   currentOtp: varchar("current_otp"),
   otpExpiresAt: timestamp("otp_expires_at"),
   passwordHash: varchar("password_hash"),
+  referralCode: varchar("referral_code", { length: 12 }).unique(),
+  referredBy: varchar("referred_by"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { db } from "./db";
 import { users, projects, milestones, escrows, messages } from "@shared/schema";
+import { storage } from "./storage";
+import { marketingService } from "./marketing-service";
 import { desc, count, sum, eq } from "drizzle-orm";
 
 const ADMIN_EMAIL = "info@paxdot.com"; // ← your admin Gmail
@@ -131,6 +133,73 @@ export function registerAdminRoutes(app: Express) {
       res.json({ isAdmin: user?.email === ADMIN_EMAIL });
     } catch {
       res.json({ isAdmin: false });
+    }
+  });
+
+  // ── Marketing & Leads ─────────────────────────────────────────────────────
+  app.get("/api/admin/leads", isAdmin, async (req, res) => {
+    try {
+      const allLeads = await storage.getLeads();
+      res.json(allLeads);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to load leads" });
+    }
+  });
+
+  app.post("/api/admin/leads/import", isAdmin, async (req, res) => {
+    try {
+      const { leads: csvLeads } = req.body;
+      if (!Array.isArray(csvLeads)) return res.status(400).json({ message: "Invalid lead data" });
+      const stats = await marketingService.importLeads(csvLeads);
+      res.json(stats);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to import leads" });
+    }
+  });
+
+  app.post("/api/admin/leads/export", isAdmin, async (req, res) => {
+    try {
+      const { leadIds, format = 'json' } = req.body;
+      const allLeads = await storage.getLeads();
+      const filtered = leadIds ? allLeads.filter(l => leadIds.includes(l.id)) : allLeads;
+
+      if (format === 'csv') {
+        const headers = ["email", "firstName", "lastName", "company", "location", "skills"];
+        const rows = filtered.map(l => [l.email, l.firstName, l.lastName, l.company, l.location, l.skills].join(","));
+        res.setHeader('Content-Type', 'text/csv');
+        res.attachment('pax_leads_export.csv');
+        return res.send([headers.join(","), ...rows].join("\n"));
+      }
+      
+      res.json(filtered);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to export leads" });
+    }
+  });
+
+  app.get("/api/admin/marketing/preview/:leadId", isAdmin, async (req, res) => {
+    try {
+      const { leadId } = req.params;
+      const allLeads = await storage.getLeads();
+      const lead = allLeads.find(l => l.id === leadId);
+      if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+      const content = await marketingService.generatePersonalizedMessage(lead);
+      res.json(content);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to generate AI preview" });
+    }
+  });
+
+  app.post("/api/admin/marketing/broadcast", isAdmin, async (req, res) => {
+    try {
+      const { subject, message, segment } = req.body;
+      const allUsers = await storage.getLeads(); // Or users
+      // Mock broadcast logic
+      console.log(`[MARKETING] Broadcasting "${subject}" to ${allUsers.length} users in segment ${segment}`);
+      res.json({ sent: allUsers.length });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to send broadcast" });
     }
   });
 }

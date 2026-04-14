@@ -77,6 +77,29 @@ export const directMessages = pgTable("direct_messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const leads = pgTable("leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull().unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  company: varchar("company"),
+  location: varchar("location"),
+  linkedinUrl: text("linkedin_url"),
+  skills: text("skills"),
+  status: varchar("status").notNull().default('NEW'), // 'NEW', 'CONTACTED', 'REPLIED', 'BOUNCED'
+  source: varchar("source").default('APOLLO'), 
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const outreachLogs = pgTable("outreach_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  leadId: varchar("lead_id").notNull(),
+  type: varchar("type").notNull(), // 'EMAIL_1', 'FOLLOW_UP_1', etc.
+  content: text("content").notNull(),
+  status: varchar("status"), // 'SENT', 'FAILED'
+  sentAt: timestamp("sent_at").defaultNow(),
+});
+
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, projectCode: true, createdBy: true, status: true, expiresAt: true, buyerId: true }).extend({
   currency: z.string().min(1).max(10).default("USD").optional(),
   expiresAt: z.coerce.date().optional(),
@@ -88,6 +111,9 @@ export const insertEscrowSchema = createInsertSchema(escrows).omit({ id: true })
 export const insertRatingSchema = createInsertSchema(ratings).omit({ id: true, createdAt: true, reviewerId: true });
 export const insertDirectChatSchema = createInsertSchema(directChats).omit({ id: true, createdAt: true });
 export const insertDirectMessageSchema = createInsertSchema(directMessages).omit({ id: true, createdAt: true });
+
+export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, createdAt: true });
+export const insertOutreachLogSchema = createInsertSchema(outreachLogs).omit({ id: true, sentAt: true });
 
 // Types
 export type Project = typeof projects.$inferSelect;
@@ -103,6 +129,10 @@ export type DirectChat = typeof directChats.$inferSelect;
 export type InsertDirectChat = z.infer<typeof insertDirectChatSchema>;
 export type DirectMessage = typeof directMessages.$inferSelect;
 export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
+export type Lead = typeof leads.$inferSelect;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type OutreachLog = typeof outreachLogs.$inferSelect;
+export type InsertOutreachLog = z.infer<typeof insertOutreachLogSchema>;
 
 // API Request/Response Types
 export type UpdateProfileRequest = {

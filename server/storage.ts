@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { users, projects, milestones, escrows, ratings, messages, directChats, directMessages, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow, type Message, type DirectChat, type DirectMessage, type InsertDirectMessage } from "@shared/schema";
-import { eq, or, asc, ilike, and } from "drizzle-orm";
+import { users, projects, milestones, escrows, ratings, messages, directChats, directMessages, leads, outreachLogs, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow, type Message, type DirectChat, type DirectMessage, type InsertDirectMessage, type Lead, type InsertLead, type OutreachLog, type InsertOutreachLog } from "@shared/schema";
+import { eq, or, asc, ilike, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -30,6 +30,13 @@ export interface IStorage {
   getOrCreateDirectChat(buyerId: string, freelancerId: string): Promise<DirectChat>;
   getDirectMessages(chatId: string): Promise<DirectMessage[]>;
   createDirectMessage(msg: InsertDirectMessage): Promise<DirectMessage>;
+
+  // Leads & Marketing
+  getLeads(): Promise<Lead[]>;
+  createLead(lead: InsertLead): Promise<Lead>;
+  updateLead(id: string, updates: Partial<Lead>): Promise<Lead>;
+  createOutreachLog(log: InsertOutreachLog): Promise<OutreachLog>;
+  getOutreachLogs(leadId: string): Promise<OutreachLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -164,6 +171,29 @@ export class DatabaseStorage implements IStorage {
   async createDirectMessage(msg: InsertDirectMessage): Promise<DirectMessage> {
     const [newMsg] = await db.insert(directMessages).values(msg).returning();
     return newMsg;
+  }
+
+  async getLeads(): Promise<Lead[]> {
+    return await db.select().from(leads).orderBy(desc(leads.createdAt));
+  }
+
+  async createLead(lead: InsertLead): Promise<Lead> {
+    const [newLead] = await db.insert(leads).values(lead).onConflictDoNothing().returning();
+    return newLead || (await db.select().from(leads).where(eq(leads.email, lead.email)))[0];
+  }
+
+  async updateLead(id: string, updates: Partial<Lead>): Promise<Lead> {
+    const [updated] = await db.update(leads).set(updates).where(eq(leads.id, id)).returning();
+    return updated;
+  }
+
+  async createOutreachLog(log: InsertOutreachLog): Promise<OutreachLog> {
+    const [newLog] = await db.insert(outreachLogs).values(log).returning();
+    return newLog;
+  }
+
+  async getOutreachLogs(leadId: string): Promise<OutreachLog[]> {
+    return await db.select().from(outreachLogs).where(eq(outreachLogs.leadId, leadId)).orderBy(desc(outreachLogs.sentAt));
   }
 }
 

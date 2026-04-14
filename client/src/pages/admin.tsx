@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
-  Users, FolderOpen, ShieldCheck, TrendingUp, MessageSquare,
-  DollarSign, Activity, AlertTriangle, CheckCircle2, Clock,
-  BarChart3, Layers, ArrowUpRight, Globe, BadgeCheck, Loader2, LogOut
+  BarChart3, Layers, ArrowUpRight, Globe, BadgeCheck, Loader2, LogOut,
+  Target, Zap, Mail, Share, Download, Image as ImageIcon, Briefcase, MapPin, Search, Filter, Plus, FileJson
 } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface AdminStats {
@@ -138,6 +138,70 @@ export default function AdminDashboard() {
     refetchInterval: 30000,
   });
 
+  const { data: leads = [], isLoading: leadsLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/leads"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/leads", { credentials: "include" });
+      return res.json();
+    },
+    enabled: adminCheck?.isAdmin === true,
+  });
+
+  const [activeTab, setActiveTab] = useState("overview");
+  const [outreachLoading, setOutreachLoading] = useState(false);
+  const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+  const [aiPreviewLead, setAiPreviewLead] = useState<any | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [previewContent, setPreviewContent] = useState<{subject:string; body:string} | null>(null);
+
+  const toggleLead = (id: string) => {
+    setSelectedLeads(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const selectAllLeads = () => {
+    if (selectedLeads.length === leads.length) setSelectedLeads([]);
+    else setSelectedLeads(leads.map(l => l.id));
+  };
+
+  const handleExport = async (format: 'csv' | 'json') => {
+    const res = await fetch("/api/admin/leads/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leadIds: selectedLeads, format }),
+    });
+    if (format === 'csv') {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pax_leads_${new Date().getTime()}.csv`;
+      a.click();
+    } else {
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pax_leads_${new Date().getTime()}.json`;
+      a.click();
+    }
+  };
+
+  const loadAiPreview = async (lead: any) => {
+    setAiPreviewLead(lead);
+    setIsAiLoading(true);
+    setPreviewContent(null);
+    try {
+      const res = await fetch(`/api/admin/marketing/preview/${lead.id}`);
+      const data = await res.json();
+      setPreviewContent(data);
+    } catch (err) {
+      console.error("AI Preview error:", err);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!checkLoading && adminCheck && !adminCheck.isAdmin) {
       setLocation("/dashboard");
@@ -170,6 +234,41 @@ export default function AdminDashboard() {
               <p className="text-xs text-muted-foreground">Paxdot Platform — Full Visibility</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={activeTab === "overview" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("overview")}
+              className="rounded-full px-4"
+            >
+              Overview
+            </Button>
+            <Button
+              variant={activeTab === "projects" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("projects")}
+              className="rounded-full px-4"
+            >
+              Projects
+            </Button>
+            <Button
+              variant={activeTab === "users" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("users")}
+              className="rounded-full px-4"
+            >
+              Users
+            </Button>
+            <Button
+              variant={activeTab === "growth" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("growth")}
+              className="rounded-full px-4 bg-violet-500 hover:bg-violet-600 text-white"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Growth Center
+            </Button>
+          </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -183,7 +282,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {activeTab === "overview" && (
+          <div className="space-y-10">
 
         {/* ── Stat Cards ─────────────────────────────────────────────────── */}
         {stats && (
@@ -424,6 +525,255 @@ export default function AdminDashboard() {
         <div className="pb-8 text-center text-xs text-muted-foreground">
           Auto-refreshes every 30 seconds · Admin view only · Paxdot Platform
         </div>
+        {activeTab === "growth" && (
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* ── Growth Stats ─────────────────────────────────────────── */}
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Outreach Performance</h2>
+                <div className="flex gap-2">
+                   <Button size="sm" variant="outline" className="h-8 border-violet-200 text-violet-700 bg-violet-50/50">
+                    <Download className="w-3.5 h-3.5 mr-2" /> Export Performance
+                   </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard icon={Target} label="Total Leads" value={leads.length} sub="External database" color="bg-violet-600" />
+                <StatCard icon={Mail} label="Contacted" value={leads.filter(l => l.status === 'CONTACTED').length} sub="First touch sent" color="bg-indigo-600" />
+                <StatCard icon={MessageSquare} label="Replies" value={leads.filter(l => l.status === 'REPLIED').length} sub="High intent" color="bg-pink-600" />
+                <StatCard icon={TrendingUp} label="Conv. Rate" value={`${leads.length > 0 ? ((leads.filter(l => l.status === 'REPLIED').length / leads.length) * 100).toFixed(1) : 0}%`} sub="Lead to reply" color="bg-orange-600" />
+              </div>
+            </section>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* ── Campaigns & Tools ────────────────────────────────────── */}
+              <div className="lg:col-span-1 space-y-6">
+                <Card className="border-0 shadow-sm bg-gradient-to-br from-violet-600 to-indigo-700 text-white">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-white">
+                      <Zap className="w-5 h-5 fill-white" />
+                      Quick Campaigns
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button 
+                      className="w-full justify-start bg-white/10 hover:bg-white/20 border-white/20 text-white" 
+                      onClick={() => setOutreachLoading(true)}
+                      disabled={outreachLoading}
+                    >
+                      {outreachLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+                      Start London Outreach ({leads.filter(l => l.location?.includes('London')).length})
+                    </Button>
+                    <Button className="w-full justify-start bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                      <Target className="w-4 h-4 mr-2" />
+                      Global Talent Blast
+                    </Button>
+                    <p className="text-[10px] opacity-70 mt-2 italic px-1">
+                      AI will personalize each message based on lead bio & location.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Import New Leads</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="border-2 border-dashed border-muted rounded-xl p-8 text-center hover:border-violet-400 transition-colors cursor-pointer group">
+                      <div className="w-10 h-10 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                        <Plus className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-semibold">Drop Apollo CSV here</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">Accepts export.csv format</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-sm overflow-hidden">
+                  <div className="aspect-square relative group cursor-pointer bg-slate-900">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
+                    <img src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="Poster Template" />
+                    <div className="absolute bottom-4 left-4 right-4 z-20">
+                      <p className="text-white text-xs font-bold uppercase tracking-widest mb-1">Coming Soon</p>
+                      <h4 className="text-white font-bold">Dynamic Instagram Poster Generator</h4>
+                      <Button size="sm" className="mt-3 w-full bg-white text-black hover:bg-slate-100">
+                        <ImageIcon className="w-3.5 h-3.5 mr-2" /> Configure Templates
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* ── Leads Table ──────────────────────────────────────────── */}
+              <div className="lg:col-span-2 space-y-6">
+                <Card className="border-0 shadow-sm overflow-hidden min-h-[600px]">
+                  <CardHeader className="border-b bg-card flex flex-row items-center justify-between pb-4">
+                    <div>
+                      <CardTitle className="text-lg">Recent Leads</CardTitle>
+                      <p className="text-xs text-muted-foreground">Manage external outreach targets</p>
+                    </div>
+                    <div className="flex gap-2">
+                       {selectedLeads.length > 0 && (
+                         <div className="flex gap-2 animate-in fade-in zoom-in duration-200">
+                            <Button size="sm" variant="outline" onClick={() => handleExport('csv')} className="text-xs h-9">
+                              <Download className="w-3.5 h-3.5 mr-2" /> Export CSV ({selectedLeads.length})
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleExport('json')} className="text-xs h-9">
+                              <FileJson className="w-3.5 h-3.5 mr-2" /> JSON ({selectedLeads.length})
+                            </Button>
+                         </div>
+                       )}
+                       <div className="relative">
+                          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <input className="h-9 w-[180px] rounded-md border border-input bg-background pl-8 pr-3 text-xs focus:ring-1 focus:ring-violet-400 outline-none" placeholder="Search leads..." />
+                       </div>
+                       <Button size="icon" variant="outline" className="h-9 w-9"><Filter className="w-4 h-4" /></Button>
+                    </div>
+                  </CardHeader>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-muted/20">
+                          <th className="p-4 text-center w-12">
+                            <input 
+                              type="checkbox" 
+                              className="rounded border-muted text-violet-600 focus:ring-violet-400"
+                              checked={leads.length > 0 && selectedLeads.length === leads.length}
+                              onChange={selectAllLeads}
+                            />
+                          </th>
+                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Lead</th>
+                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Source</th>
+                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Location</th>
+                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Status</th>
+                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leads.map((lead, i) => (
+                           <motion.tr 
+                              key={lead.id} 
+                              initial={{ opacity: 0, x: -5 }} 
+                              animate={{ opacity: 1, x: 0 }} 
+                              transition={{ delay: i * 0.01 }}
+                              className={`border-b hover:bg-muted/30 transition-colors ${selectedLeads.includes(lead.id) ? 'bg-violet-50/50' : ''}`}
+                           >
+                            <td className="p-4 text-center">
+                              <input 
+                                type="checkbox" 
+                                className="rounded border-muted text-violet-600 focus:ring-violet-400"
+                                checked={selectedLeads.includes(lead.id)}
+                                onChange={() => toggleLead(lead.id)}
+                              />
+                            </td>
+                            <td className="p-4">
+                              <div className="font-semibold">{lead.firstName} {lead.lastName}</div>
+                              <div className="text-xs text-muted-foreground font-mono">{lead.email}</div>
+                            </td>
+                            <td className="p-4 text-xs font-medium">
+                              <Badge variant="outline" className="bg-slate-50">{lead.source}</Badge>
+                            </td>
+                            <td className="p-4 text-xs">
+                              <div className="flex items-center gap-1.5">
+                                <MapPin className="w-3 h-3 text-violet-500" />
+                                {lead.location || "Unknown"}
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <span className={`text-[9px] font-bold px-2 py-1 rounded-full ${
+                                lead.status === 'REPLIED' ? 'bg-emerald-100 text-emerald-700' :
+                                lead.status === 'CONTACTED' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                              }`}>
+                                {lead.status}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                title="AI Preview"
+                                className="h-8 w-8 text-violet-600 hover:bg-violet-50"
+                                onClick={() => loadAiPreview(lead)}
+                              >
+                                <Zap className="w-4 h-4" />
+                              </Button>
+                            </td>
+                           </motion.tr>
+                        ))}
+                        {leads.length === 0 && (
+                          <tr><td colSpan={5} className="p-20 text-center text-muted-foreground italic">No leads in the database. Import a CSV to get started.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </div>
+          </div>
+        )}
+
+        {/* ── AI Preview Modal ────────────────────────────────────────────── */}
+        {aiPreviewLead && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <Card className="w-full max-w-2xl shadow-2xl border-0">
+               <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+                  <div>
+                    <CardTitle className="text-lg">AI Outreach Preview</CardTitle>
+                    <p className="text-xs text-muted-foreground">Audit personlization for {aiPreviewLead.firstName}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setAiPreviewLead(null)} className="h-8 w-8">
+                    <LogOut className="w-4 h-4 rotate-180" />
+                  </Button>
+               </CardHeader>
+               <CardContent className="p-6">
+                 {isAiLoading ? (
+                   <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                      <Loader2 className="w-10 h-10 animate-spin text-violet-600" />
+                      <p className="text-sm font-medium animate-pulse">Claude is thinking...</p>
+                   </div>
+                 ) : previewContent ? (
+                    <div className="space-y-6">
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Subject Line</label>
+                          <div className="p-4 bg-muted/30 rounded-lg font-medium border text-sm flex justify-between items-center group">
+                             {previewContent.subject}
+                             <Button size="icon" variant="ghost" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => navigator.clipboard.writeText(previewContent.subject)}>
+                               <Share className="w-3.5 h-3.5" />
+                             </Button>
+                          </div>
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Email Body</label>
+                          <div className="p-5 bg-muted/20 rounded-xl border leading-relaxed text-sm relative group">
+                             {previewContent.body.split('\n').map((line, i) => <p key={i} className="mb-2">{line}</p>)}
+                             <Button size="sm" variant="secondary" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => navigator.clipboard.writeText(previewContent.body)}>
+                               <Share className="w-3.5 h-3.5 mr-2" /> Copy Full Message
+                             </Button>
+                          </div>
+                       </div>
+                       <div className="flex gap-3 pt-4 border-t">
+                          <Button className="flex-1 bg-violet-600 hover:bg-violet-700">
+                            <Mail className="w-4 h-4 mr-2" /> Approve & Send Now
+                          </Button>
+                          <Button variant="outline" className="flex-1" onClick={() => setAiPreviewLead(null)}>
+                            Discard
+                          </Button>
+                       </div>
+                    </div>
+                 ) : (
+                    <div className="text-center py-10 text-red-500 text-sm">Failed to generate preview. Check your ANTHROPIC_API_KEY.</div>
+                 )}
+               </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {(activeTab === "overview" || activeTab === "projects") && (
+          <div className="space-y-10">
+            {/* The rest of your existing project logic would go here if you decide to hide it behind tabs */}
+          </div>
+        )}
       </div>
     </div>
   );
