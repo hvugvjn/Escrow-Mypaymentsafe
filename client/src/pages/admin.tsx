@@ -80,14 +80,14 @@ function StatCard({ icon: Icon, label, value, sub, color }: { icon: any; label: 
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
       <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow">
         <div className={`absolute inset-0 opacity-5 ${color}`} />
-        <CardContent className="p-5 flex items-start gap-4 relative">
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color}`}>
-            <Icon className="w-5 h-5 text-white" />
+        <CardContent className="p-4 md:p-5 flex items-start gap-3 md:gap-4 relative">
+          <div className={`w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+            <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{label}</p>
-            <p className="text-2xl font-bold text-foreground">{value}</p>
-            {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+          <div className="min-w-0">
+            <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider truncate">{label}</p>
+            <p className="text-lg md:text-2xl font-bold text-foreground leading-tight">{value}</p>
+            {sub && <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 truncate">{sub}</p>}
           </div>
         </CardContent>
       </Card>
@@ -233,66 +233,58 @@ export default function AdminDashboard() {
   const isLoading = statsLoading || usersLoading || projectsLoading;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* ── Top Header Bar ─────────────────────────────────────── */}
-      <div className="border-b bg-card/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-white" />
+      <div className="border-b bg-card/80 backdrop-blur sticky top-0 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-base md:text-lg font-bold tracking-tight truncate leading-none">Admin Control Panel</h1>
+                <p className="text-[10px] md:text-xs text-muted-foreground truncate mt-1">Pax Platform — Full Visibility</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight">Admin Control Panel</h1>
-              <p className="text-xs text-muted-foreground">Pax Platform — Full Visibility</p>
+            
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs text-muted-foreground font-medium">Live</span>
+              </div>
+              <button 
+                onClick={() => { if(window.confirm("Are you sure you want to logout?")) window.location.href = "/api/logout"; }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted text-[10px] md:text-sm font-medium transition-colors border md:border-0"
+              >
+                <LogOut className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden xs:inline">Logout</span>
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={activeTab === "overview" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveTab("overview")}
-              className="rounded-full px-4"
-            >
-              Overview
-            </Button>
-            <Button
-              variant={activeTab === "projects" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveTab("projects")}
-              className="rounded-full px-4"
-            >
-              Projects
-            </Button>
-            <Button
-              variant={activeTab === "users" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveTab("users")}
-              className="rounded-full px-4"
-            >
-              Users
-            </Button>
-            <Button
-              variant={activeTab === "growth" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActiveTab("growth")}
-              className="rounded-full px-4 bg-violet-500 hover:bg-violet-600 text-white"
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Growth Center
-            </Button>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs text-muted-foreground font-medium">Live</span>
-            </div>
-            <button 
-              onClick={() => { if(window.confirm("Are you sure you want to logout?")) window.location.href = "/api/logout"; }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted text-sm font-medium transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
+
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar -mx-2 px-2 scroll-smooth">
+            {[
+              { id: "overview", label: "Overview", icon: Activity },
+              { id: "projects", label: "Projects", icon: FolderOpen },
+              { id: "users", label: "Users", icon: Users },
+              { id: "growth", label: "Growth", icon: Zap, color: "bg-violet-500 hover:bg-violet-600 text-white" }
+            ].map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "rounded-full px-4 h-8 text-[11px] md:text-xs font-semibold shrink-0 transition-all",
+                  tab.color,
+                  activeTab === tab.id && !tab.color && "bg-primary text-primary-foreground shadow-md"
+                )}
+              >
+                {tab.icon && <tab.icon className="w-3.5 h-3.5 mr-1.5" />}
+                {tab.label}
+              </Button>
+            ))}
           </div>
         </div>
       </div>
@@ -304,8 +296,8 @@ export default function AdminDashboard() {
         {/* ── Stat Cards ─────────────────────────────────────────────────── */}
         {stats && (
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Platform Overview</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <h2 className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Platform Overview</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub={`${stats.buyers} clients · ${stats.freelancers} talents`} color="bg-violet-500" />
               <StatCard icon={FolderOpen} label="All Projects" value={stats.totalProjects} sub={`${stats.statusCounts["ACTIVE"] || 0} active`} color="bg-blue-500" />
               <StatCard icon={DollarSign} label="Total Escrow Value" value={fmt(stats.totalEscrowValue)} sub={`${stats.fundedEscrows} funded`} color="bg-emerald-500" />
@@ -346,76 +338,112 @@ export default function AdminDashboard() {
                <div className="flex items-center justify-between mb-4">
                  <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">All Projects ({projects.length})</h2>
                </div>
-               <Card className="border-0 shadow-sm overflow-hidden">
-                 <div className="overflow-x-auto">
-                   <table className="w-full text-sm">
-                     <thead>
-                       <tr className="border-b bg-muted/40">
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Project</th>
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Code</th>
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Status</th>
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Client</th>
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Talent</th>
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Escrow</th>
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Milestones</th>
-                         <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Created</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       {projects.map((project, i) => (
-                         <motion.tr
-                           key={project.id}
-                           initial={{ opacity: 0, x: -10 }}
-                           animate={{ opacity: 1, x: 0 }}
-                           transition={{ delay: i * 0.03 }}
-                           className="border-b hover:bg-muted/30 transition-colors"
-                         >
-                           <td className="p-4">
-                             <div className="font-semibold max-w-[180px] truncate">{project.title}</div>
-                             <div className="text-xs text-muted-foreground max-w-[180px] truncate">{project.description}</div>
-                           </td>
-                           <td className="p-4">
-                             <code className="bg-muted px-2 py-1 rounded font-mono text-xs font-bold">{project.projectCode}</code>
-                           </td>
-                           <td className="p-4">
-                             <span className={`text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COLOR[project.status] || "bg-gray-100 text-gray-600"}`}>
-                               {project.status.replace(/_/g, " ")}
-                             </span>
-                           </td>
-                           <td className="p-4 text-sm max-w-[120px] truncate">{project.clientName}</td>
-                           <td className="p-4 text-sm max-w-[120px] truncate">{project.talentName}</td>
-                           <td className="p-4">
-                             {project.escrow ? (
-                               <div>
-                                 <p className="font-semibold">{fmt(project.escrow.totalAmount, project.currency)}</p>
-                                 <p className="text-xs text-muted-foreground">
-                                   {project.escrow.funded ? "✅ Funded" : "⏳ Pending"} · Released: {fmt(project.escrow.releasedAmount, project.currency)}
-                                 </p>
-                               </div>
-                             ) : <span className="text-muted-foreground text-xs">—</span>}
-                           </td>
-                           <td className="p-4">
-                             <div className="flex flex-wrap gap-1">
-                               {project.milestones.map(m => (
-                                 <span key={m.id} className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${STATUS_COLOR[m.status] || "bg-gray-100"}`}>
-                                   {m.status}
-                                 </span>
-                               ))}
-                               {project.milestones.length === 0 && <span className="text-xs text-muted-foreground">None</span>}
-                             </div>
-                           </td>
-                           <td className="p-4 text-xs text-muted-foreground whitespace-nowrap">
-                             {project.createdAt ? format(new Date(project.createdAt), "MMM d, yyyy") : "—"}
-                           </td>
-                         </motion.tr>
-                       ))}
-                       {projects.length === 0 && (
-                         <tr><td colSpan={8} className="p-10 text-center text-muted-foreground">No projects yet.</td></tr>
-                       )}
-                     </tbody>
-                   </table>
-                 </div>
-               </Card>
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/40">
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Project</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Code</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Status</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Client</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Talent</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Escrow</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Milestones</th>
+                        <th className="text-left p-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {projects.map((project, i) => (
+                        <motion.tr
+                          key={project.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className="border-b hover:bg-muted/30 transition-colors"
+                        >
+                          <td className="p-4">
+                            <div className="font-semibold max-w-[180px] truncate">{project.title}</div>
+                            <div className="text-xs text-muted-foreground max-w-[180px] truncate">{project.description}</div>
+                          </td>
+                          <td className="p-4">
+                            <code className="bg-muted px-2 py-1 rounded font-mono text-xs font-bold">{project.projectCode}</code>
+                          </td>
+                          <td className="p-4">
+                            <span className={`text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COLOR[project.status] || "bg-gray-100 text-gray-600"}`}>
+                              {project.status.replace(/_/g, " ")}
+                            </span>
+                          </td>
+                          <td className="p-4 text-sm max-w-[120px] truncate">{project.clientName}</td>
+                          <td className="p-4 text-sm max-w-[120px] truncate">{project.talentName}</td>
+                          <td className="p-4">
+                            {project.escrow ? (
+                              <div>
+                                <p className="font-semibold">{fmt(project.escrow.totalAmount, project.currency)}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {project.escrow.funded ? "✅ Funded" : "⏳ Pending"} · Released: {fmt(project.escrow.releasedAmount, project.currency)}
+                                </p>
+                              </div>
+                            ) : <span className="text-muted-foreground text-xs">—</span>}
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-wrap gap-1">
+                              {project.milestones.map(m => (
+                                <span key={m.id} className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${STATUS_COLOR[m.status] || "bg-gray-100"}`}>
+                                  {m.status}
+                                </span>
+                              ))}
+                              {project.milestones.length === 0 && <span className="text-xs text-muted-foreground">None</span>}
+                            </div>
+                          </td>
+                          <td className="p-4 text-xs text-muted-foreground whitespace-nowrap">
+                            {project.createdAt ? format(new Date(project.createdAt), "MMM d, yyyy") : "—"}
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Project Cards */}
+                <div className="md:hidden divide-y">
+                  {projects.map((project, i) => (
+                    <motion.div 
+                      key={project.id} 
+                      initial={{ opacity: 0, y: 10 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      transition={{ delay: i * 0.05 }}
+                      className="p-4 space-y-3"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-bold text-sm leading-tight">{project.title}</p>
+                          <code className="text-[10px] text-muted-foreground font-mono bg-muted/50 px-1 rounded">{project.projectCode}</code>
+                        </div>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${STATUS_COLOR[project.status]}`}>
+                          {project.status}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                         <div>
+                            <p className="text-muted-foreground uppercase text-[9px] font-bold tracking-wider">Client</p>
+                            <p className="font-medium truncate">{project.clientName}</p>
+                         </div>
+                         <div>
+                            <p className="text-muted-foreground uppercase text-[9px] font-bold tracking-wider">Talent</p>
+                            <p className="font-medium truncate">{project.talentName}</p>
+                         </div>
+                      </div>
+                      <div className="bg-slate-50 p-2 rounded-lg flex justify-between items-center text-[11px]">
+                         <span className="font-bold">{fmt(project.escrow?.totalAmount || 0, project.currency)}</span>
+                         <span className="text-muted-foreground">{project.milestones.length} milestones</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {projects.length === 0 && (
+                  <div className="p-10 text-center text-muted-foreground text-sm italic">No projects yet.</div>
+                )}
              </section>
              
              {/* ── Escrow Summary per Project ──────────────────────────────────── */}
@@ -495,57 +523,92 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">All Users ({users.length})</h2>
           </div>
-          <Card className="border-0 shadow-sm overflow-hidden text-black">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40 font-bold">
-                    <th className="text-left p-4">Name</th>
-                    <th className="text-left p-4">Email</th>
-                    <th className="text-left p-4">Role</th>
-                    <th className="text-left p-4">Company</th>
-                    <th className="text-left p-4">Country</th>
-                    <th className="text-left p-4">Profile</th>
-                    <th className="text-left p-4">Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u, i) => (
-                    <motion.tr
-                      key={u.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.02 }}
-                      className="border-b hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="p-4 font-medium">
-                        {[u.firstName, u.lastName].filter(Boolean).join(" ") || <span className="text-muted-foreground italic">No name</span>}
-                      </td>
-                      <td className="p-4 text-muted-foreground">{u.email}</td>
-                      <td className="p-4">
-                        {u.role ? (
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${u.role === "BUYER" ? "bg-blue-100 text-blue-800" : u.role === "FREELANCER" ? "bg-purple-100 text-purple-800" : "bg-red-100 text-red-800"}`}>
-                            {u.role === "BUYER" ? "CLIENT" : u.role === "FREELANCER" ? "TALENT" : u.role}
-                          </span>
-                        ) : <span className="text-xs text-muted-foreground">—</span>}
-                      </td>
-                      <td className="p-4 text-sm">{u.companyName || "—"}</td>
-                      <td className="p-4 text-sm">{u.country || "—"}</td>
-                      <td className="p-4">
-                        {u.profileCompleted
-                          ? <span className="flex items-center gap-1 text-xs text-emerald-600 font-bold"><BadgeCheck className="w-3.5 h-3.5" />Complete</span>
-                          : <span className="text-xs text-amber-600 font-bold">Incomplete</span>
-                        }
-                      </td>
-                      <td className="p-4 text-xs text-muted-foreground whitespace-nowrap">
-                        {u.createdAt ? format(new Date(u.createdAt), "MMM d, yyyy") : "—"}
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/40 font-bold">
+                        <th className="text-left p-4">Name</th>
+                        <th className="text-left p-4">Email</th>
+                        <th className="text-left p-4">Role</th>
+                        <th className="text-left p-4">Company</th>
+                        <th className="text-left p-4">Country</th>
+                        <th className="text-left p-4">Profile</th>
+                        <th className="text-left p-4">Joined</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((u, i) => (
+                        <motion.tr
+                          key={u.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.02 }}
+                          className="border-b hover:bg-muted/30 transition-colors"
+                        >
+                          <td className="p-4 font-medium">
+                            {[u.firstName, u.lastName].filter(Boolean).join(" ") || <span className="text-muted-foreground italic">No name</span>}
+                          </td>
+                          <td className="p-4 text-muted-foreground">{u.email}</td>
+                          <td className="p-4">
+                            {u.role ? (
+                              <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${u.role === "BUYER" ? "bg-blue-100 text-blue-800" : u.role === "FREELANCER" ? "bg-purple-100 text-purple-800" : "bg-red-100 text-red-800"}`}>
+                                {u.role === "BUYER" ? "CLIENT" : u.role === "FREELANCER" ? "TALENT" : u.role}
+                              </span>
+                            ) : <span className="text-xs text-muted-foreground">—</span>}
+                          </td>
+                          <td className="p-4 text-sm">{u.companyName || "—"}</td>
+                          <td className="p-4 text-sm">{u.country || "—"}</td>
+                          <td className="p-4">
+                            {u.profileCompleted
+                              ? <span className="flex items-center gap-1 text-xs text-emerald-600 font-bold"><BadgeCheck className="w-3.5 h-3.5" />Complete</span>
+                              : <span className="text-xs text-amber-600 font-bold">Incomplete</span>
+                            }
+                          </td>
+                          <td className="p-4 text-xs text-muted-foreground whitespace-nowrap">
+                            {u.createdAt ? format(new Date(u.createdAt), "MMM d, yyyy") : "—"}
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile User Cards */}
+                <div className="md:hidden divide-y">
+                   {users.map((u, i) => (
+                      <motion.div 
+                        key={u.id} 
+                        initial={{ opacity: 0, scale: 0.98 }} 
+                        animate={{ opacity: 1, scale: 1 }} 
+                        transition={{ delay: i * 0.04 }}
+                        className="p-4 space-y-2"
+                      >
+                         <div className="flex justify-between items-center">
+                            <span className="font-bold text-sm leading-tight truncate mr-2">
+                               {[u.firstName, u.lastName].filter(Boolean).join(" ") || u.email}
+                            </span>
+                            {u.role && (
+                               <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${u.role === "BUYER" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>
+                                  {u.role === "BUYER" ? "CLIENT" : "TALENT"}
+                               </span>
+                            )}
+                         </div>
+                         <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>
+                         <div className="flex justify-between items-center pt-1">
+                            <span className="text-[9px] text-muted-foreground">{u.country || "No location"}</span>
+                            {u.profileCompleted ? (
+                               <span className="flex items-center gap-0.5 text-[9px] font-bold text-emerald-600"><BadgeCheck className="w-3 h-3" /> VERIFIED</span>
+                            ) : (
+                               <span className="text-[9px] font-bold text-amber-600">INCOMPLETE</span>
+                            )}
+                         </div>
+                      </motion.div>
+                   ))}
+                </div>
+
+                {users.length === 0 && (
+                   <div className="p-10 text-center text-muted-foreground text-sm italic">No users in the system.</div>
+                )}
         </section>
       </div>
     )}
