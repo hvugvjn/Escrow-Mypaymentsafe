@@ -216,7 +216,18 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!adminCheck?.isAdmin) return null;
+  if (!adminCheck?.isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
+        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+          <ShieldCheck className="w-8 h-8" />
+        </div>
+        <h1 className="text-xl font-bold text-slate-900">Access Denied</h1>
+        <p className="text-slate-500 mt-2 max-w-xs">You do not have administrative privileges. Please log in with an authorized account.</p>
+        <Button className="mt-6" onClick={() => setLocation("/dashboard")}>Return to Dashboard</Button>
+      </div>
+    );
+  }
 
   const isLoading = statsLoading || usersLoading || projectsLoading;
 
@@ -615,7 +626,7 @@ export default function AdminDashboard() {
                       <p className="text-xs text-muted-foreground">Manage external outreach targets</p>
                     </div>
                     <div className="flex gap-2">
-                       {selectedLeads.length > 0 && (
+                       {Array.isArray(leads) && selectedLeads.length > 0 && (
                          <div className="flex gap-2 animate-in fade-in zoom-in duration-200">
                             <Button size="sm" variant="outline" onClick={() => handleExport('csv')} className="text-xs h-9">
                               <Download className="w-3.5 h-3.5 mr-2" /> Export CSV ({selectedLeads.length})
@@ -652,7 +663,7 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {leads.map((lead, i) => (
+                        {Array.isArray(leads) && leads.map((lead, i) => (
                            <motion.tr 
                               key={lead.id} 
                               initial={{ opacity: 0, x: -5 }} 
