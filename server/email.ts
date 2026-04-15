@@ -222,3 +222,61 @@ export async function sendPaymentReleasedEmail(to: string, projectTitle: string,
   const text = `Payment Released: $${(amount / 100).toFixed(2)} for ${projectTitle}.\nFunds are on the way.`;
   await sendEmail(to, subject, html, text);
 }
+export async function sendMarketingChimeEmail(to: string, subject: string, body: string) {
+  const content = `
+    <h2 style="margin:0 0 16px 0;font-size:22px;color:#111827;">${subject}</h2>
+    <p style="margin:0 0 28px 0;font-size:15px;color:#4b5563;line-height:1.7;white-space:pre-wrap;">${body}</p>
+    <div style="text-align:center;margin-top:32px;">
+      <a href="https://paxdot.com/dashboard" style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:12px;font-weight:700;font-size:15px;display:inline-block;box-shadow:0 10px 15px -3px rgba(79,70,229,0.3);">Go to My Dashboard</a>
+    </div>
+  `;
+  const html = getBaseTemplate(subject, content);
+  await sendEmail(to, subject, html, body);
+}
+
+export async function sendWelcomeBroadcastEmail(to: string) {
+  const content = `
+    <h1 style="margin:0 0 16px 0;font-size:24px;color:#111827;text-align:center;">Welcome to the New Standard of Work</h1>
+    <p style="margin:0 0 32px 0;font-size:16px;color:#4b5563;line-height:1.6;text-align:center;">
+      Pax is a high-fidelity milestone escrow platform. We ensure that <strong>Projects are Funded</strong> before work starts and <strong>Talent is Paid</strong> the moment work is approved.
+    </p>
+
+    <div style="background:#f8f9ff;border-radius:24px;padding:32px;margin-bottom:32px;border:1px solid #e0e7ff;">
+      <p style="text-align:center;font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#6366f1;font-weight:800;margin-bottom:24px;">How Pax Works</p>
+      
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td width="30%" align="center" style="vertical-align:top;">
+            <div style="width:48px;height:48px;background:#ffffff;border-radius:12px;cursor:default;line-height:48px;font-size:24px;box-shadow:0 4px 12px rgba(99,102,241,0.15);margin-bottom:12px;">🔒</div>
+            <p style="margin:0;font-weight:700;font-size:14px;color:#1e1b4b;">1. Fund</p>
+            <p style="margin:4px 0 0 0;font-size:11px;color:#6b7280;line-height:1.4;">Client secures project<br/>total in escrow.</p>
+          </td>
+          <td width="5%" align="center" style="vertical-align:top;padding-top:20px;color:#c7d2fe;">→</td>
+          <td width="30%" align="center" style="vertical-align:top;">
+            <div style="width:48px;height:48px;background:#ffffff;border-radius:12px;cursor:default;line-height:48px;font-size:24px;box-shadow:0 4px 12px rgba(99,102,241,0.15);margin-bottom:12px;">⏳</div>
+            <p style="margin:0;font-weight:700;font-size:14px;color:#1e1b4b;">2. Milestone</p>
+            <p style="margin:4px 0 0 0;font-size:11px;color:#6b7280;line-height:1.4;">Talent works; money<br/>stays protected.</p>
+          </td>
+          <td width="5%" align="center" style="vertical-align:top;padding-top:20px;color:#c7d2fe;">→</td>
+          <td width="30%" align="center" style="vertical-align:top;">
+            <div style="width:48px;height:48px;background:#ffffff;border-radius:12px;cursor:default;line-height:48px;font-size:24px;box-shadow:0 4px 12px rgba(99,102,241,0.15);margin-bottom:12px;">🚀</div>
+            <p style="margin:0;font-weight:700;font-size:14px;color:#1e1b4b;">3. Release</p>
+            <p style="margin:4px 0 0 0;font-size:11px;color:#6b7280;line-height:1.4;">Work approved and<br/>funds auto-payout.</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="text-align:center;">
+      <a href="https://paxdot.com/dashboard" style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:#ffffff;padding:16px 32px;text-decoration:none;border-radius:12px;font-weight:700;font-size:15px;display:inline-block;box-shadow:0 10px 15px -3px rgba(79,70,229,0.3);">Access Your Pax Workspace</a>
+      <p style="margin:20px 0 0 0;font-size:13px;color:#9ca3af;">Join thousands of global teams securing their milestones on Pax.</p>
+    </div>
+  `;
+  
+  const subject = `Introducing Pax: The New Standard for Secure Global Work`;
+  const html = getBaseTemplate(subject, content);
+  const text = `Welcome to Pax. Pax is a high-fidelity milestone escrow platform. 1. Fund Escrow, 2. Complete Milestone, 3. Release Payment. Visit https://paxdot.com to learn more.`;
+  
+  await sendEmail(to, subject, html, text);
+}
+

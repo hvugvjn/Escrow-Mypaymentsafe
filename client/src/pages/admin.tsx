@@ -140,67 +140,57 @@ export default function AdminDashboard() {
     refetchInterval: 30000,
   });
 
-  const { data: leads = [], isLoading: leadsLoading } = useQuery<any[]>({
-    queryKey: ["/api/admin/leads"],
+  const { data: segments = { incomplete: [], stalled: [] }, isLoading: segmentsLoading } = useQuery<{ incomplete: AdminUser[], stalled: AdminUser[] }>({
+    queryKey: ["/api/admin/growth/segments"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/leads", { credentials: "include" });
+      const res = await fetch("/api/admin/growth/segments", { credentials: "include" });
       return res.json();
     },
     enabled: adminCheck?.isAdmin === true,
   });
 
   const [activeTab, setActiveTab] = useState("overview");
-  const [outreachLoading, setOutreachLoading] = useState(false);
-  const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
-  const [aiPreviewLead, setAiPreviewLead] = useState<any | null>(null);
+  const [chimeLoading, setChimeLoading] = useState<string | null>(null);
+  const [previewUser, setPreviewUser] = useState<AdminUser | null>(null);
+  const [previewDay, setPreviewDay] = useState<1 | 2 | 3 | 14>(1);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [previewContent, setPreviewContent] = useState<{subject:string; body:string} | null>(null);
 
-  const toggleLead = (id: string) => {
-    setSelectedLeads(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
-  const selectAllLeads = () => {
-    if (selectedLeads.length === leads.length) setSelectedLeads([]);
-    else setSelectedLeads(leads.map(l => l.id));
-  };
-
-  const handleExport = async (format: 'csv' | 'json') => {
-    const res = await fetch("/api/admin/leads/export", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ leadIds: selectedLeads, format }),
-    });
-    if (format === 'csv') {
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pax_leads_${new Date().getTime()}.csv`;
-      a.click();
-    } else {
-      const data = await res.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pax_leads_${new Date().getTime()}.json`;
-      a.click();
-    }
-  };
-
-  const loadAiPreview = async (lead: any) => {
-    setAiPreviewLead(lead);
+  const loadGrowthPreview = async (user: AdminUser, day: 1 | 2 | 3 | 14) => {
+    setPreviewUser(user);
+    setPreviewDay(day);
     setIsAiLoading(true);
     setPreviewContent(null);
     try {
-      const res = await fetch(`/api/admin/marketing/preview/${lead.id}`);
+      const res = await fetch(`/api/admin/growth/preview/${user.id}/${day}`);
       const data = await res.json();
       setPreviewContent(data);
     } catch (err) {
       console.error("AI Preview error:", err);
     } finally {
       setIsAiLoading(false);
+    }
+  };
+
+  const sendChime = async () => {
+    if (!previewUser || !previewContent) return;
+    setChimeLoading(previewUser.id);
+    try {
+      await fetch(`/api/admin/growth/chime/${previewUser.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          day: previewDay,
+          subject: previewContent.subject,
+          body: previewContent.body
+        })
+      });
+      alert("Success chime sent!");
+      setPreviewUser(null);
+    } catch (err) {
+      console.error("Failed to send chime:", err);
+    } finally {
+      setChimeLoading(null);
     }
   };
 
@@ -232,6 +222,20 @@ export default function AdminDashboard() {
   }
 
   const isLoading = statsLoading || usersLoading || projectsLoading;
+
+  const broadcastWelcome = async () => {
+    if (!window.confirm("Send welcome broadcast to ALL registered users?")) return;
+    setChimeLoading("broadcast");
+    try {
+      const res = await fetch("/api/admin/growth/broadcast-welcome", { method: "POST" });
+      const data = await res.json();
+      alert(data.message);
+    } catch (err) {
+      alert("Broadcast failed");
+    } finally {
+      setChimeLoading(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -615,189 +619,144 @@ export default function AdminDashboard() {
     )}
         {activeTab === "growth" && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* ── Growth Stats ─────────────────────────────────────────── */}
+            {/* ── Global Initiatives (The Broadcast Button) ──────────────── */}
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Outreach Performance</h2>
-                <div className="flex gap-2">
-                   <Button size="sm" variant="outline" className="h-8 border-violet-200 text-violet-700 bg-violet-50/50">
-                    <Download className="w-3.5 h-3.5 mr-2" /> Export Performance
-                   </Button>
-                </div>
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mr-2">Global Initiatives</h2>
+                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">Broadcast Power</Badge>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard icon={Target} label="Total Leads" value={leads.length} sub="External database" color="bg-violet-600" />
-                <StatCard icon={Mail} label="Contacted" value={leads.filter(l => l.status === 'CONTACTED').length} sub="First touch sent" color="bg-indigo-600" />
-                <StatCard icon={MessageSquare} label="Replies" value={leads.filter(l => l.status === 'REPLIED').length} sub="High intent" color="bg-pink-600" />
-                <StatCard icon={TrendingUp} label="Conv. Rate" value={`${leads.length > 0 ? ((leads.filter(l => l.status === 'REPLIED').length / leads.length) * 100).toFixed(1) : 0}%`} sub="Lead to reply" color="bg-orange-600" />
+              <Card className="border-0 shadow-sm bg-gradient-to-br from-indigo-600 to-violet-700 text-white overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-8 opacity-10">
+                   <Zap className="w-32 h-32 fill-white" />
+                </div>
+                <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                  <div className="space-y-3 text-center md:text-left">
+                    <h3 className="text-2xl font-extrabold tracking-tight underline decoration-violet-400 underline-offset-4">Announce Pax to Everyone</h3>
+                    <p className="text-indigo-100 opacity-90 max-w-lg leading-relaxed font-medium">
+                      One-click broadcast: Sens a high-fidelity <strong>Pictorial Welcome</strong> explaining how Pax protects milestones to every member of your platform.
+                    </p>
+                    <div className="flex items-center gap-4 text-xs font-bold text-indigo-200">
+                       <span className="flex items-center gap-1"><BadgeCheck className="w-3 h-3" /> Professional Layout</span>
+                       <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Enterprise Tonality</span>
+                    </div>
+                  </div>
+                  <Button 
+                    size="lg"
+                    className="bg-white text-indigo-700 hover:bg-slate-50 font-black px-10 h-14 rounded-2xl shadow-xl hover:scale-105 transition-all text-base border-0"
+                    onClick={broadcastWelcome}
+                    disabled={chimeLoading === "broadcast"}
+                  >
+                    {chimeLoading === "broadcast" ? <Loader2 className="w-5 h-5 mr-3 animate-spin" /> : <Mail className="w-5 h-5 mr-3" />}
+                    SEND WELCOME BLAST NOW
+                  </Button>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* ── Success Pipeline Segments ───────────────────────────── */}
+            <section>
+              <div className="flex items-center justify-between mb-4 mt-12">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mr-2">Success Pipeline</h2>
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 italic">Gemini 1.5 Active</Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <StatCard icon={Target} label="Incomplete Profiles" value={segments.incomplete.length} sub="Need Day 1/2 nudge" color="bg-orange-500" />
+                <StatCard icon={Zap} label="Stalled Members" value={segments.stalled.length} sub="No projects yet" color="bg-indigo-600" />
+                <StatCard icon={Mail} label="Total Reach" value={stats?.totalUsers || 0} sub="All registered users" color="bg-violet-600" />
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-8">
+                 <Card className="border-0 shadow-sm overflow-hidden min-h-[400px]">
+                   <CardHeader className="bg-slate-50/50 border-b py-4">
+                     <CardTitle className="text-sm font-bold flex items-center gap-2">
+                       <AlertTriangle className="w-4 h-4 text-orange-500" /> Incomplete Profiles
+                     </CardTitle>
+                   </CardHeader>
+                   <div className="divide-y max-h-[400px] overflow-y-auto">
+                     {segments.incomplete.map((u) => (
+                       <div key={u.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                         <div className="min-w-0">
+                           <p className="font-bold text-sm truncate">{[u.firstName, u.lastName].filter(Boolean).join(" ") || u.email}</p>
+                           <p className="text-[10px] text-muted-foreground">{u.email}</p>
+                         </div>
+                         <div className="flex gap-2 shrink-0">
+                           <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-orange-200 text-orange-700 hover:bg-orange-50" onClick={() => loadGrowthPreview(u, 1)}>Tip 1</Button>
+                           <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-orange-200 text-orange-700 hover:bg-orange-50" onClick={() => loadGrowthPreview(u, 2)}>Tip 2</Button>
+                         </div>
+                       </div>
+                     ))}
+                     {segments.incomplete.length === 0 && <div className="p-20 text-center text-xs text-muted-foreground italic">Pipeline clean.</div>}
+                   </div>
+                 </Card>
+
+                 <Card className="border-0 shadow-sm overflow-hidden min-h-[400px]">
+                   <CardHeader className="bg-slate-50/50 border-b py-4">
+                     <CardTitle className="text-sm font-bold flex items-center gap-2">
+                       <Clock className="w-4 h-4 text-indigo-500" /> Stalled Members
+                     </CardTitle>
+                   </CardHeader>
+                   <div className="divide-y max-h-[400px] overflow-y-auto">
+                     {segments.stalled.map((u) => (
+                       <div key={u.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                         <div className="min-w-0">
+                           <p className="font-bold text-sm truncate">{[u.firstName, u.lastName].filter(Boolean).join(" ") || u.email}</p>
+                           <p className="text-[10px] text-muted-foreground">Joined {u.createdAt ? format(new Date(u.createdAt), "MMM d") : ""}</p>
+                         </div>
+                         <div className="flex gap-2 shrink-0">
+                           <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => loadGrowthPreview(u, 3)}>Tip 3</Button>
+                           <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => loadGrowthPreview(u, 14)}>Tip 14</Button>
+                         </div>
+                       </div>
+                     ))}
+                     {segments.stalled.length === 0 && <div className="p-20 text-center text-xs text-muted-foreground italic">Every user has a project.</div>}
+                   </div>
+                 </Card>
               </div>
             </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* ── Campaigns & Tools ────────────────────────────────────── */}
-              <div className="lg:col-span-1 space-y-6">
-                <Card className="border-0 shadow-sm bg-gradient-to-br from-violet-600 to-indigo-700 text-white">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-white">
-                      <Zap className="w-5 h-5 fill-white" />
-                      Quick Campaigns
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Button 
-                      className="w-full justify-start bg-white/10 hover:bg-white/20 border-white/20 text-white" 
-                      onClick={() => setOutreachLoading(true)}
-                      disabled={outreachLoading}
-                    >
-                      {outreachLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
-                      Start Outreach ({leads.filter(l => l.location?.includes('London')).length})
-                    </Button>
-                    <Button className="w-full justify-start bg-white/10 hover:bg-white/20 border-white/20 text-white">
-                      <Target className="w-4 h-4 mr-2" />
-                      Global Talent Blast
-                    </Button>
-                    <p className="text-[10px] opacity-70 mt-2 italic px-1">
-                      AI will personalize each message based on lead bio & location.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-sm">Import New Leads</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="border-2 border-dashed border-muted rounded-xl p-8 text-center hover:border-violet-400 transition-colors cursor-pointer group">
-                      <div className="w-10 h-10 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                        <Plus className="w-5 h-5" />
+            {/* ── Success Chime AI Modal ───────────────────────────────── */}
+            {previewUser && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                <Card className="w-full max-w-lg shadow-2xl border-0 overflow-hidden rounded-3xl">
+                  <div className="bg-gradient-to-br from-indigo-700 to-violet-800 p-8 text-white relative">
+                     <div className="absolute top-4 right-4">
+                        <Button variant="ghost" className="text-white/50 hover:text-white hover:bg-white/10" onClick={() => setPreviewUser(null)}>×</Button>
+                     </div>
+                     <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">AI LifeCycle Chime</span>
+                     <h2 className="text-2xl font-black mt-1">Nudge: Day {previewDay}</h2>
+                     <p className="text-indigo-200 text-xs font-bold mt-2 truncate">Recipient: {previewUser.email}</p>
+                  </div>
+                  <CardContent className="p-8">
+                    {isAiLoading ? (
+                      <div className="py-12 space-y-4 flex flex-col items-center">
+                        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+                        <p className="text-sm font-bold text-indigo-600 animate-pulse italic">Gemini is curating success tips...</p>
                       </div>
-                      <p className="text-xs font-semibold">Drop CSV here</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">Accepts export.csv format</p>
-                    </div>
+                    ) : previewContent ? (
+                      <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500">
+                         <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase text-slate-400">Subject Line</label>
+                            <p className="text-sm font-extrabold text-slate-900 border-b pb-2">{previewContent.subject}</p>
+                         </div>
+                         <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase text-slate-400">Email Draft</label>
+                            <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-2xl italic border border-slate-100 whitespace-pre-wrap">"{previewContent.body}"</p>
+                         </div>
+                         <div className="flex gap-3 pt-4">
+                            <Button className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-200" onClick={sendChime} disabled={!!chimeLoading}>
+                               {chimeLoading === previewUser.id ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+                               Approve & Send (Resend)
+                            </Button>
+                            <Button variant="ghost" className="flex-1 h-12 rounded-xl text-slate-500 font-bold" onClick={() => setPreviewUser(null)}>Cancel</Button>
+                         </div>
+                      </div>
+                    ) : <div className="p-10 text-center text-red-500 text-xs font-bold">API Offline. Check GEMINI_API_KEY.</div>}
                   </CardContent>
                 </Card>
-
-                <Card className="border-0 shadow-sm overflow-hidden">
-                  <div className="aspect-square relative group cursor-pointer bg-slate-900">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
-                    <img src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="Poster Template" />
-                    <div className="absolute bottom-4 left-4 right-4 z-20">
-                      <p className="text-white text-xs font-bold uppercase tracking-widest mb-1">Coming Soon</p>
-                      <h4 className="text-white font-bold">Dynamic Instagram Poster Generator</h4>
-                      <Button size="sm" className="mt-3 w-full bg-white text-black hover:bg-slate-100">
-                        <ImageIcon className="w-3.5 h-3.5 mr-2" /> Configure Templates
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
               </div>
-
-              {/* ── Leads Table ──────────────────────────────────────────── */}
-              <div className="lg:col-span-2 space-y-6">
-                <Card className="border-0 shadow-sm overflow-hidden min-h-[600px]">
-                  <CardHeader className="border-b bg-card flex flex-row items-center justify-between pb-4">
-                    <div>
-                      <CardTitle className="text-lg">Recent Leads</CardTitle>
-                      <p className="text-xs text-muted-foreground">Manage external outreach targets</p>
-                    </div>
-                    <div className="flex gap-2">
-                       {Array.isArray(leads) && selectedLeads.length > 0 && (
-                         <div className="flex gap-2 animate-in fade-in zoom-in duration-200">
-                            <Button size="sm" variant="outline" onClick={() => handleExport('csv')} className="text-xs h-9">
-                              <Download className="w-3.5 h-3.5 mr-2" /> Export CSV ({selectedLeads.length})
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleExport('json')} className="text-xs h-9">
-                              <FileJson className="w-3.5 h-3.5 mr-2" /> JSON ({selectedLeads.length})
-                            </Button>
-                         </div>
-                       )}
-                       <div className="relative">
-                          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                          <input className="h-9 w-[180px] rounded-md border border-input bg-background pl-8 pr-3 text-xs focus:ring-1 focus:ring-violet-400 outline-none" placeholder="Search leads..." />
-                       </div>
-                       <Button size="icon" variant="outline" className="h-9 w-9"><Filter className="w-4 h-4" /></Button>
-                    </div>
-                  </CardHeader>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/20">
-                          <th className="p-4 text-center w-12">
-                            <input 
-                              type="checkbox" 
-                              className="rounded border-muted text-violet-600 focus:ring-violet-400"
-                              checked={leads.length > 0 && selectedLeads.length === leads.length}
-                              onChange={selectAllLeads}
-                            />
-                          </th>
-                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Lead</th>
-                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Source</th>
-                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Location</th>
-                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Status</th>
-                          <th className="text-left p-4 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Array.isArray(leads) && leads.map((lead, i) => (
-                           <motion.tr 
-                              key={lead.id} 
-                              initial={{ opacity: 0, x: -5 }} 
-                              animate={{ opacity: 1, x: 0 }} 
-                              transition={{ delay: i * 0.01 }}
-                              className={`border-b hover:bg-muted/30 transition-colors ${selectedLeads.includes(lead.id) ? 'bg-violet-50/50' : ''}`}
-                           >
-                            <td className="p-4 text-center">
-                              <input 
-                                type="checkbox" 
-                                className="rounded border-muted text-violet-600 focus:ring-violet-400"
-                                checked={selectedLeads.includes(lead.id)}
-                                onChange={() => toggleLead(lead.id)}
-                              />
-                            </td>
-                            <td className="p-4">
-                              <div className="font-semibold">{lead.firstName} {lead.lastName}</div>
-                              <div className="text-xs text-muted-foreground font-mono">{lead.email}</div>
-                            </td>
-                            <td className="p-4 text-xs font-medium">
-                              <Badge variant="outline" className="bg-slate-50">{lead.source}</Badge>
-                            </td>
-                            <td className="p-4 text-xs">
-                              <div className="flex items-center gap-1.5">
-                                <MapPin className="w-3 h-3 text-violet-500" />
-                                {lead.location || "Unknown"}
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <span className={`text-[9px] font-bold px-2 py-1 rounded-full ${
-                                lead.status === 'REPLIED' ? 'bg-emerald-100 text-emerald-700' :
-                                lead.status === 'CONTACTED' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
-                              }`}>
-                                {lead.status}
-                              </span>
-                            </td>
-                            <td className="p-4">
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                title="AI Preview"
-                                className="h-8 w-8 text-violet-600 hover:bg-violet-50"
-                                onClick={() => loadAiPreview(lead)}
-                              >
-                                <Zap className="w-4 h-4" />
-                              </Button>
-                            </td>
-                           </motion.tr>
-                        ))}
-                        {leads.length === 0 && (
-                          <tr><td colSpan={5} className="p-20 text-center text-muted-foreground italic">No leads in the database. Import a CSV to get started.</td></tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </Card>
-              </div>
-            </div>
+            )}
           </div>
+        )}
         )}
 
         {/* ── AI Preview Modal ────────────────────────────────────────────── */}

@@ -1,106 +1,97 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { storage } from "./storage";
-import { type Lead, type InsertLead } from "@shared/schema";
+import { type User } from "@shared/schema";
 
-// Initialize Anthropic client (will fail gracefully if key is missing)
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "mock-key",
-});
+// Initialize Gemini client (free tier)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "mock-key");
 
 /**
- * Service to handle automated marketing activities
+ * Service to handle Pax Lifecycle Marketing
+ * Powered by Google Gemini 1.5 Flash
  */
 export class MarketingService {
   private isDryRun = process.env.AI_DRY_RUN === "true";
 
   /**
-   * Process a list of leads (e.g. from an Apollo CSV)
+   * Generates a personalized "Success Chime" for a registered user
+   * Handles 3-day onboarding and Day 14 re-engagement
    */
-  async importLeads(csvData: any[]): Promise<{ imported: number; skipped: number }> {
-    let imported = 0;
-    let skipped = 0;
-
-    for (const row of csvData) {
-      try {
-        const lead: InsertLead = {
-          email: row.email || row.Email,
-          firstName: row.firstName || row.First_Name || row['First Name'],
-          lastName: row.lastName || row.Last_Name || row['Last Name'],
-          company: row.company || row.Company || row['Company Name'],
-          location: row.location || row.City || row.Country || row.Location,
-          linkedinUrl: row.linkedinUrl || row.Linkedin_Url || row['LinkedIn URL'],
-          skills: row.skills || row.Keywords || row.Industry,
-          source: 'APOLLO_CSV'
-        };
-
-        if (lead.email) {
-          await storage.createLead(lead);
-          imported++;
-        } else {
-          skipped++;
-        }
-      } catch (err) {
-        console.error("Error importing lead row:", err);
-        skipped++;
-      }
+  async generateUserChime(user: User, day: 1 | 2 | 3 | 14): Promise<{ subject: string; body: string }> {
+    // Fallback if no API key
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "mock-key") {
+      return this.getFallbackMessage(user, day);
     }
 
-    return { imported, skipped };
-  }
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  /**
-   * AI-powered personalization logic using Claude 3 Haiku
-   * Professional "Head of Growth" persona
-   */
-  async generatePersonalizedMessage(lead: Lead): Promise<{ subject: string; body: string }> {
-    // If no API key, return a mock
-    if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === "your_key_here") {
-      return {
-        subject: `PAX Escrow for ${lead.firstName || 'your business'}`,
-        body: `Hi ${lead.firstName || "there"},\n\nI noticed your work in ${lead.location || "the industry"}. We're building PAX to ensure freelancers like you get paid securely and on time.\n\nBest,\nHead of Growth @ PAX`
-      };
+    const persona = `You are the User Success Lead at PAX, a premium global escrow platform. 
+Your tone is professional, helpful, and results-oriented. 
+Your goal is to ensure the user understands how to safely use PAX for high-value projects.
+Avoid mention of local Indian certifications (Udyam). Focus on global trust and security.`;
+
+    let context = "";
+    if (day === 1) {
+      context = "This is Day 1 (Welcome). Explain how Pax works: Safe milestones, secure escrow, and direct chat. Keep it and a feature overview.";
+    } else if (day === 2) {
+      context = `This is Day 2 (Personalized). Focus on their role as a ${user.role || 'Member'}.
+      If they are a CLIENT: Explain how to fund their first project with zero risk.
+      If they are a TALENT: Explain how to secure their payment before they start work.
+      Profile Progress: ${user.profileCompleted ? 'Complete' : 'Incomplete'}.`;
+    } else if (day === 3) {
+      context = "This is Day 3 (Trust). Focus on the 'Pax Guarantee'—how we protect both sides and handle disputes fairly. Explain the escrow security logic.";
+    } else if (day === 14) {
+      context = "This is Day 14 (Re-engagement). The user has been inactive. Highlight the benefits: 'People are benefiting day by day from Pax security.' Encourage them to return and start a new project.";
     }
 
-    const systemPrompt = `You are the Head of Growth at PAX, a high-end escrow platform for global talent. 
-Your tone is extremely professional, direct, and zero-risk focused. 
-You are reaching out to high-value leads from Apollo.io. 
-Your goal is to solve their payment security problems. 
-Do NOT mention being "Udyam verified" or specific local certifications.
-Keep the email under 4 sentences.`;
+    const prompt = `${persona}
+    
+    Target User: ${user.firstName || 'Pax Member'}
+    Role: ${user.role}
+    Phase: ${context}
 
-    const userPrompt = `Lead Name: ${lead.firstName} ${lead.lastName}
-Company: ${lead.company}
-Skills/Industry: ${lead.skills}
-Location: ${lead.location}
-
-Write a personalized subject line and email body. Return it in this JSON format:
-{
-  "subject": "string",
-  "body": "string"
-}`;
+    Write a high-end email subject and body (under 4 sentences). Return it strictly in this JSON format:
+    {
+      "subject": "string",
+      "body": "string"
+    }`;
 
     try {
-      const response = await anthropic.messages.create({
-        model: "claude-3-haiku-20240307",
-        max_tokens: 500,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
-      });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let text = response.text().trim();
+      
+      // Clean up markdown code blocks if Gemini adds them
+      if (text.startsWith("```")) {
+        text = text.replace(/^```json/, "").replace(/```$/, "").trim();
+      }
 
-      const content = response.content[0].type === "text" ? response.content[0].text : "";
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(text);
 
       if (this.isDryRun) {
-        console.log(`[AI_DRY_RUN] To: ${lead.email}`);
+        console.log(`[PAX_GROWTH_DRY_RUN] To: ${user.email} (Day ${day})`);
         console.log(`Subject: ${parsed.subject}`);
         console.log(`Body: ${parsed.body}\n-------------------`);
       }
 
       return parsed;
     } catch (err) {
-      console.error("AI Generation Error:", err);
-      throw new Error("Failed to generate personalized message");
+      console.error("Gemini Generation Error:", err);
+      return this.getFallbackMessage(user, day);
     }
+  }
+
+  private getFallbackMessage(user: User, day: number) {
+    if (day === 1) {
+      return {
+        subject: "Welcome to PAX – Secure Your First Project",
+        body: `Hi ${user.firstName || 'there'},\n\nWelcome to Pax, the secure milestone escrow platform. You can now create projects, manage milestones, and ensure zero-risk payments.\n\nBest,\nSuccess Team @ PAX`
+      };
+    }
+    // Simple fallback for other days
+    return {
+      subject: "Boosting your success on PAX",
+      body: `Hi ${user.firstName || 'there'},\n\nWe noticed you haven't completed your profile yet. Finishing it helps you secure better projects on Pax.\n\nBest,\nSuccess Team @ PAX`
+    };
   }
 }
 

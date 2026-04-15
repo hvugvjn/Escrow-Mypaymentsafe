@@ -37,6 +37,9 @@ export interface IStorage {
   updateLead(id: string, updates: Partial<Lead>): Promise<Lead>;
   createOutreachLog(log: InsertOutreachLog): Promise<OutreachLog>;
   getOutreachLogs(leadId: string): Promise<OutreachLog[]>;
+  getUserOutreachLogs(userId: string): Promise<OutreachLog[]>;
+  getIncompleteProfiles(): Promise<User[]>;
+  getStalledUsers(): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -194,6 +197,23 @@ export class DatabaseStorage implements IStorage {
 
   async getOutreachLogs(leadId: string): Promise<OutreachLog[]> {
     return await db.select().from(outreachLogs).where(eq(outreachLogs.leadId, leadId)).orderBy(desc(outreachLogs.sentAt));
+  }
+
+  async getUserOutreachLogs(userId: string): Promise<OutreachLog[]> {
+    return await db.select().from(outreachLogs).where(eq(outreachLogs.userId, userId)).orderBy(desc(outreachLogs.sentAt));
+  }
+
+  async getIncompleteProfiles(): Promise<User[]> {
+    return await db.select().from(users).where(and(eq(users.profileCompleted, false), or(eq(users.role, 'BUYER'), eq(users.role, 'FREELANCER')))).orderBy(desc(users.createdAt));
+  }
+
+  async getStalledUsers(): Promise<User[]> {
+    // Users with no projects created or joined
+    const subquery = db.select({ id: projects.createdBy }).from(projects);
+    return await db.select().from(users).where(and(
+      or(eq(users.role, 'BUYER'), eq(users.role, 'FREELANCER')),
+      sql`${users.id} NOT IN (SELECT created_by FROM projects) AND ${users.id} NOT IN (SELECT buyer_id FROM projects WHERE buyer_id IS NOT NULL) AND ${users.id} NOT IN (SELECT freelancer_id FROM projects WHERE freelancer_id IS NOT NULL)`
+    )).orderBy(desc(users.createdAt));
   }
 }
 

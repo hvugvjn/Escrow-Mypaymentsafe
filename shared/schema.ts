@@ -93,8 +93,9 @@ export const leads = pgTable("leads", {
 
 export const outreachLogs = pgTable("outreach_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  leadId: varchar("lead_id").notNull(),
-  type: varchar("type").notNull(), // 'EMAIL_1', 'FOLLOW_UP_1', etc.
+  leadId: varchar("lead_id"), // Optional: for external leads
+  userId: varchar("user_id"), // Optional: for internal members
+  type: varchar("type").notNull(), // 'DAY_1', 'DAY_14', etc.
   content: text("content").notNull(),
   status: varchar("status"), // 'SENT', 'FAILED'
   sentAt: timestamp("sent_at").defaultNow(),

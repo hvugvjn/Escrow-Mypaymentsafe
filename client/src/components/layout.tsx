@@ -3,18 +3,62 @@ import { useAuth } from "@/hooks/use-auth";
 import { LayoutDashboard, PlusCircle, User, LogOut, Menu, X, Search, Inbox } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PaxLogo } from "@/components/pax-logo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
+// ── Startup Sound Logic ────────────────────────────────────────────────────
+const playPremiumChime = () => {
+  try {
+    const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    
+    const context = new AudioContextClass();
+    const masterGain = context.createGain();
+    masterGain.connect(context.destination);
+    masterGain.gain.setValueAtTime(0, context.currentTime);
+    masterGain.gain.linearRampToValueAtTime(0.08, context.currentTime + 0.05);
+    masterGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1.2);
+
+    // High crystalline note
+    const osc1 = context.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(1244.51, context.currentTime); // Eb6
+    osc1.connect(masterGain);
+
+    // Deep resonance note
+    const osc2 = context.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(311.13, context.currentTime); // Eb4
+    osc2.connect(masterGain);
+
+    osc1.start();
+    osc2.start();
+    osc1.stop(context.currentTime + 1.5);
+    osc2.stop(context.currentTime + 1.5);
+  } catch (e) {
+    console.error("Audio chime failed", e);
+  }
+};
+// ────────────────────────────────────────────────────────────────────────────
+
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [startY, setStartY] = useState(0);
+
+  // Trigger sound exactly once when the layout mounts
+  useEffect(() => {
+    const hasPlayed = sessionStorage.getItem('pax_chime_played');
+    if (!hasPlayed) {
+      setTimeout(playPremiumChime, 400); // Small delay to sync with splash fade
+      sessionStorage.setItem('pax_chime_played', 'true');
+    }
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     // Only allow pull to refresh if we are at the very top of the scroll
