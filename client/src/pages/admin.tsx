@@ -758,62 +758,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ── AI Preview Modal ────────────────────────────────────────────── */}
-        {aiPreviewLead && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <Card className="w-full max-w-2xl shadow-2xl border-0">
-               <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
-                  <div>
-                    <CardTitle className="text-lg">AI Outreach Preview</CardTitle>
-                    <p className="text-xs text-muted-foreground">Audit personlization for {aiPreviewLead.firstName}</p>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => setAiPreviewLead(null)} className="h-8 w-8">
-                    <LogOut className="w-4 h-4 rotate-180" />
-                  </Button>
-               </CardHeader>
-               <CardContent className="p-6">
-                 {isAiLoading ? (
-                   <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                      <Loader2 className="w-10 h-10 animate-spin text-violet-600" />
-                      <p className="text-sm font-medium animate-pulse">Claude is thinking...</p>
-                   </div>
-                 ) : previewContent ? (
-                    <div className="space-y-6">
-                       <div className="space-y-2">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Subject Line</label>
-                          <div className="p-4 bg-muted/30 rounded-lg font-medium border text-sm flex justify-between items-center group">
-                             {previewContent.subject}
-                             <Button size="icon" variant="ghost" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => navigator.clipboard.writeText(previewContent.subject)}>
-                               <Share className="w-3.5 h-3.5" />
-                             </Button>
-                          </div>
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Email Body</label>
-                          <div className="p-5 bg-muted/20 rounded-xl border leading-relaxed text-sm relative group">
-                             {previewContent.body.split('\n').map((line, i) => <p key={i} className="mb-2">{line}</p>)}
-                             <Button size="sm" variant="secondary" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => navigator.clipboard.writeText(previewContent.body)}>
-                               <Share className="w-3.5 h-3.5 mr-2" /> Copy Full Message
-                             </Button>
-                          </div>
-                       </div>
-                       <div className="flex gap-3 pt-4 border-t">
-                          <Button className="flex-1 bg-violet-600 hover:bg-violet-700">
-                            <Mail className="w-4 h-4 mr-2" /> Approve & Send Now
-                          </Button>
-                          <Button variant="outline" className="flex-1" onClick={() => setAiPreviewLead(null)}>
-                            Discard
-                          </Button>
-                       </div>
-                    </div>
-                 ) : (
-                    <div className="text-center py-10 text-red-500 text-sm">Failed to generate preview. Check your ANTHROPIC_API_KEY.</div>
-                 )}
-               </CardContent>
-            </Card>
-          </div>
-        )}
-
         {/* Tab checks removed as they are integrated above */}
       </div>
     </div>
