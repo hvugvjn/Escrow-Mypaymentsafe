@@ -700,7 +700,7 @@ export default function AdminDashboard() {
                        <div key={u.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                          <div className="min-w-0">
                            <p className="font-bold text-sm truncate">{[u.firstName, u.lastName].filter(Boolean).join(" ") || u.email}</p>
-                           <p className="text-[10px] text-muted-foreground">Joined {u.createdAt ? format(new Date(u.createdAt), "MMM d") : ""}</p>
+                           <p className="text-[10px] text-muted-foreground">Joined {u.createdAt ? format(new Date(u.createdAt), "MMM d") : "Recently"}</p>
                          </div>
                          <div className="flex gap-2 shrink-0">
                            <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => loadGrowthPreview(u, 3)}>Tip 3</Button>
