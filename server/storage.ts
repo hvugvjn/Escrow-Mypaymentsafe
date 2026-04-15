@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { users, projects, milestones, escrows, ratings, messages, directChats, directMessages, leads, outreachLogs, type User, type UpsertUser, type InsertProject, type InsertMilestone, type InsertEscrow, type Project, type Milestone, type Escrow, type Message, type DirectChat, type DirectMessage, type InsertDirectMessage, type Lead, type InsertLead, type OutreachLog, type InsertOutreachLog } from "@shared/schema";
-import { eq, or, asc, ilike, and, desc } from "drizzle-orm";
+import { eq, or, asc, ilike, and, desc, notInArray } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -208,12 +208,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStalledUsers(): Promise<User[]> {
-    // Users with no projects created or joined
-    const subquery = db.select({ id: projects.createdBy }).from(projects);
-    return await db.select().from(users).where(and(
-      or(eq(users.role, 'BUYER'), eq(users.role, 'FREELANCER')),
-      sql`${users.id} NOT IN (SELECT created_by FROM projects) AND ${users.id} NOT IN (SELECT buyer_id FROM projects WHERE buyer_id IS NOT NULL) AND ${users.id} NOT IN (SELECT freelancer_id FROM projects WHERE freelancer_id IS NOT NULL)`
-    )).orderBy(desc(users.createdAt));
+    // Get all users with a role
+    const allRoleUsers = await db.select().from(users).where(
+      or(eq(users.role, 'BUYER'), eq(users.role, 'FREELANCER'))
+    ).orderBy(desc(users.createdAt));
+
+    // Get all user IDs who have any project activity
+    const activeProjects = await db.select({
+      createdBy: projects.createdBy,
+      buyerId: projects.buyerId,
+      freelancerId: projects.freelancerId,
+    }).from(projects);
+
+    const activeUserIds = new Set<string>();
+    activeProjects.forEach(p => {
+      if (p.createdBy) activeUserIds.add(p.createdBy);
+      if (p.buyerId) activeUserIds.add(p.buyerId);
+      if (p.freelancerId) activeUserIds.add(p.freelancerId);
+    });
+
+    // Filter to users with no project activity
+    return allRoleUsers.filter(u => !activeUserIds.has(u.id));
   }
 }
 
