@@ -757,7 +757,6 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
-        )}
 
         {/* ── AI Preview Modal ────────────────────────────────────────────── */}
         {aiPreviewLead && (
