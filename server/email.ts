@@ -619,7 +619,7 @@ export async function sendWelcomeBroadcastEmail(to: string): Promise<void> {
     <p style="margin:0 0 22px 0;font-size:19px;font-weight:800;color:${C.text};">How PAX Works ⚙️</p>
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       ${step('1', '📋', 'Agree on Scope', 'Both parties agree on the project scope, milestones, and deliverables upfront — no surprises.')}
-      ${step('2', '🔒', 'Client Funds Escrow', 'The total project value is deposited into PAX's secure vault. Talent can safely begin work.')}
+      ${step('2', '🔒', 'Client Funds Escrow', 'The total project value is deposited into PAX&#39;s secure vault. Talent can safely begin work.')}
       ${step('3', '🚀', 'Deliver Milestones', 'Talent submits each milestone. The client can review, approve, or request revisions in real time.')}
       ${step('4', '💸', 'Instant Payment', 'Upon approval, PAX instantly releases the milestone payment directly to talent. Done and verified.')}
     </table>
