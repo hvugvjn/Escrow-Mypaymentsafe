@@ -189,18 +189,34 @@ export function registerAdminRoutes(app: Express) {
     try {
       const allUsers = await db.select({ email: users.email }).from(users);
       const { sendWelcomeBroadcastEmail } = await import("./email");
-      
+
       let sentCount = 0;
+      let failedCount = 0;
+      const failures: string[] = [];
+
       for (const u of allUsers) {
         if (u.email && u.email !== ADMIN_EMAIL) {
-          await sendWelcomeBroadcastEmail(u.email);
-          sentCount++;
+          try {
+            await sendWelcomeBroadcastEmail(u.email);
+            sentCount++;
+            console.log(`[BROADCAST] ✅ Sent to ${u.email}`);
+          } catch (emailErr: any) {
+            failedCount++;
+            failures.push(u.email);
+            console.error(`[BROADCAST] ❌ Failed for ${u.email}:`, emailErr?.message ?? emailErr);
+          }
         }
       }
-      
-      res.json({ message: `Broadcast sent to ${sentCount} users` });
+
+      console.log(`[BROADCAST] Complete — sent: ${sentCount}, failed: ${failedCount}`);
+      res.json({
+        message: `Broadcast complete: ${sentCount} sent, ${failedCount} failed`,
+        sentCount,
+        failedCount,
+        failures,
+      });
     } catch (err) {
-      console.error(err);
+      console.error("[BROADCAST] Fatal error:", err);
       res.status(500).json({ message: "Failed to send broadcast" });
     }
   });
