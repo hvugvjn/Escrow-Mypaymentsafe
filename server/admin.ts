@@ -192,7 +192,7 @@ export function registerAdminRoutes(app: Express) {
 
       let sentCount = 0;
       let failedCount = 0;
-      const failures: string[] = [];
+      const failures: { email: string; reason: string }[] = [];
 
       for (const u of allUsers) {
         if (u.email && u.email !== ADMIN_EMAIL) {
@@ -202,8 +202,9 @@ export function registerAdminRoutes(app: Express) {
             console.log(`[BROADCAST] ✅ Sent to ${u.email}`);
           } catch (emailErr: any) {
             failedCount++;
-            failures.push(u.email);
-            console.error(`[BROADCAST] ❌ Failed for ${u.email}:`, emailErr?.message ?? emailErr);
+            const reason = emailErr?.message ?? String(emailErr) ?? 'Unknown error';
+            failures.push({ email: u.email, reason });
+            console.error(`[BROADCAST] ❌ Failed for ${u.email}: ${reason}`);
           }
         }
       }

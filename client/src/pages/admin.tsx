@@ -158,7 +158,7 @@ export default function AdminDashboard() {
   const [broadcastResult, setBroadcastResult] = useState<{
     sentCount: number;
     failedCount: number;
-    failures: string[];
+    failures: { email: string; reason: string }[];
     timestamp: string;
   } | null>(null);
 
@@ -754,13 +754,15 @@ export default function AdminDashboard() {
                         <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Role</th>
                         <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Joined</th>
                         <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Status</th>
+                        <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Reason / Error</th>
                       </tr>
                     </thead>
                     <tbody>
                       {users
                         .filter(u => u.email !== "info@paxdot.com")
                         .map((u, i) => {
-                          const failed = broadcastResult.failures.includes(u.email ?? "");
+                          const failEntry = broadcastResult.failures.find(f => f.email === u.email);
+                          const failed = !!failEntry;
                           return (
                             <motion.tr
                               key={u.id}
@@ -802,6 +804,15 @@ export default function AdminDashboard() {
                                   <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
                                     <CheckCircle2 className="w-3 h-3" /> Delivered
                                   </span>
+                                )}
+                              </td>
+                              <td className="p-3 text-xs max-w-[220px]">
+                                {failed ? (
+                                  <span className="text-red-500 font-mono break-all leading-relaxed">
+                                    {failEntry?.reason ?? 'Unknown error'}
+                                  </span>
+                                ) : (
+                                  <span className="text-emerald-600 font-medium">Sent via Resend ✓</span>
                                 )}
                               </td>
                             </motion.tr>
