@@ -1,14 +1,14 @@
 // ============================================================
-// PAX – Professional Email Service  |  Powered by Resend API
+// PAX â€“ Professional Email Service  |  Powered by Resend API
 // ============================================================
 // Categories:
-//   OTP          → Zero-latency, tracking DISABLED for max speed
-//   Milestone    → Project lifecycle updates, tracking ENABLED
-//   Marketing    → High-conversion onboarding, tracking ENABLED
-// Brand: #0e4573 (Deep Blue) · #f2df74 (Gold) · #722f37 (Wine)
+//   OTP          â†’ Zero-latency, tracking DISABLED for max speed
+//   Milestone    â†’ Project lifecycle updates, tracking ENABLED
+//   Marketing    â†’ High-conversion onboarding, tracking ENABLED
+// Brand: #0e4573 (Deep Blue) Â· #f2df74 (Gold) Â· #722f37 (Wine)
 // ============================================================
 
-// ── Brand Design Tokens ──────────────────────────────────────────────────────
+// â”€â”€ Brand Design Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const C = {
   primary:    '#0e4573', // Deep Blue
   secondary:  '#f2df74', // Gold / Yellow
@@ -26,14 +26,13 @@ const C = {
 
 const FONT = "'Montserrat','Trebuchet MS',Arial,sans-serif";
 
-// Sender addresses — paxdot.com must be verified in Resend dashboard first
-// resend.com/domains → Add Domain → add the 3 DNS records → Verify
+// Sender addresses â€” paxdot.com must be verified in Resend dashboard first
 const FROM_OTP       = 'PAX Security <security@paxdot.com>';
-const FROM_NOTIFY    = 'PAX <notifications@paxdot.com>';
-const FROM_MARKETING = 'PAX <hello@paxdot.com>';
-const REPLY_TO       = 'PAX Support <support@paxdot.com>';
+const FROM_NOTIFY    = 'PAX Notifications <notifications@paxdot.com>';
+const FROM_MARKETING = 'Vishal from PAX <hello@paxdot.com>'; // personal name â†’ avoids Promotions
+const REPLY_TO       = 'support@paxdot.com';
 
-// ── Core Resend API Sender ───────────────────────────────────────────────────
+// â”€â”€ Core Resend API Sender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface ResendPayload {
   from: string;
   reply_to?: string;
@@ -52,8 +51,8 @@ async function sendViaResend(
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
-    console.error('[EMAIL] ‼️  RESEND_API_KEY is not set. Email not sent.');
-    console.warn(`[EMAIL FALLBACK] Would have sent → To: ${payload.to.join(', ')} | Subject: "${payload.subject}"`);
+    console.error('[EMAIL] â€¼ï¸  RESEND_API_KEY is not set. Email not sent.');
+    console.warn(`[EMAIL FALLBACK] Would have sent â†’ To: ${payload.to.join(', ')} | Subject: "${payload.subject}"`);
     return;
   }
 
@@ -77,18 +76,18 @@ async function sendViaResend(
       body: JSON.stringify(body),
     });
 
-    // ── Success ──────────────────────────────────────────────────────────────
+    // â”€â”€ Success â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (res.status === 200 || res.status === 201) {
       const data = await res.json() as { id?: string };
-      console.log(`[EMAIL] ✅ Delivered via Resend → ${payload.to.join(', ')} | id: ${data.id ?? 'n/a'}`);
+      console.log(`[EMAIL] âœ… Delivered via Resend â†’ ${payload.to.join(', ')} | id: ${data.id ?? 'n/a'}`);
       return;
     }
 
-    // ── Error: non-200/201 response ──────────────────────────────────────────
+    // â”€â”€ Error: non-200/201 response â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const errorText = await res.text();
-    console.error(`[EMAIL] ❌ Resend error (HTTP ${res.status}): ${errorText}`);
+    console.error(`[EMAIL] âŒ Resend error (HTTP ${res.status}): ${errorText}`);
 
-    // Structured fallback alert — pipe this to Slack / PagerDuty if needed
+    // Structured fallback alert â€” pipe this to Slack / PagerDuty if needed
     console.error(JSON.stringify({
       level: 'ALERT',
       service: 'resend-email',
@@ -102,9 +101,9 @@ async function sendViaResend(
     throw new Error(`Resend API returned ${res.status}: ${errorText}`);
 
   } catch (err: any) {
-    // ── Network / fetch failure ──────────────────────────────────────────────
+    // â”€â”€ Network / fetch failure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (!err.message?.startsWith('Resend API returned')) {
-      console.error('[EMAIL] ❌ Network error reaching Resend:', err.message);
+      console.error('[EMAIL] âŒ Network error reaching Resend:', err.message);
       console.error(JSON.stringify({
         level: 'ALERT',
         service: 'resend-email',
@@ -119,7 +118,7 @@ async function sendViaResend(
   }
 }
 
-// ── Base Email Shell ─────────────────────────────────────────────────────────
+// â”€â”€ Base Email Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildBaseTemplate(
   pageTitle: string,
   headerLabel: string,
@@ -141,7 +140,7 @@ function buildBaseTemplate(
       <table width="600" cellpadding="0" cellspacing="0" role="presentation"
              style="max-width:600px;width:100%;background:${C.cardBg};border-radius:24px;overflow:hidden;box-shadow:0 12px 48px rgba(14,69,115,0.13);">
 
-        <!-- ═══ HEADER ════════════════════════════════════════════════════ -->
+        <!-- â•â•â• HEADER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <tr>
           <td style="background:linear-gradient(140deg,${C.primary} 0%,#1560a8 60%,#0a3358 100%);padding:40px 40px 32px 40px;text-align:center;">
             <!-- Logo pill -->
@@ -153,24 +152,24 @@ function buildBaseTemplate(
           </td>
         </tr>
 
-        <!-- ═══ BODY ══════════════════════════════════════════════════════ -->
+        <!-- â•â•â• BODY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <tr>
           <td style="padding:40px 44px 36px 44px;">
             ${bodyHtml}
           </td>
         </tr>
 
-        <!-- ═══ DIVIDER ══════════════════════════════════════════════════ -->
+        <!-- â•â•â• DIVIDER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <tr><td style="padding:0 40px;"><div style="border-top:1px solid ${C.border};"></div></td></tr>
 
-        <!-- ═══ FOOTER ═══════════════════════════════════════════════════ -->
+        <!-- â•â•â• FOOTER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <tr>
           <td style="padding:24px 40px 28px 40px;text-align:center;background:#f4f7fb;border-radius:0 0 24px 24px;">
             ${footerNote
               ? `<p style="margin:0 0 10px 0;font-size:12px;color:${C.muted};">${footerNote}</p>`
               : ''}
             <p style="margin:0;font-size:11px;color:#90a8c0;line-height:1.6;">
-              © ${new Date().getFullYear()} PAX · Secure Milestone Escrow Platform ·
+              Â© ${new Date().getFullYear()} PAX Â· Secure Milestone Escrow Platform Â·
               <a href="https://paxdot.com" style="color:${C.primary};text-decoration:none;font-weight:600;">paxdot.com</a>
             </p>
           </td>
@@ -183,14 +182,14 @@ function buildBaseTemplate(
 </html>`;
 }
 
-// ── Milestone Progress Bar ───────────────────────────────────────────────────
+// â”€â”€ Milestone Progress Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // activeStep: 1=Agreement  2=Escrow  3=Approved  4=Released
 function buildProgressBar(activeStep: 1 | 2 | 3 | 4): string {
   const steps = [
-    { icon: '📋', label: 'Agreement\nSigned'   },
-    { icon: '🔒', label: 'Funds in\nEscrow'    },
-    { icon: '✅', label: 'Work\nApproved'      },
-    { icon: '💸', label: 'Payment\nReleased'   },
+    { icon: 'ðŸ“‹', label: 'Agreement\nSigned'   },
+    { icon: 'ðŸ”’', label: 'Funds in\nEscrow'    },
+    { icon: 'âœ…', label: 'Work\nApproved'      },
+    { icon: 'ðŸ’¸', label: 'Payment\nReleased'   },
   ];
 
   const connectors = steps.map((_, i) => i < steps.length - 1).filter(Boolean);
@@ -241,7 +240,7 @@ function buildProgressBar(activeStep: 1 | 2 | 3 | 4): string {
     </div>`;
 }
 
-// ── CTA Button ───────────────────────────────────────────────────────────────
+// â”€â”€ CTA Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ctaButton(label: string, href = 'https://paxdot.com/dashboard'): string {
   return `
     <div style="text-align:center;margin-top:32px;">
@@ -253,9 +252,9 @@ function ctaButton(label: string, href = 'https://paxdot.com/dashboard'): string
     </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 1️⃣  OTP EMAIL — Minimalist · High-Security · Tracking DISABLED
-// ═══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// 1ï¸âƒ£  OTP EMAIL â€” Minimalist Â· High-Security Â· Tracking DISABLED
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 export async function sendOtpEmail(to: string, otp: string): Promise<void> {
   // Always log OTP to server console as a hard fallback (visible in Render logs)
   console.log(`[OTP] Code for ${to}: ${otp}`);
@@ -283,7 +282,7 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
     </p>
     <p style="margin:0 0 30px 0;font-size:14px;color:${C.muted};line-height:1.7;">
       Use the one-time code below to securely access your <strong>PAX</strong> account.
-      Valid for <strong>10 minutes</strong> — do not share it with anyone.
+      Valid for <strong>10 minutes</strong> â€” do not share it with anyone.
     </p>
 
     <!-- OTP Card -->
@@ -296,26 +295,26 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
         <tr>${digitCells}</tr>
       </table>
 
-      <p style="margin:18px 0 0 0;font-size:12px;color:${C.muted};">⏱ Expires in 10 minutes</p>
+      <p style="margin:18px 0 0 0;font-size:12px;color:${C.muted};">â± Expires in 10 minutes</p>
     </div>
 
     <!-- Security Warning -->
     <div style="background:#fff8f2;border-left:4px solid ${C.accent};border-radius:0 12px 12px 0;padding:16px 20px;">
       <p style="margin:0;font-size:13px;color:#5c1c24;line-height:1.65;">
-        <strong>⚠️ Security Notice:</strong> PAX will <strong>never</strong> call, chat, or email you
-        asking for this code. If you didn't request this, please ignore — your account is safe.
+        <strong>âš ï¸ Security Notice:</strong> PAX will <strong>never</strong> call, chat, or email you
+        asking for this code. If you didn't request this, please ignore â€” your account is safe.
       </p>
     </div>`;
 
   const html = buildBaseTemplate(
-    'PAX – Verify Your Identity',
+    'PAX â€“ Verify Your Identity',
     'Secure Authentication',
     body,
     `This code was requested for ${to}`
   );
 
   const text = [
-    'PAX – Verify Your Identity',
+    'PAX â€“ Verify Your Identity',
     '',
     `Your one-time login code: ${otp}`,
     '',
@@ -327,7 +326,7 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
     from: FROM_OTP,
     reply_to: REPLY_TO,
     to: [to],
-    subject: `${otp} – Your PAX Verification Code`,
+    subject: `${otp} â€“ Your PAX Verification Code`,
     html,
     text,
     tags: [{ name: 'category', value: 'otp' }],
@@ -336,21 +335,21 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
       'X-Priority': '1',
       'Importance': 'high',
     },
-  }, false); // ← tracking DISABLED for OTPs
+  }, false); // â† tracking DISABLED for OTPs
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 2️⃣  MILESTONE EMAILS — Lifecycle updates with visual progress bar
-// ═══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// 2ï¸âƒ£  MILESTONE EMAILS â€” Lifecycle updates with visual progress bar
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── 2a. Project Created ──────────────────────────────────────────────────────
+// â”€â”€ 2a. Project Created â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function sendProjectCreatedEmail(
   to: string,
   projectTitle: string,
   joinCode: string
 ): Promise<void> {
   const body = `
-    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Project Created 🎉</p>
+    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Project Created ðŸŽ‰</p>
     <p style="margin:0 0 26px 0;font-size:14px;color:${C.muted};line-height:1.7;">
       Your project <strong style="color:${C.text};">${projectTitle}</strong> is live on PAX.
       Share the invite code below with your talent to link them to the project.
@@ -368,7 +367,7 @@ export async function sendProjectCreatedEmail(
       <p style="margin:0;font-size:12px;color:${C.muted};">Share this code so your talent can join the project</p>
     </div>
 
-    ${ctaButton('View Project Dashboard →')}`;
+    ${ctaButton('View Project Dashboard â†’')}`;
 
   const html = buildBaseTemplate(`Project Created: ${projectTitle}`, 'Milestone Update', body);
   const text = `Project Created: ${projectTitle}\n\nTalent Invite Code: ${joinCode}\n\nShare this code so your talent can join on PAX.\nhttps://paxdot.com/dashboard`;
@@ -384,7 +383,7 @@ export async function sendProjectCreatedEmail(
   }, true);
 }
 
-// ── 2b. Escrow Funded ────────────────────────────────────────────────────────
+// â”€â”€ 2b. Escrow Funded â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function sendEscrowFundedEmail(
   to: string,
   projectTitle: string,
@@ -393,7 +392,7 @@ export async function sendEscrowFundedEmail(
   const formatted = (amount / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
   const body = `
-    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Escrow Secured 🔒</p>
+    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Escrow Secured ðŸ”’</p>
     <p style="margin:0 0 26px 0;font-size:14px;color:${C.muted};line-height:1.7;">
       The client has funded the escrow for <strong style="color:${C.text};">${projectTitle}</strong>.
       Your payment is protected in PAX's secure vault and will be released upon milestone approval.
@@ -413,12 +412,12 @@ export async function sendEscrowFundedEmail(
     <!-- Trust Note -->
     <div style="background:#f0f9ff;border:1px solid #bdd9f2;border-radius:14px;padding:16px 20px;margin-bottom:8px;">
       <p style="margin:0;font-size:13px;color:#0a3d6b;line-height:1.65;">
-        🛡️ <strong>PAX Guarantee:</strong> Funds are held in escrow and cannot be accessed by anyone
+        ðŸ›¡ï¸ <strong>PAX Guarantee:</strong> Funds are held in escrow and cannot be accessed by anyone
         until both parties confirm the milestone is complete.
       </p>
     </div>
 
-    ${ctaButton('Begin Working on Milestones →')}`;
+    ${ctaButton('Begin Working on Milestones â†’')}`;
 
   const html = buildBaseTemplate(`Escrow Funded: ${projectTitle}`, 'Milestone Update', body);
   const text = `Escrow Secured for: ${projectTitle}\n\nAmount in Escrow: ${formatted}\n\nFunds are held securely. You can safely begin working on milestones.\nhttps://paxdot.com/dashboard`;
@@ -434,14 +433,14 @@ export async function sendEscrowFundedEmail(
   }, true);
 }
 
-// ── 2c. Work Submitted for Review ────────────────────────────────────────────
+// â”€â”€ 2c. Work Submitted for Review â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function sendWorkSubmittedEmail(
   to: string,
   projectTitle: string,
   milestoneTitle: string
 ): Promise<void> {
   const body = `
-    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Review Requested 📝</p>
+    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Review Requested ðŸ“</p>
     <p style="margin:0 0 26px 0;font-size:14px;color:${C.muted};line-height:1.7;">
       Your talent has submitted work for milestone
       <strong style="color:${C.text};">"${milestoneTitle}"</strong>
@@ -454,12 +453,12 @@ export async function sendWorkSubmittedEmail(
     <!-- Action Required Banner -->
     <div style="background:#fff8ed;border:1.5px solid #f5c842;border-radius:14px;padding:18px 22px;margin-bottom:28px;">
       <p style="margin:0;font-size:13px;color:#6b3d00;line-height:1.7;">
-        ⏰ <strong>Action Required:</strong> Log in to review the submitted deliverables.
+        â° <strong>Action Required:</strong> Log in to review the submitted deliverables.
         Approve to release the milestone payment, or request a revision if changes are needed.
       </p>
     </div>
 
-    ${ctaButton('Review & Approve Work →')}`;
+    ${ctaButton('Review & Approve Work â†’')}`;
 
   const html = buildBaseTemplate(`Review Requested: ${milestoneTitle}`, 'Milestone Update', body);
   const text = `Work Submitted for Review\n\nMilestone: ${milestoneTitle}\nProject: ${projectTitle}\n\nLog in to PAX to review and approve.\nhttps://paxdot.com/dashboard`;
@@ -475,7 +474,7 @@ export async function sendWorkSubmittedEmail(
   }, true);
 }
 
-// ── 2d. Payment Released ─────────────────────────────────────────────────────
+// â”€â”€ 2d. Payment Released â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function sendPaymentReleasedEmail(
   to: string,
   projectTitle: string,
@@ -484,7 +483,7 @@ export async function sendPaymentReleasedEmail(
   const formatted = (amount / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
   const body = `
-    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Payment Released! 💸</p>
+    <p style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:${C.text};">Payment Released! ðŸ’¸</p>
     <p style="margin:0 0 26px 0;font-size:14px;color:${C.muted};line-height:1.7;">
       Congratulations! The client has approved your work for
       <strong style="color:${C.text};">${projectTitle}</strong>.
@@ -506,11 +505,11 @@ export async function sendPaymentReleasedEmail(
     <div style="background:linear-gradient(135deg,#fff8e6,#fff3cc);border:1px solid #f5d87a;
                 border-radius:14px;padding:16px 22px;margin-bottom:8px;text-align:center;">
       <p style="margin:0;font-size:14px;color:#5a3d00;font-weight:600;">
-        🎉 Great work! Keep growing your reputation on PAX — every approved milestone builds your trust score.
+        ðŸŽ‰ Great work! Keep growing your reputation on PAX â€” every approved milestone builds your trust score.
       </p>
     </div>
 
-    ${ctaButton('View Transaction History →')}`;
+    ${ctaButton('View Transaction History â†’')}`;
 
   const html = buildBaseTemplate(`Payment Released: ${projectTitle}`, 'Milestone Update', body);
   const text = `Payment Released!\n\nAmount: ${formatted}\nProject: ${projectTitle}\n\nFunds are on their way to your account.\nhttps://paxdot.com/dashboard`;
@@ -526,11 +525,11 @@ export async function sendPaymentReleasedEmail(
   }, true);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 3️⃣  MARKETING EMAILS — High-conversion · Tracking ENABLED
-// ═══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// 3ï¸âƒ£  MARKETING EMAILS â€” High-conversion Â· Tracking ENABLED
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── 3a. Admin Growth Chime (personalised AI outreach) ───────────────────────
+// â”€â”€ 3a. Admin Growth Chime (personalised AI outreach) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function sendMarketingChimeEmail(
   to: string,
   subject: string,
@@ -541,7 +540,7 @@ export async function sendMarketingChimeEmail(
     <div style="font-size:15px;color:${C.muted};line-height:1.85;white-space:pre-wrap;margin:0 0 8px 0;">
       ${body}
     </div>
-    ${ctaButton('Go to My Dashboard →')}`;
+    ${ctaButton('Go to My Dashboard â†’')}`;
 
   const html = buildBaseTemplate(subject, 'A Message from PAX', contentHtml);
 
@@ -560,184 +559,102 @@ export async function sendMarketingChimeEmail(
   }, true);
 }
 
-// ── 3b. Welcome Broadcast — PAX Platform Introduction ───────────────────────
+// â”€â”€ 3b. Welcome Broadcast â€” Personal plain-email style (lands in Primary inbox) â”€â”€
 export async function sendWelcomeBroadcastEmail(to: string): Promise<void> {
+  const subject = `Your PAX account is ready`;
 
-  // How-it-works step builder
-  const step = (num: string, icon: string, title: string, desc: string) => `
-    <tr>
-      <td style="padding:0 0 22px 0;">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-          <tr>
-            <td width="56" style="vertical-align:top;padding-right:18px;">
-              <div style="width:52px;height:52px;background:${C.secondary};border-radius:14px;
-                          text-align:center;line-height:52px;font-size:24px;
-                          box-shadow:0 4px 14px rgba(14,69,115,0.15);">${icon}</div>
-            </td>
-            <td style="vertical-align:top;">
-              <div style="margin-bottom:4px;">
-                <span style="background:${C.primary};color:${C.white};font-size:9px;font-weight:700;
-                             padding:3px 10px;border-radius:20px;letter-spacing:1.5px;
-                             text-transform:uppercase;">Step ${num}</span>
-              </div>
-              <p style="margin:6px 0 4px 0;font-size:15px;font-weight:700;color:${C.text};">${title}</p>
-              <p style="margin:0;font-size:13px;color:${C.muted};line-height:1.6;">${desc}</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>`;
+  // Plain-text-style HTML â€” no gradients, no banners, no List-Unsubscribe
+  // This mimics a personal email from a real person â†’ Gmail Primary inbox
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;">
+<div style="max-width:580px;margin:0 auto;padding:48px 28px 40px 28px;">
 
-  // Trust pillar card builder
-  const pillar = (icon: string, title: string, desc: string) => `
-    <td width="33%" style="vertical-align:top;padding:0 6px;text-align:center;">
-      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);
-                  border-radius:16px;padding:24px 14px;">
-        <div style="font-size:34px;margin-bottom:10px;">${icon}</div>
-        <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:${C.secondary};">${title}</p>
-        <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.5;">${desc}</p>
-      </div>
-    </td>`;
+  <p style="font-size:15px;color:#111111;line-height:1.8;margin:0 0 16px 0;">Hi,</p>
 
-  const body = `
-    <!-- ─── Hero ─────────────────────────────────────────────────────────── -->
-    <div style="background:linear-gradient(140deg,${C.primary} 0%,#0a3a60 100%);border-radius:20px;
-                padding:40px 32px;text-align:center;margin-bottom:36px;">
-      <div style="display:inline-block;background:${C.secondary};border-radius:8px;
-                  padding:4px 14px;margin-bottom:14px;font-size:10px;font-weight:800;
-                  color:${C.primary};text-transform:uppercase;letter-spacing:2px;">
-        Trusted Globally
-      </div>
-      <h1 style="margin:0 0 16px 0;font-size:30px;font-weight:800;color:${C.white};line-height:1.3;
-                 font-family:${FONT};">
-        The New Standard for<br/>Secure Global Work
-      </h1>
-      <p style="margin:0 0 30px 0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.75;
-                max-width:400px;margin-left:auto;margin-right:auto;">
-        PAX ensures your money is safe, your work is verified, and your trust is never compromised —
-        every milestone, every time.
-      </p>
+  <p style="font-size:15px;color:#111111;line-height:1.8;margin:0 0 16px 0;">
+    I wanted to personally reach out and welcome you to <strong>PAX</strong> â€” the secure escrow
+    platform built for freelancers and businesses who want every project to run without financial risk.
+  </p>
 
-      <!-- Pillar Cards -->
-      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:30px;">
-        <tr>
-          ${pillar('🔒', 'Zero Risk', 'Funds secured in escrow before work begins')}
-          ${pillar('⚡', 'Instant Payout', 'Released the moment work is approved')}
-          ${pillar('🌍', 'Global Teams', 'Multi-currency, multi-timezone support')}
-        </tr>
-      </table>
+  <p style="font-size:15px;color:#111111;line-height:1.8;margin:0 0 20px 0;">
+    Here is how PAX protects you in 4 simple steps:
+  </p>
 
-      <a href="https://paxdot.com/dashboard"
-         style="display:inline-block;background:${C.secondary};color:${C.primary};
-                padding:16px 38px;text-decoration:none;border-radius:14px;font-weight:800;
-                font-size:14px;letter-spacing:0.5px;box-shadow:0 10px 28px rgba(0,0,0,0.3);">
-        Access Your PAX Workspace →
-      </a>
-    </div>
+  <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 24px 0;border-left:3px solid #0e4573;padding-left:0;">
+    <tr><td style="padding:10px 0 10px 18px;font-size:14px;color:#222222;line-height:1.7;">
+      <strong>1. Agree on scope</strong><br>
+      Both parties lock in milestones, deliverables, and payment amounts â€” before any work starts.
+    </td></tr>
+    <tr><td style="padding:10px 0 10px 18px;font-size:14px;color:#222222;line-height:1.7;border-top:1px solid #f0f0f0;">
+      <strong>2. Secure funds in escrow</strong><br>
+      The client deposits the full amount into PAX's secure vault. Work begins only after funds are confirmed.
+    </td></tr>
+    <tr><td style="padding:10px 0 10px 18px;font-size:14px;color:#222222;line-height:1.7;border-top:1px solid #f0f0f0;">
+      <strong>3. Deliver and review milestones</strong><br>
+      Talent submits work. The client reviews it in real time and can approve or request revisions.
+    </td></tr>
+    <tr><td style="padding:10px 0 10px 18px;font-size:14px;color:#222222;line-height:1.7;border-top:1px solid #f0f0f0;">
+      <strong>4. Get paid instantly</strong><br>
+      Once the client approves, PAX releases the payment to talent immediately â€” no delays, no disputes.
+    </td></tr>
+  </table>
 
-    <!-- ─── How PAX Works ─────────────────────────────────────────────────── -->
-    <p style="margin:0 0 22px 0;font-size:19px;font-weight:800;color:${C.text};">How PAX Works ⚙️</p>
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      ${step('1', '📋', 'Agree on Scope', 'Both parties agree on the project scope, milestones, and deliverables upfront — no surprises.')}
-      ${step('2', '🔒', 'Client Funds Escrow', 'The total project value is deposited into PAX&#39;s secure vault. Talent can safely begin work.')}
-      ${step('3', '🚀', 'Deliver Milestones', 'Talent submits each milestone. The client can review, approve, or request revisions in real time.')}
-      ${step('4', '💸', 'Instant Payment', 'Upon approval, PAX instantly releases the milestone payment directly to talent. Done and verified.')}
-    </table>
+  <p style="font-size:15px;color:#111111;line-height:1.8;margin:0 0 16px 0;">
+    No more chasing invoices. No more working without a guarantee. PAX is the single platform
+    that makes every project secure â€” for both sides.
+  </p>
 
-    <!-- ─── PAX for Freelancers ───────────────────────────────────────────── -->
-    <div style="background:linear-gradient(135deg,#f0f6ff,#e6effc);border-radius:18px;
-                padding:28px 28px;margin:28px 0;border:1px solid ${C.border};">
-      <p style="margin:0 0 14px 0;font-size:16px;font-weight:800;color:${C.text};">
-        🧑‍💻 For Freelancers & Independent Talent
-      </p>
-      <p style="margin:0 0 16px 0;font-size:13px;color:${C.muted};line-height:1.7;">
-        No more chasing invoices. No more working for free. PAX guarantees that every hour you work,
-        every deliverable you ship is backed by a secured payment waiting in escrow.
-      </p>
-      <table cellpadding="0" cellspacing="0" role="presentation">
-        <tr><td style="padding:5px 0;">
-          <span style="font-size:13px;color:${C.text};">✅ &nbsp;Get funded before you start</span>
-        </td></tr>
-        <tr><td style="padding:5px 0;">
-          <span style="font-size:13px;color:${C.text};">✅ &nbsp;Real-time milestone tracking</span>
-        </td></tr>
-        <tr><td style="padding:5px 0;">
-          <span style="font-size:13px;color:${C.text};">✅ &nbsp;Dispute resolution built in</span>
-        </td></tr>
-      </table>
-    </div>
+  <p style="font-size:15px;color:#111111;line-height:1.8;margin:0 0 28px 0;">
+    When you are ready to start:
+    <br>
+    <a href="https://paxdot.com/dashboard" style="color:#0e4573;font-weight:bold;">
+      â†’ paxdot.com/dashboard
+    </a>
+  </p>
 
-    <!-- ─── PAX for Companies ─────────────────────────────────────────────── -->
-    <div style="background:linear-gradient(135deg,#fff8f2,#ffe8d6);border-radius:18px;
-                padding:28px 28px;margin:0 0 28px 0;border:1px solid #f5d7c0;">
-      <p style="margin:0 0 14px 0;font-size:16px;font-weight:800;color:${C.text};">
-        🏢 For Companies & Enterprises
-      </p>
-      <p style="margin:0 0 16px 0;font-size:13px;color:${C.muted};line-height:1.7;">
-        PAX gives your team a single source of truth for every external project. Track spend,
-        approve milestones, and maintain a clean audit trail — all from one dashboard.
-      </p>
-      <table cellpadding="0" cellspacing="0" role="presentation">
-        <tr><td style="padding:5px 0;">
-          <span style="font-size:13px;color:${C.text};">✅ &nbsp;Full spend visibility</span>
-        </td></tr>
-        <tr><td style="padding:5px 0;">
-          <span style="font-size:13px;color:${C.text};">✅ &nbsp;Complete audit trail</span>
-        </td></tr>
-        <tr><td style="padding:5px 0;">
-          <span style="font-size:13px;color:${C.text};">✅ &nbsp;Scales from 1 to 1,000 projects</span>
-        </td></tr>
-      </table>
-    </div>
+  <p style="font-size:15px;color:#111111;line-height:1.6;margin:0 0 4px 0;">Warm regards,</p>
+  <p style="font-size:15px;color:#111111;font-weight:bold;margin:0 0 4px 0;">Vishal</p>
+  <p style="font-size:13px;color:#555555;margin:0 0 36px 0;">
+    Founder, PAX &mdash;
+    <a href="https://paxdot.com" style="color:#0e4573;">paxdot.com</a>
+  </p>
 
-    <!-- ─── Trust Banner ──────────────────────────────────────────────────── -->
-    <div style="background:linear-gradient(135deg,${C.accent} 0%,#8f2f39 100%);border-radius:18px;
-                padding:30px 32px;margin-bottom:28px;text-align:center;">
-      <p style="margin:0 0 10px 0;font-size:20px;font-weight:800;color:${C.white};">
-        Built on Trust. Powered by Security.
-      </p>
-      <p style="margin:0 0 22px 0;font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">
-        PAX is the escrow partner that ambitious companies rely on to protect every rupee and every
-        deliverable. From bootstrapped startups to scaling enterprises — PAX is the boost for any team
-        that runs on trust.
-      </p>
-      <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
-        <tr>
-          <td style="padding:0 6px;">
-            <span style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:8px;
-                         padding:8px 14px;font-size:11px;color:${C.white};font-weight:600;">
-              🛡️ Bank-Grade Security
-            </span>
-          </td>
-          <td style="padding:0 6px;">
-            <span style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:8px;
-                         padding:8px 14px;font-size:11px;color:${C.white};font-weight:600;">
-              📊 Full Audit Trail
-            </span>
-          </td>
-          <td style="padding:0 6px;">
-            <span style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:8px;
-                         padding:8px 14px;font-size:11px;color:${C.white};font-weight:600;">
-              ⚡ Real-Time Updates
-            </span>
-          </td>
-        </tr>
-      </table>
-    </div>
+  <hr style="border:none;border-top:1px solid #eeeeee;margin:0 0 20px 0;">
+  <p style="font-size:11px;color:#aaaaaa;line-height:1.6;margin:0;">
+    PAX Escrow Platform &middot; paxdot.com &middot;
+    You received this because you created an account at paxdot.com.
+    To unsubscribe, reply to this email with the word "unsubscribe".
+  </p>
 
-    ${ctaButton('Start Your First Project on PAX →')}`;
+</div>
+</body>
+</html>`;
 
-  const subject = `Welcome to PAX – The New Standard for Secure Global Work`;
-  const html = buildBaseTemplate(subject, 'Welcome to PAX', body);
   const text = [
-    'Welcome to PAX – The New Standard for Secure Global Work.',
+    'Hi,',
     '',
-    'PAX is your secure escrow partner.',
-    '1. Agree on scope  →  2. Fund escrow  →  3. Deliver milestones  →  4. Get paid instantly.',
+    'I wanted to personally reach out and welcome you to PAX â€” the secure escrow',
+    'platform built for freelancers and businesses who want every project to run without financial risk.',
     '',
-    'No more chasing invoices. No more risk.',
+    'How PAX works:',
+    '1. Agree on scope â€” lock in milestones and payment amounts upfront.',
+    '2. Secure funds in escrow â€” client deposits before work begins.',
+    '3. Deliver and review milestones â€” talent submits, client reviews in real time.',
+    '4. Get paid instantly â€” PAX releases payment on approval.',
     '',
-    'Visit https://paxdot.com to get started.',
+    'No more chasing invoices. No more working without a guarantee.',
+    '',
+    'Start here: https://paxdot.com/dashboard',
+    '',
+    'Warm regards,',
+    'Vishal',
+    'Founder, PAX — paxdot.com',
   ].join('\n');
 
   await sendViaResend({
@@ -748,9 +665,6 @@ export async function sendWelcomeBroadcastEmail(to: string): Promise<void> {
     html,
     text,
     tags: [{ name: 'category', value: 'onboarding' }],
-    headers: {
-      'List-Unsubscribe': '<mailto:unsubscribe@paxdot.com>',
-      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-    },
-  }, true);
+    // NO List-Unsubscribe header — avoids Gmail Promotions classification
+  }, false); // tracking OFF for better inbox placement
 }
