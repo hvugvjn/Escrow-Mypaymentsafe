@@ -3,11 +3,12 @@ import { motion } from "framer-motion";
 import {
   BarChart3, Layers, ArrowUpRight, Globe, BadgeCheck, Loader2, LogOut,
   Target, Zap, Mail, Share, Download, Image as ImageIcon, Briefcase, MapPin, Search, Filter, Plus, FileJson,
-  Users, FolderOpen, ShieldCheck, TrendingUp, MessageSquare, DollarSign, Activity, AlertTriangle, CheckCircle2, Clock
+  Users, FolderOpen, ShieldCheck, TrendingUp, MessageSquare, DollarSign, Activity, AlertTriangle, CheckCircle2, Clock, RefreshCw, Send, FlaskConical
 } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -161,6 +162,10 @@ export default function AdminDashboard() {
     failures: { email: string; reason: string }[];
     timestamp: string;
   } | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState<any>(null);
+  const [retryLoading, setRetryLoading] = useState(false);
 
   const loadGrowthPreview = async (user: AdminUser, day: 1 | 2 | 3 | 14) => {
     setPreviewUser(user);
@@ -233,6 +238,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Send welcome broadcast to ALL registered users?")) return;
     setChimeLoading("broadcast");
     setBroadcastResult(null);
+    setTestResult(null);
     try {
       const res = await fetch("/api/admin/growth/broadcast-welcome", { method: "POST", credentials: "include" });
       const data = await res.json();
@@ -247,6 +253,57 @@ export default function AdminDashboard() {
       alert("Broadcast failed — check server logs");
     } finally {
       setChimeLoading(null);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    if (!testEmail.trim()) return;
+    setTestLoading(true);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/admin/email/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: testEmail.trim() }),
+      });
+      const data = await res.json();
+      setTestResult(data);
+    } catch (err: any) {
+      setTestResult({ success: false, error: err.message });
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
+  const retryFailed = async () => {
+    if (!broadcastResult?.failures.length) return;
+    setRetryLoading(true);
+    try {
+      const emails = broadcastResult.failures.map(f => f.email);
+      const res = await fetch("/api/admin/growth/retry-failed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ emails }),
+      });
+      const data = await res.json();
+      // Refresh failures based on retry results
+      const stillFailed = data.results
+        .filter((r: any) => !r.success)
+        .map((r: any) => ({ email: r.email, reason: r.reason ?? "Still failing" }));
+      setBroadcastResult(prev => prev ? {
+        ...prev,
+        sentCount: prev.sentCount + (data.results.length - stillFailed.length),
+        failedCount: stillFailed.length,
+        failures: stillFailed,
+        timestamp: new Date().toLocaleString() + " (after retry)",
+      } : null);
+      alert(data.message);
+    } catch (err) {
+      alert("Retry failed");
+    } finally {
+      setRetryLoading(false);
     }
   };
 
@@ -666,6 +723,57 @@ export default function AdminDashboard() {
               </Card>
             </section>
 
+            {/* ── Email Debugger ──────────────────────────────────────── */}
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email Debugger</h2>
+                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Test Any Address</Badge>
+              </div>
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6 space-y-4">
+                  <p className="text-xs text-muted-foreground">Send a test email to any address and see the exact Resend API response. Use this to debug why specific emails fail.</p>
+                  <div className="flex gap-3">
+                    <Input
+                      type="email"
+                      placeholder="e.g. someone@gmail.com"
+                      value={testEmail}
+                      onChange={e => setTestEmail(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && sendTestEmail()}
+                      className="flex-1 h-10 font-mono text-sm"
+                    />
+                    <Button onClick={sendTestEmail} disabled={testLoading || !testEmail.trim()} className="h-10 px-6 font-bold">
+                      {testLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                      {testLoading ? "Testing..." : "Send Test"}
+                    </Button>
+                  </div>
+
+                  {testResult && (
+                    <div className={`rounded-xl p-4 border text-xs font-mono whitespace-pre-wrap break-all ${
+                      testResult.success
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                        : "bg-red-50 border-red-200 text-red-800"
+                    }`}>
+                      <div className="flex items-center gap-2 mb-3 font-bold text-sm non-mono">
+                        {testResult.success
+                          ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> ✅ Email Delivered</>
+                          : <><AlertTriangle className="w-4 h-4 text-red-500" /> ❌ Delivery Failed</>
+                        }
+                        <span className="ml-auto text-[10px] opacity-60">HTTP {testResult.httpStatus}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div><span className="opacity-60">To:</span> {testResult.email}</div>
+                        <div><span className="opacity-60">From:</span> {testResult.from}</div>
+                        <div><span className="opacity-60">Resend Response:</span></div>
+                        <div className="bg-white/60 rounded p-2 mt-1">
+                          {JSON.stringify(testResult.resendResponse ?? testResult.error, null, 2)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
+
             {/* ── Success Pipeline Segments ───────────────────────────── */}
             <section>
               <div className="flex items-center justify-between mb-4 mt-12">
@@ -734,13 +842,25 @@ export default function AdminDashboard() {
                   <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Broadcast Report · {broadcastResult.timestamp}
                   </h2>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
                       ✅ {broadcastResult.sentCount} Delivered
                     </span>
                     <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-red-100 text-red-700">
                       ❌ {broadcastResult.failedCount} Failed
                     </span>
+                    {broadcastResult.failedCount > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[10px] font-bold border-orange-300 text-orange-700 hover:bg-orange-50 gap-1"
+                        onClick={retryFailed}
+                        disabled={retryLoading}
+                      >
+                        {retryLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                        Retry {broadcastResult.failedCount} Failed
+                      </Button>
+                    )}
                   </div>
                 </div>
 

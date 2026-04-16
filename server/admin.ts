@@ -221,4 +221,82 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: "Failed to send broadcast" });
     }
   });
+
+  // ── Test single email — shows exact Resend API response ───────────────────
+  app.post("/api/admin/email/test", isAdmin, async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "email required" });
+
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) return res.status(500).json({ message: "RESEND_API_KEY not set" });
+
+    try {
+      const payload = {
+        from: "PAX <hello@paxdot.com>",
+        to: [email],
+        subject: "PAX – Email Delivery Test",
+        html: `<div style="font-family:Arial,sans-serif;padding:32px;max-width:500px;">
+          <h2 style="color:#0e4573;">✅ PAX Email Test</h2>
+          <p>This is a delivery test from PAX admin panel.</p>
+          <p style="color:#888;font-size:12px;">Sent at: ${new Date().toISOString()}</p>
+        </div>`,
+        text: `PAX Email Delivery Test. Sent at: ${new Date().toISOString()}`,
+      };
+
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseText = await response.text();
+      let responseData: any;
+      try { responseData = JSON.parse(responseText); } catch { responseData = responseText; }
+
+      console.log(`[TEST_EMAIL] to=${email} status=${response.status} body=${responseText}`);
+
+      res.json({
+        email,
+        httpStatus: response.status,
+        success: response.status === 200 || response.status === 201,
+        resendResponse: responseData,
+        from: "PAX <hello@paxdot.com>",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      res.status(500).json({
+        email,
+        success: false,
+        error: err?.message ?? String(err),
+      });
+    }
+  });
+
+  // ── Retry failed emails only ───────────────────────────────────────────────
+  app.post("/api/admin/growth/retry-failed", isAdmin, async (req, res) => {
+    const { emails } = req.body as { emails: string[] };
+    if (!emails?.length) return res.status(400).json({ message: "emails array required" });
+
+    const { sendWelcomeBroadcastEmail } = await import("./email");
+    let sentCount = 0;
+    const results: { email: string; success: boolean; reason?: string }[] = [];
+
+    for (const email of emails) {
+      try {
+        await sendWelcomeBroadcastEmail(email);
+        sentCount++;
+        results.push({ email, success: true });
+        console.log(`[RETRY] ✅ Sent to ${email}`);
+      } catch (err: any) {
+        const reason = err?.message ?? String(err);
+        results.push({ email, success: false, reason });
+        console.error(`[RETRY] ❌ ${email}: ${reason}`);
+      }
+    }
+
+    res.json({ message: `Retry: ${sentCount}/${emails.length} sent`, results });
+  });
 }
