@@ -26,23 +26,23 @@ const C = {
 
 const FONT = "'Montserrat','Trebuchet MS',Arial,sans-serif";
 
-// Sender addresses — update to your verified domain once paxdot.com is added in Resend
-const FROM_OTP       = 'PAX Security <onboarding@resend.dev>';
-const FROM_NOTIFY    = 'PAX <onboarding@resend.dev>';
-const FROM_MARKETING = 'PAX <onboarding@resend.dev>';
-// Once domain verified, replace with:
-// const FROM_OTP       = 'PAX Security <security@paxdot.com>';
-// const FROM_NOTIFY    = 'PAX <notifications@paxdot.com>';
-// const FROM_MARKETING = 'PAX <hello@paxdot.com>';
+// Sender addresses — paxdot.com must be verified in Resend dashboard first
+// resend.com/domains → Add Domain → add the 3 DNS records → Verify
+const FROM_OTP       = 'PAX Security <security@paxdot.com>';
+const FROM_NOTIFY    = 'PAX <notifications@paxdot.com>';
+const FROM_MARKETING = 'PAX <hello@paxdot.com>';
+const REPLY_TO       = 'PAX Support <support@paxdot.com>';
 
 // ── Core Resend API Sender ───────────────────────────────────────────────────
 interface ResendPayload {
   from: string;
+  reply_to?: string;
   to: string[];
   subject: string;
   html: string;
   text: string;
   tags?: { name: string; value: string }[];
+  headers?: Record<string, string>;
 }
 
 async function sendViaResend(
@@ -57,10 +57,15 @@ async function sendViaResend(
     return;
   }
 
-  // Build request body — Resend does not support open/click tracking toggle via body;
-  // tracking is managed per-domain in the Resend dashboard.
-  // For OTPs we tag them separately so you can filter analytics.
-  const body = { ...payload };
+  // Merge anti-spam / deliverability headers
+  const body = {
+    ...payload,
+    headers: {
+      'X-Mailer': 'PAX-Mailer/1.0',
+      'X-Entity-Ref-ID': `pax-${Date.now()}`,
+      ...(payload.headers ?? {}),
+    },
+  };
 
   try {
     const res = await fetch('https://api.resend.com/emails', {
@@ -320,11 +325,17 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
 
   await sendViaResend({
     from: FROM_OTP,
+    reply_to: REPLY_TO,
     to: [to],
     subject: `${otp} – Your PAX Verification Code`,
     html,
     text,
     tags: [{ name: 'category', value: 'otp' }],
+    headers: {
+      // OTP: plain, no-tracking, high-priority
+      'X-Priority': '1',
+      'Importance': 'high',
+    },
   }, false); // ← tracking DISABLED for OTPs
 }
 
@@ -364,8 +375,9 @@ export async function sendProjectCreatedEmail(
 
   await sendViaResend({
     from: FROM_NOTIFY,
+    reply_to: REPLY_TO,
     to: [to],
-    subject: `🎉 Project Created: ${projectTitle}`,
+    subject: `Project Created: ${projectTitle}`,
     html,
     text,
     tags: [{ name: 'category', value: 'milestone' }],
@@ -413,8 +425,9 @@ export async function sendEscrowFundedEmail(
 
   await sendViaResend({
     from: FROM_NOTIFY,
+    reply_to: REPLY_TO,
     to: [to],
-    subject: `🔒 Escrow Secured: ${projectTitle} – ${formatted}`,
+    subject: `Escrow Secured: ${projectTitle}`,
     html,
     text,
     tags: [{ name: 'category', value: 'milestone' }],
@@ -453,8 +466,9 @@ export async function sendWorkSubmittedEmail(
 
   await sendViaResend({
     from: FROM_NOTIFY,
+    reply_to: REPLY_TO,
     to: [to],
-    subject: `📝 Review Requested: ${milestoneTitle}`,
+    subject: `Review Requested: ${milestoneTitle}`,
     html,
     text,
     tags: [{ name: 'category', value: 'milestone' }],
@@ -503,8 +517,9 @@ export async function sendPaymentReleasedEmail(
 
   await sendViaResend({
     from: FROM_NOTIFY,
+    reply_to: REPLY_TO,
     to: [to],
-    subject: `💸 Payment Released: ${formatted} for ${projectTitle}`,
+    subject: `Payment Released: ${formatted} for ${projectTitle}`,
     html,
     text,
     tags: [{ name: 'category', value: 'milestone' }],
@@ -532,11 +547,16 @@ export async function sendMarketingChimeEmail(
 
   await sendViaResend({
     from: FROM_MARKETING,
+    reply_to: REPLY_TO,
     to: [to],
     subject,
     html,
     text: body,
     tags: [{ name: 'category', value: 'chime' }],
+    headers: {
+      'List-Unsubscribe': '<mailto:unsubscribe@paxdot.com>',
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   }, true);
 }
 
@@ -722,10 +742,15 @@ export async function sendWelcomeBroadcastEmail(to: string): Promise<void> {
 
   await sendViaResend({
     from: FROM_MARKETING,
+    reply_to: REPLY_TO,
     to: [to],
     subject,
     html,
     text,
     tags: [{ name: 'category', value: 'onboarding' }],
+    headers: {
+      'List-Unsubscribe': '<mailto:unsubscribe@paxdot.com>',
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   }, true);
 }
