@@ -155,6 +155,12 @@ export default function AdminDashboard() {
   const [previewDay, setPreviewDay] = useState<1 | 2 | 3 | 14>(1);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [previewContent, setPreviewContent] = useState<{subject:string; body:string} | null>(null);
+  const [broadcastResult, setBroadcastResult] = useState<{
+    sentCount: number;
+    failedCount: number;
+    failures: string[];
+    timestamp: string;
+  } | null>(null);
 
   const loadGrowthPreview = async (user: AdminUser, day: 1 | 2 | 3 | 14) => {
     setPreviewUser(user);
@@ -226,12 +232,19 @@ export default function AdminDashboard() {
   const broadcastWelcome = async () => {
     if (!window.confirm("Send welcome broadcast to ALL registered users?")) return;
     setChimeLoading("broadcast");
+    setBroadcastResult(null);
     try {
-      const res = await fetch("/api/admin/growth/broadcast-welcome", { method: "POST" });
+      const res = await fetch("/api/admin/growth/broadcast-welcome", { method: "POST", credentials: "include" });
       const data = await res.json();
+      setBroadcastResult({
+        sentCount: data.sentCount ?? 0,
+        failedCount: data.failedCount ?? 0,
+        failures: data.failures ?? [],
+        timestamp: new Date().toLocaleString(),
+      });
       alert(data.message);
     } catch (err) {
-      alert("Broadcast failed");
+      alert("Broadcast failed — check server logs");
     } finally {
       setChimeLoading(null);
     }
@@ -713,6 +726,92 @@ export default function AdminDashboard() {
                  </Card>
               </div>
             </section>
+
+            {/* ── Broadcast Results Table ──────────────────────────────── */}
+            {broadcastResult && (
+              <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Broadcast Report · {broadcastResult.timestamp}
+                  </h2>
+                  <div className="flex gap-2">
+                    <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                      ✅ {broadcastResult.sentCount} Delivered
+                    </span>
+                    <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-red-100 text-red-700">
+                      ❌ {broadcastResult.failedCount} Failed
+                    </span>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border shadow-sm">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted/40 border-b">
+                        <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">#</th>
+                        <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Name</th>
+                        <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Email</th>
+                        <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Role</th>
+                        <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Joined</th>
+                        <th className="text-left p-3 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users
+                        .filter(u => u.email !== "info@paxdot.com")
+                        .map((u, i) => {
+                          const failed = broadcastResult.failures.includes(u.email ?? "");
+                          return (
+                            <motion.tr
+                              key={u.id}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.02 }}
+                              className={`border-b transition-colors ${
+                                failed
+                                  ? "bg-red-50/60 hover:bg-red-50"
+                                  : "bg-emerald-50/40 hover:bg-emerald-50/70"
+                              }`}
+                            >
+                              <td className="p-3 text-xs text-muted-foreground font-mono">{i + 1}</td>
+                              <td className="p-3 font-semibold text-sm">
+                                {[u.firstName, u.lastName].filter(Boolean).join(" ") ||
+                                  <span className="italic text-muted-foreground text-xs">No name</span>}
+                              </td>
+                              <td className="p-3 text-muted-foreground text-xs font-mono">{u.email}</td>
+                              <td className="p-3">
+                                {u.role ? (
+                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                                    u.role === "BUYER" ? "bg-blue-100 text-blue-700" :
+                                    u.role === "FREELANCER" ? "bg-purple-100 text-purple-700" :
+                                    "bg-gray-100 text-gray-600"
+                                  }`}>
+                                    {u.role === "BUYER" ? "CLIENT" : u.role === "FREELANCER" ? "TALENT" : u.role}
+                                  </span>
+                                ) : <span className="text-xs text-muted-foreground">—</span>}
+                              </td>
+                              <td className="p-3 text-xs text-muted-foreground">
+                                {u.createdAt ? format(new Date(u.createdAt), "MMM d, yyyy") : "—"}
+                              </td>
+                              <td className="p-3">
+                                {failed ? (
+                                  <span className="flex items-center gap-1 text-[10px] font-bold text-red-600">
+                                    <AlertTriangle className="w-3 h-3" /> Failed
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
+                                    <CheckCircle2 className="w-3 h-3" /> Delivered
+                                  </span>
+                                )}
+                              </td>
+                            </motion.tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
 
             {/* ── Success Chime AI Modal ───────────────────────────────── */}
             {previewUser && (
