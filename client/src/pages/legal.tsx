@@ -1,5 +1,5 @@
 import { PaxLogo } from "@/components/pax-logo";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 
 function LegalSidebar() {
   const [location] = useLocation();
