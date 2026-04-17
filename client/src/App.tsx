@@ -15,7 +15,7 @@ import Profile from "@/pages/profile";
 import TalentSearch from "@/pages/talent-search";
 import Inbox from "@/pages/inbox";
 import AdminDashboard from "@/pages/admin";
-import { Privacy, Terms, Support } from "@/pages/legal";
+import { Privacy, Terms, Support, EscrowTerms } from "@/pages/legal";
 import { AppLayout } from "@/components/layout";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -87,6 +87,7 @@ function Router() {
       {/* Legal & Support */}
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
+      <Route path="/escrow-terms" component={EscrowTerms} />
       <Route path="/support" component={Support} />
 
       {/* Fallback */}

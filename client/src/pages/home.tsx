@@ -264,8 +264,9 @@ export default function Home() {
                                 <li className="hover:text-white transition-colors cursor-default">Why Choose Us</li>
                                 <li className="hover:text-white transition-colors cursor-default">Security</li>
                                 <li className="hover:text-white transition-colors cursor-default">Contact Us</li>
-                                <li className="hover:text-white transition-colors cursor-default">Privacy Policy</li>
-                                <li className="hover:text-white transition-colors cursor-default">Terms of Service</li>
+                                <li className="hover:text-white transition-colors cursor-default"><Link href="/privacy">Privacy Policy</Link></li>
+                                <li className="hover:text-white transition-colors cursor-default"><Link href="/terms">Terms of Service</Link></li>
+                                <li className="hover:text-white transition-colors cursor-default"><Link href="/escrow-terms">Escrow Terms</Link></li>
                             </ul>
                         </div>
                     </div>
