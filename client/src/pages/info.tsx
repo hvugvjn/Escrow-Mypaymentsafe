@@ -207,7 +207,7 @@ export default function InfoPage() {
             <Button variant="ghost" className="font-semibold hidden md:flex">Log In</Button>
           </Link>
           <Link href="/login">
-            <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-full px-6">
+            <Button className="rounded-full px-6 font-semibold shadow-sm">
               Sign Up
             </Button>
           </Link>
@@ -262,8 +262,8 @@ export default function InfoPage() {
         <div className="space-y-6">
           {content.bullets.map((bullet, i) => (
             <div key={i} className="flex items-start gap-4">
-              <div className="mt-1 bg-green-100 rounded-full p-1">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <div className="mt-1 bg-primary/10 rounded-full p-1">
+                <CheckCircle2 className="w-5 h-5 text-primary" />
               </div>
               <p className="text-lg font-medium text-gray-800">{bullet}</p>
             </div>
@@ -277,7 +277,7 @@ export default function InfoPage() {
               <p className="text-gray-500">Join thousands of professionals already using PAX.</p>
             </div>
             <Link href="/login">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 shrink-0">
+              <Button size="lg" className="rounded-full px-8 shrink-0 shadow-md h-12 text-base">
                 Create your account <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
