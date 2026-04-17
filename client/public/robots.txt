@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /inbox
+
+Sitemap: https://paxdot.com/sitemap.xml
