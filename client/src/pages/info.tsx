@@ -195,16 +195,101 @@ export default function InfoPage() {
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      {/* Navbar — Clean White Style like Upwork */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-white border-b border-gray-100">
+      {/* Navbar — Clean White Style like Upwork with Mega Menu */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-3 md:py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="flex items-center gap-8">
           <Link href="/">
             <a className="hover:opacity-80 transition-opacity"><PaxLogo className="text-3xl" /></a>
           </Link>
+          
+          <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-700">
+            {/* Hire Freelancers */}
+            <div className="group relative py-4">
+                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+                    Hire freelancers <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div className="absolute top-full -left-4 w-[600px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Development & IT</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/info/how-to-hire"><a className="hover:text-primary transition-colors cursor-pointer">Software Developers</a></Link></li>
+                            <li><Link href="/info/how-to-hire"><a className="hover:text-primary transition-colors cursor-pointer">Web Developers</a></Link></li>
+                            <li><Link href="/info/how-to-hire"><a className="hover:text-primary transition-colors cursor-pointer">AI Engineers</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Design & Creative</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/info/find-top-talents"><a className="hover:text-primary transition-colors cursor-pointer">UI/UX Designers</a></Link></li>
+                            <li><Link href="/info/find-top-talents"><a className="hover:text-primary transition-colors cursor-pointer">Graphic Designers</a></Link></li>
+                            <li><Link href="/info/find-top-talents"><a className="hover:text-primary transition-colors cursor-pointer">Illustrators</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4 bg-gray-50 -my-8 -mr-8 p-8 rounded-r-2xl border-l border-gray-100">
+                        <ul className="space-y-4">
+                            <li><Link href="/info/how-to-hire"><a className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer">Explore more <ArrowRight className="w-4 h-4"/></a></Link></li>
+                            <li><Link href="/support"><a className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer">Book consultation <ArrowRight className="w-4 h-4"/></a></Link></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {/* Find Work */}
+            <div className="group relative py-4">
+                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+                    Find work <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div className="absolute top-full -left-4 w-[400px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Ways to earn</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/info/how-it-works-talent"><a className="hover:text-primary transition-colors cursor-pointer">How to find work</a></Link></li>
+                            <li><Link href="/info/direct-contracts"><a className="hover:text-primary transition-colors cursor-pointer">Direct Contracts</a></Link></li>
+                            <li><Link href="/info/success-stories"><a className="hover:text-primary transition-colors cursor-pointer">Success Stories</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4 border-l border-gray-100 pl-8">
+                        <h4 className="font-bold text-gray-900 mb-2">Featured</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/info/guaranteed-payments"><a className="hover:text-gray-900 transition-colors rounded hover:bg-gray-50 py-1 px-2 -mx-2 block cursor-pointer">Set up your profile</a></Link></li>
+                            <li><Link href="/info/how-it-works-talent"><a className="hover:text-gray-900 transition-colors rounded hover:bg-gray-50 py-1 px-2 -mx-2 block cursor-pointer">Grow your business</a></Link></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {/* Why PAX */}
+            <div className="group relative py-4">
+                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+                    Why PAX <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div className="absolute top-full -left-4 w-[250px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-6">
+                    <ul className="space-y-4 text-gray-600">
+                        <li><Link href="/info/trust-and-safety"><a className="hover:text-gray-900 flex flex-col gap-1 cursor-pointer"><span className="font-semibold text-gray-900">Trust & Safety</span><span className="text-xs">Bank-grade security</span></a></Link></li>
+                        <li><Link href="/info/managed-escrow"><a className="hover:text-gray-900 flex flex-col gap-1 cursor-pointer"><span className="font-semibold text-gray-900">Managed Escrow</span><span className="text-xs">Absolute financial safety</span></a></Link></li>
+                        <li><Link href="/info/project-oversight"><a className="hover:text-gray-900 flex flex-col gap-1 cursor-pointer"><span className="font-semibold text-gray-900">Project Oversight</span><span className="text-xs">Zero micromanagement</span></a></Link></li>
+                    </ul>
+                </div>
+            </div>
+
+            {/* What's New */}
+            <div className="group relative py-4">
+                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+                    What's new <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div className="absolute top-full -left-4 w-[250px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-4">
+                    <ul className="space-y-1 text-gray-600">
+                        <li><Link href="/info/blog"><a className="block hover:bg-gray-50 rounded-lg p-3 transition-colors cursor-pointer"><span className="block font-semibold text-gray-900 mb-1">Blog</span><span className="block text-xs text-gray-500">Trends & strategies</span></a></Link></li>
+                        <li><Link href="/info/press-and-media"><a className="block hover:bg-gray-50 rounded-lg p-3 transition-colors cursor-pointer"><span className="block font-semibold text-gray-900 mb-1">Press Releases</span><span className="block text-xs text-gray-500">Our latest announcements</span></a></Link></li>
+                    </ul>
+                </div>
+            </div>
+          </div>
         </div>
+        
         <div className="flex items-center gap-4">
           <Link href="/login">
-            <Button variant="ghost" className="font-semibold hidden md:flex">Log In</Button>
+            <Button variant="ghost" className="font-semibold hidden sm:flex text-gray-600 hover:text-gray-900 hover:bg-gray-50">Log In</Button>
           </Link>
           <Link href="/login">
             <Button className="rounded-full px-6 font-semibold shadow-sm">
