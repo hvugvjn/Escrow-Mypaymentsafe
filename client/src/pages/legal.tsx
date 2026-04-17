@@ -83,7 +83,7 @@ function Layout({ title, children }: { title: string, children: React.ReactNode 
 export function Terms() {
   return (
     <Layout title="Master Terms of Service / User Agreement">
-      <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Last Updated: April 17, 2026</p>
+      <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Last Updated: 17/04/26</p>
       
       <h3>1. Introduction to Pax and Our Role</h3>
       <p>Welcome to Pax! Pax operates an online marketplace, project management tool, and escrow-based payment platform connecting clients seeking professional services ("Clients") with independent professionals offering those services ("Freelancers" or "Talent").</p>
@@ -143,7 +143,7 @@ export function Terms() {
 export function EscrowTerms() {
   return (
     <Layout title="Escrow Terms & Conditions">
-      <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Last Updated: April 17, 2026</p>
+      <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Last Updated: 17/04/26</p>
 
       <h3>1. Role of Pax as an Escrow Facilitator</h3>
       <p>Pax acts solely as a secure facilitator. We use trusted third-party payment processors to hold project funds securely in escrow. <strong>Pax is not a bank, financial institution, or money transmitter.</strong> Our Escrow service simply ensures that funds are held conditionally and released only when predefined project criteria or mutual agreements are met.</p>

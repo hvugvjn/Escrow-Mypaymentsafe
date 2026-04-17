@@ -220,13 +220,13 @@ export default function Home() {
                         <div className="space-y-4">
                             <h4 className="text-white font-bold text-sm tracking-widest uppercase">For Clients</h4>
                             <ul className="space-y-3 text-sm text-white/40">
-                                <li className="hover:text-white transition-colors cursor-default">How to hire</li>
-                                <li className="hover:text-white transition-colors cursor-default">Managed Escrow</li>
-                                <li className="hover:text-white transition-colors cursor-default">Project Oversight</li>
-                                <li className="hover:text-white transition-colors cursor-default">Find Top Talents</li>
-                                <li className="hover:text-white transition-colors cursor-default">Secure Payouts</li>
-                                <li className="hover:text-white transition-colors cursor-default">VIP Pay-on-Delivery</li>
-                                <li className="hover:text-white transition-colors cursor-default">Post a Project</li>
+                                <li><Link href="/info/how-to-hire"><a className="hover:text-white transition-colors">How to hire</a></Link></li>
+                                <li><Link href="/info/managed-escrow"><a className="hover:text-white transition-colors">Managed Escrow</a></Link></li>
+                                <li><Link href="/info/project-oversight"><a className="hover:text-white transition-colors">Project Oversight</a></Link></li>
+                                <li><Link href="/info/find-top-talents"><a className="hover:text-white transition-colors">Find Top Talents</a></Link></li>
+                                <li><Link href="/info/managed-escrow"><a className="hover:text-white transition-colors">Secure Payouts</a></Link></li>
+                                <li><Link href="/info/vip-pay-on-delivery"><a className="hover:text-white transition-colors">VIP Pay-on-Delivery</a></Link></li>
+                                <li><Link href="/login"><a className="hover:text-white transition-colors">Post a Project</a></Link></li>
                             </ul>
                         </div>
 
@@ -234,12 +234,12 @@ export default function Home() {
                         <div className="space-y-4">
                             <h4 className="text-white font-bold text-sm tracking-widest uppercase">For Talents</h4>
                             <ul className="space-y-3 text-sm text-white/40">
-                                <li className="hover:text-white transition-colors cursor-default">How it works</li>
-                                <li className="hover:text-white transition-colors cursor-default">Guaranteed Payments</li>
-                                <li className="hover:text-white transition-colors cursor-default">Secure Invoicing</li>
-                                <li className="hover:text-white transition-colors cursor-default">Direct Contracts</li>
-                                <li className="hover:text-white transition-colors cursor-default">Success Stories</li>
-                                <li className="hover:text-white transition-colors cursor-default">Managed Milestones</li>
+                                <li><Link href="/info/how-it-works-talent"><a className="hover:text-white transition-colors">How it works</a></Link></li>
+                                <li><Link href="/info/guaranteed-payments"><a className="hover:text-white transition-colors">Guaranteed Payments</a></Link></li>
+                                <li><Link href="/info/guaranteed-payments"><a className="hover:text-white transition-colors">Secure Invoicing</a></Link></li>
+                                <li><Link href="/info/direct-contracts"><a className="hover:text-white transition-colors">Direct Contracts</a></Link></li>
+                                <li><Link href="/info/success-stories"><a className="hover:text-white transition-colors">Success Stories</a></Link></li>
+                                <li><Link href="/info/project-oversight"><a className="hover:text-white transition-colors">Managed Milestones</a></Link></li>
                             </ul>
                         </div>
 
@@ -247,12 +247,12 @@ export default function Home() {
                         <div className="space-y-4">
                             <h4 className="text-white font-bold text-sm tracking-widest uppercase">Resources</h4>
                             <ul className="space-y-3 text-sm text-white/40">
-                                <li className="hover:text-white transition-colors cursor-default">Help & Support</li>
-                                <li className="hover:text-white transition-colors cursor-default">Trust & Safety</li>
-                                <li className="hover:text-white transition-colors cursor-default">Dispute Resolution</li>
-                                <li className="hover:text-white transition-colors cursor-default">PAX for Enterprise</li>
-                                <li className="hover:text-white transition-colors cursor-default">Blog</li>
-                                <li className="hover:text-white transition-colors cursor-default">Press & Media</li>
+                                <li><Link href="/support"><a className="hover:text-white transition-colors">Help & Support</a></Link></li>
+                                <li><Link href="/info/trust-and-safety"><a className="hover:text-white transition-colors">Trust & Safety</a></Link></li>
+                                <li><Link href="/info/dispute-resolution"><a className="hover:text-white transition-colors">Dispute Resolution</a></Link></li>
+                                <li><Link href="/info/pax-for-enterprise"><a className="hover:text-white transition-colors">PAX for Enterprise</a></Link></li>
+                                <li><Link href="/info/blog"><a className="hover:text-white transition-colors">Blog</a></Link></li>
+                                <li><Link href="/info/press-and-media"><a className="hover:text-white transition-colors">Press & Media</a></Link></li>
                             </ul>
                         </div>
 
@@ -260,13 +260,13 @@ export default function Home() {
                         <div className="space-y-4">
                             <h4 className="text-white font-bold text-sm tracking-widest uppercase">Company</h4>
                             <ul className="space-y-3 text-sm text-white/40">
-                                <li className="hover:text-white transition-colors cursor-default">About PAX</li>
-                                <li className="hover:text-white transition-colors cursor-default">Why Choose Us</li>
-                                <li className="hover:text-white transition-colors cursor-default">Security</li>
-                                <li className="hover:text-white transition-colors cursor-default">Contact Us</li>
-                                <li className="hover:text-white transition-colors cursor-default"><Link href="/privacy">Privacy Policy</Link></li>
-                                <li className="hover:text-white transition-colors cursor-default"><Link href="/terms">Terms of Service</Link></li>
-                                <li className="hover:text-white transition-colors cursor-default"><Link href="/escrow-terms">Escrow Terms</Link></li>
+                                <li><Link href="/info/about-pax"><a className="hover:text-white transition-colors">About PAX</a></Link></li>
+                                <li><Link href="/info/about-pax"><a className="hover:text-white transition-colors">Why Choose Us</a></Link></li>
+                                <li><Link href="/info/trust-and-safety"><a className="hover:text-white transition-colors">Security</a></Link></li>
+                                <li><Link href="/support"><a className="hover:text-white transition-colors">Contact Us</a></Link></li>
+                                <li><Link href="/privacy"><a className="hover:text-white transition-colors">Privacy Policy</a></Link></li>
+                                <li><Link href="/terms"><a className="hover:text-white transition-colors">Terms of Service</a></Link></li>
+                                <li><Link href="/escrow-terms"><a className="hover:text-white transition-colors">Escrow Terms</a></Link></li>
                             </ul>
                         </div>
                     </div>

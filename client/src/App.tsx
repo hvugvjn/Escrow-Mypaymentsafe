@@ -16,6 +16,7 @@ import TalentSearch from "@/pages/talent-search";
 import Inbox from "@/pages/inbox";
 import AdminDashboard from "@/pages/admin";
 import { Privacy, Terms, Support, EscrowTerms } from "@/pages/legal";
+import InfoPage from "@/pages/info";
 import { AppLayout } from "@/components/layout";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -91,6 +92,7 @@ function Router() {
       <Route path="/support" component={Support} />
 
       {/* Fallback */}
+      <Route path="/info/:slug" component={InfoPage} />
       <Route component={NotFound} />
     </Switch>
   );
