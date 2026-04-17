@@ -6,8 +6,28 @@ function LegalSidebar() {
 
   const links = [
     { href: "/terms", label: "Master Terms of Service" },
+    { href: "/legal/user-agreement", label: "User Agreement" },
+    { href: "/legal/terms-of-use", label: "Terms of Use" },
+    { href: "/legal/enterprise-hire", label: "Enterprise Hire Terms" },
+    { href: "/legal/direct-contracts-terms", label: "Direct Contracts Terms" },
     { href: "/escrow-terms", label: "Escrow Instructions" },
+    { href: "/legal/hourly-escrow", label: "Hourly & Bonus Escrow Instructions" },
+    { href: "/legal/fixed-price-escrow", label: "Fixed Price Contract Escrow" },
+    { href: "/legal/enterprise-escrow", label: "Enterprise Escrow Instructions" },
+    { href: "/legal/direct-contracts-escrow", label: "Direct Contracts Escrow Instructions" },
+    { href: "/legal/pax-escrow-inc", label: "Pax Payment Escrow Inc." },
+    { href: "/legal/fee-authorization", label: "Fee and ACH Authorization Agreement" },
+    { href: "/legal/membership", label: "Freelancer Membership Agreement" },
+    { href: "/legal/optional-contract", label: "Optional Service Contract Terms" },
+    { href: "/legal/referral", label: "Referral Program Terms & Conditions" },
+    { href: "/legal/mark-use", label: "Mark Use Guidelines" },
+    { href: "/legal/infringement", label: "Proprietary Rights Infringement Procedures" },
     { href: "/privacy", label: "Privacy Policy" },
+    { href: "/legal/gdpa", label: "Global Data Processing Agreement" },
+    { href: "/legal/dsa", label: "Digital Services Act compliance" },
+    { href: "/legal/privacy-center", label: "Privacy Center Hub" },
+    { href: "/legal/cookie", label: "Cookie Policy" },
+    { href: "/legal/api-terms", label: "API Terms of Use" },
     { href: "/support", label: "Help & Support" },
   ];
 
@@ -194,7 +214,7 @@ export function Privacy() {
 export function Support() {
   return (
     <Layout title="Help & Support">
-      <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Last Updated: April 17, 2026</p>
+      <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Last Updated: 17/04/26</p>
       
       <h3>How can we help you?</h3>
       <p>Welcome to the PAX Support Center. If you're experiencing issues with an active escrow, a delayed milestone, or a technical bug, we are here to help!</p>
@@ -212,3 +232,182 @@ export function Support() {
   )
 }
 
+// Dynamic Content Map for remaining legal pages
+const LEGAL_CONTENT: Record<string, { title: string, sections: { head: string, body: string }[] }> = {
+  "user-agreement": {
+    title: "User Agreement",
+    sections: [
+      { head: "1. Account Registration", body: "By registering for an account on PAX, you agree to provide truthful, accurate, and complete information. You are strictly responsible for preserving the confidentiality of your login credentials." },
+      { head: "2. Platform Conduct", body: "Users must adhere strictly to professional standards. Harassment, unauthorized circumventing of platform fees, and fraudulent behavior are grounds for immediate and permanent termination without recourse." },
+      { head: "3. Service Availability", body: "PAX aims for 99.9% uptime, but we do not guarantee uninterrupted access. We reserve the right to perform emergency maintenance, which may result in temporary offline status." }
+    ]
+  },
+  "terms-of-use": {
+    title: "Terms of Use",
+    sections: [
+      { head: "1. Acceptable Use", body: "The PAX platform must not be used for illicit transactions, money laundering, or the distribution of restricted materials. Use of the service is limited strictly to professional freelance arrangements." },
+      { head: "2. Intellectual Property", body: "All content uploaded to the platform remains the property of the creator until explicit transfer occurs upon final escrow milestone release." },
+      { head: "3. Termination", body: "We reserve the right to suspend or terminate any user who operates in violation of these usage terms, local laws, or international financial regulations." }
+    ]
+  },
+  "enterprise-hire": {
+    title: "Enterprise Hire Terms",
+    sections: [
+      { head: "1. Enterprise Scope", body: "Enterprise clients gain access to advanced routing, volume discounts, and dedicated account management. These terms supersede standard Client terms where conflicts arise." },
+      { head: "2. Dedicated Compliance", body: "PAX provides worker classification services for Enterprise users, but the ultimate tax liability rests with the employing corporate entity unless specifically stated in an addendum." }
+    ]
+  },
+  "direct-contracts-terms": {
+    title: "Direct Contracts Terms",
+    sections: [
+      { head: "1. Direct Engagement", body: "Talent may bring external clients to PAX to utilize our escrow infrastructure. These contracts bypass marketplace discovery fees." },
+      { head: "2. Non-Circumvention Waiver", body: "Direct Contracts are exempt from the standard non-circumvention clause, provided the relationship provably originated externally." }
+    ]
+  },
+  "hourly-escrow": {
+    title: "Hourly & Bonus Escrow Instructions",
+    sections: [
+      { head: "1. Hourly Tracking", body: "All hourly contracts require the use of the PAX time tracker to guarantee payment. Manual time is not protected by escrow guarantees." },
+      { head: "2. Bonus Payments", body: "Clients may issue discretionary bonuses. These bypass the escrow holding period and are distributed immediately upon clearance." }
+    ]
+  },
+  "fixed-price-escrow": {
+    title: "Fixed Price Contract Escrow Instructions",
+    sections: [
+      { head: "1. Milestone Funding", body: "The client must fully fund a milestone into the PAX escrow vault before work commences. Talent should never begin work on an unfunded milestone." },
+      { head: "2. Milestone Approval", body: "Clients have 14 days to review submitted work. If no action is taken, the escrow vault will automatically release the funds to the Talent." }
+    ]
+  },
+  "enterprise-escrow": {
+    title: "Enterprise Escrow Instructions",
+    sections: [
+      { head: "1. Deferred Funding", body: "Qualifying Enterprise clients may utilize credit-based escrow initiation, where funds are guaranteed by institutional credit lines rather than cash-up-front deposits." },
+      { head: "2. Enterprise Dispute Processing", body: "Disputes involving Enterprise accounts are routed through priority arbitration channels with dedicated impartial legal analysts." }
+    ]
+  },
+  "direct-contracts-escrow": {
+    title: "Direct Contracts Escrow Instructions",
+    sections: [
+      { head: "1. Payment Processing", body: "Direct Contract funds are processed swiftly through Stripe and held in custody until client approval is received." },
+      { head: "2. Dispute Limitations", body: "Since these relationships originate off-platform, PAX mediation is strictly limited to verifying whether the delivered file matches the contract description." }
+    ]
+  },
+  "pax-escrow-inc": {
+    title: "Pax Payment Escrow Inc.",
+    sections: [
+      { head: "1. Corporate Structure", body: "Pax Payment Escrow Inc. is a registered financial intermediary acting solely as an escrow agent. We are not a licensed bank." },
+      { head: "2. Custodial Accounts", body: "All funds are held in non-interest-bearing custodial accounts at top-tier partner banking institutions, ring-fenced entirely from PAX operational capital." }
+    ]
+  },
+  "fee-authorization": {
+    title: "Fee and ACH Authorization Agreement",
+    sections: [
+      { head: "1. Authorization", body: "By linking a bank account, you authorize PAX to execute ACH debits and credits for funding escrow and receiving payouts." },
+      { head: "2. Insufficient Funds", body: "Any failed ACH transfer due to insufficient funds may result in penalty fees and immediate suspension of your PAX account." }
+    ]
+  },
+  "membership": {
+    title: "Freelancer Membership Agreement",
+    sections: [
+      { head: "1. Membership Tiers", body: "Talent may opt into premium membership tiers for additional proposal credits, advanced analytics, and enhanced profile visibility." },
+      { head: "2. Billing", body: "Memberships are billed on a recurring monthly cycle. Cancellations must occur 48 hours prior to the next billing date to avoid charges." }
+    ]
+  },
+  "optional-contract": {
+    title: "Optional Service Contract Terms",
+    sections: [
+      { head: "1. Custom Addendums", body: "Clients and Talent may attach custom NDAs or IP transfer agreements to PAX milestones. In the event of a dispute, PAX arbitration will enforce these agreed-upon addendums." }
+    ]
+  },
+  "referral": {
+    title: "Referral Program Terms & Conditions",
+    sections: [
+      { head: "1. Eligibility", body: "Any verified user may generate referral links. Rewards are disbursed only after the referred user completes their first successful escrow transaction." },
+      { head: "2. Reward Structure", body: "PAX reserves the right to dynamically adjust the referral fiat reward or platform credit distributions without prior notice." }
+    ]
+  },
+  "mark-use": {
+    title: "Mark Use Guidelines",
+    sections: [
+      { head: "1. Allowed Usage", body: "You may use the PAX logo only to indicate that your services are available on our platform. The logo must not be distorted, recolored, or used in a way that implies PAX endorsement." }
+    ]
+  },
+  "infringement": {
+    title: "Proprietary Rights Infringement Reporting Procedures",
+    sections: [
+      { head: "1. DMCA Notices", body: "If you believe your copyrighted work is being used improperly on a freelancer's portfolio, submit a formal DMCA takedown notice to legal@paxdot.com." },
+      { head: "2. Counter-Notices", body: "Accused parties will be granted 10 days to submit a legal counter-notice before permanent removal of the disputed content." }
+    ]
+  },
+  "gdpa": {
+    title: "Global Data Processing Agreement",
+    sections: [
+      { head: "1. Controller and Processor", body: "PAX acts as a Data Processor for the files shared in the workspace, and a Data Controller for account infrastructure. We strictly comply with GDPR regulations." },
+      { head: "2. Sub-processors", body: "We employ strictly vetted third-party sub-processors (e.g., AWS, Stripe) which adhere to equal or greater data protection standards." }
+    ]
+  },
+  "dsa": {
+    title: "Digital Services Act Compliance",
+    sections: [
+      { head: "1. European Market Operations", body: "In accordance with the EU DSA, PAX maintains a single point of contact and publishes annual transparency reports regarding content moderation." }
+    ]
+  },
+  "privacy-center": {
+    title: "Privacy Center Hub",
+    sections: [
+      { head: "1. Data Export", body: "Users may request a full JSON export of all platform data via the Support portal. Requests are fulfilled within 30 days." },
+      { head: "2. Right to be Forgotten", body: "Account deletion initiates a cascading purge of PII, though financial transaction records may be retained up to 7 years to comply with international KYC/AML laws." }
+    ]
+  },
+  "cookie": {
+    title: "Cookie Policy",
+    sections: [
+      { head: "1. Tracking Instruments", body: "PAX uses essential cookies for session authentication, and optional cookies for analytics and targeted platform notifications." },
+      { head: "2. Consent Management", body: "You can revoke non-essential cookie consent at any time via your browser settings or the platform footer toggle." }
+    ]
+  },
+  "api-terms": {
+    title: "API Terms of Use",
+    sections: [
+      { head: "1. Rate Limiting", body: "API access is strictly rate-limited to ensure platform stability. Excessive polling will trigger temporary IP bans." },
+      { head: "2. Commercial Restrictions", body: "The PAX API cannot be used to replicate the core marketplace functionality or scrape talent profiles for external aggregation." }
+    ]
+  }
+};
+
+export function DynamicLegalPage() {
+  const [match, params] = useRoute("/legal/:slug");
+  
+  if (!match || !params?.slug) return null;
+  const content = LEGAL_CONTENT[params.slug];
+
+  if (!content) {
+    return (
+      <Layout title="Document Not Found">
+        <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Error: 404</p>
+        <p>The requested legal document could not be found. Please contact support if you believe this is an error.</p>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout title={content.title}>
+      <p className="not-prose text-sm font-medium text-muted-foreground mb-8">Last Updated: 17/04/26</p>
+      
+      <p className="mb-8">This agreement details the exact operational methodologies, policies, and parameters governing this specific area of your interaction with the PAX platform.</p>
+
+      {content.sections.map((section, idx) => (
+        <div key={idx} className="mb-8">
+          <h3>{section.head}</h3>
+          <p>{section.body}</p>
+        </div>
+      ))}
+      
+      <div className="mt-12 p-6 bg-muted/30 rounded-xl border border-muted">
+        <p className="text-sm m-0 text-muted-foreground">
+          <strong>Need clarification?</strong> If you have any questions regarding this specific policy, please reach out to <a href="mailto:legal@paxdot.com" className="text-primary hover:underline">legal@paxdot.com</a> before agreeing to proceed.
+        </p>
+      </div>
+    </Layout>
+  );
+}
