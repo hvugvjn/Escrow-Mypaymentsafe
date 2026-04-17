@@ -208,28 +208,84 @@ export default function InfoPage() {
                 <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
                     Hire freelancers <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </button>
-                <div className="absolute top-full -left-4 w-[600px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-3 gap-8">
+                <div className="absolute top-full -left-4 w-[1100px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-4 gap-y-12 gap-x-8">
+                    {/* ROW 1 */}
                     <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Development & IT</h4>
+                        <h4 className="font-bold text-gray-900 mb-2">Admin & support</h4>
                         <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/how-to-hire"><a className="hover:text-primary transition-colors cursor-pointer">Software Developers</a></Link></li>
-                            <li><Link href="/info/how-to-hire"><a className="hover:text-primary transition-colors cursor-pointer">Web Developers</a></Link></li>
-                            <li><Link href="/info/how-to-hire"><a className="hover:text-primary transition-colors cursor-pointer">AI Engineers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Cold callers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Content moderators</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Lead generation specialists</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Personal assistants</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Virtual assistants</a></Link></li>
                         </ul>
                     </div>
                     <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Design & Creative</h4>
+                        <h4 className="font-bold text-gray-900 mb-2">Design & creative</h4>
                         <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/find-top-talents"><a className="hover:text-primary transition-colors cursor-pointer">UI/UX Designers</a></Link></li>
-                            <li><Link href="/info/find-top-talents"><a className="hover:text-primary transition-colors cursor-pointer">Graphic Designers</a></Link></li>
-                            <li><Link href="/info/find-top-talents"><a className="hover:text-primary transition-colors cursor-pointer">Illustrators</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Graphic designers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Illustrators</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Logo designers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">UX designers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Web designers</a></Link></li>
                         </ul>
                     </div>
-                    <div className="space-y-4 bg-gray-50 -my-8 -mr-8 p-8 rounded-r-2xl border-l border-gray-100">
-                        <ul className="space-y-4">
-                            <li><Link href="/info/how-to-hire"><a className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer">Explore more <ArrowRight className="w-4 h-4"/></a></Link></li>
-                            <li><Link href="/support"><a className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer">Book consultation <ArrowRight className="w-4 h-4"/></a></Link></li>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Marketing</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Digital marketers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Email marketers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Google Ads experts</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">SEO experts</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Social media managers</a></Link></li>
                         </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Writing & content</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Book editors</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Content writers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Copywriters</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Email copywriters</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Ghostwriters</a></Link></li>
+                        </ul>
+                    </div>
+
+                    {/* ROW 2 */}
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">AI & emerging tech</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Automation engineers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Chatbot developers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Computer vision engineers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Ethical hackers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Machine learning engineers</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Development & tech</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Mobile app developers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Python developers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Software developers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Web developers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">WordPress developers</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Video, audio & animation</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Animators</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Audio editors</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Music producers</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Video editors</a></Link></li>
+                            <li><Link href="/talent"><a className="hover:text-primary transition-colors cursor-pointer block">Voice actors</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-6 flex flex-col justify-end">
+                        <Link href="/info/how-to-hire"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Explore more <ArrowRight className="w-4 h-4"/></a></Link>
+                        <Link href="/support"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Book consultation <ArrowRight className="w-4 h-4"/></a></Link>
+                        <Link href="/info/pax-for-enterprise"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Join Business Plus <ArrowRight className="w-4 h-4"/></a></Link>
                     </div>
                 </div>
             </div>
@@ -239,21 +295,85 @@ export default function InfoPage() {
                 <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
                     Find work <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </button>
-                <div className="absolute top-full -left-4 w-[400px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-2 gap-8">
+                <div className="absolute top-full -left-4 w-[1100px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-4 gap-y-12 gap-x-8">
+                    {/* ROW 1 */}
                     <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Ways to earn</h4>
+                        <h4 className="font-bold text-gray-900 mb-2">Admin & support jobs</h4>
                         <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/how-it-works-talent"><a className="hover:text-primary transition-colors cursor-pointer">How to find work</a></Link></li>
-                            <li><Link href="/info/direct-contracts"><a className="hover:text-primary transition-colors cursor-pointer">Direct Contracts</a></Link></li>
-                            <li><Link href="/info/success-stories"><a className="hover:text-primary transition-colors cursor-pointer">Success Stories</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Chat support jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Cold calling jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Content moderation jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Lead generation jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Virtual assistant jobs</a></Link></li>
                         </ul>
                     </div>
-                    <div className="space-y-4 border-l border-gray-100 pl-8">
-                        <h4 className="font-bold text-gray-900 mb-2">Featured</h4>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Design & creative jobs</h4>
                         <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/guaranteed-payments"><a className="hover:text-gray-900 transition-colors rounded hover:bg-gray-50 py-1 px-2 -mx-2 block cursor-pointer">Set up your profile</a></Link></li>
-                            <li><Link href="/info/how-it-works-talent"><a className="hover:text-gray-900 transition-colors rounded hover:bg-gray-50 py-1 px-2 -mx-2 block cursor-pointer">Grow your business</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Canva jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Graphic design jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Illustration jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Logo design jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Web design jobs</a></Link></li>
                         </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Marketing jobs</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Digital marketing jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Email marketing jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Google Ads jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">SEO jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Social media management jobs</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Writing & content jobs</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Book editing jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Content writing jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Copywriting jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Email copywriting jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Ghostwriting jobs</a></Link></li>
+                        </ul>
+                    </div>
+
+                    {/* ROW 2 */}
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">AI & emerging tech jobs</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">AI app development jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Chatbot development jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Ethical hacking jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Machine learning jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">OpenAI jobs</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Development & tech jobs</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Mobile app development jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Python jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Software development jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Web development jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">WordPress jobs</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Video, audio & animation jobs</h4>
+                        <ul className="space-y-3 text-gray-600">
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Animation jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Audio editing jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Music production jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Video editing jobs</a></Link></li>
+                            <li><Link href="/login"><a className="hover:text-primary transition-colors cursor-pointer block">Voice over jobs</a></Link></li>
+                        </ul>
+                    </div>
+                    <div className="space-y-6 flex flex-col justify-end">
+                        <Link href="/info/how-it-works-talent"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Explore more <ArrowRight className="w-4 h-4"/></a></Link>
+                        <Link href="/info/direct-contracts"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Ways to earn <ArrowRight className="w-4 h-4"/></a></Link>
+                        <Link href="/info/success-stories"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Win work with ads <ArrowRight className="w-4 h-4"/></a></Link>
+                        <Link href="/info/guaranteed-payments"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Join Freelancer Plus <ArrowRight className="w-4 h-4"/></a></Link>
                     </div>
                 </div>
             </div>
