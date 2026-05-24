@@ -77,6 +77,9 @@ export async function createMilestonePaymentLink(params: {
     },
     order_meta: {
       return_url: params.returnUrl,
+    },
+    order_tags: {
+      milestone_id: params.milestoneId,
     }
   };
 

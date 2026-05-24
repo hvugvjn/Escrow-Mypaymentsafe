@@ -351,7 +351,8 @@ export async function registerRoutes(
         if (event?.type === 'PAYMENT_SUCCESS_WEBHOOK' || event?.data?.payment?.payment_status === 'SUCCESS') {
           const linkId    = event?.data?.link?.link_id || event?.data?.order?.order_id || '';
           const linkMeta  = event?.data?.link?.link_meta || {};
-          const milestoneId = linkMeta?.milestone_id;
+          const orderTags = event?.data?.order?.order_tags || {};
+          const milestoneId = linkMeta?.milestone_id || orderTags?.milestone_id;
 
           if (milestoneId) {
             // Get milestone and mark as RELEASED
