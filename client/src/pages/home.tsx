@@ -250,15 +250,13 @@ export default function Home() {
                         Escrow managed for you
                     </motion.div>
 
-                    <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6">
-                        Stop stressing over execution.<br />
-                        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Start using </span>
-                        pax.
+                    <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-6 tracking-tight">
+                        Execute Complex Projects with<br />
+                        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">100% Payment Certainty.</span>
                     </motion.h1>
 
                     <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-3xl mx-auto mb-8 md:mb-10 leading-relaxed">
-                        PAX is the only platform that combines <strong>secure financial escrow</strong> with <strong>full-service project management</strong>.
-                        We hold your money safely, structure your milestones, and actively oversee exactly what the talent delivers — so you never have to worry about fraud or missed deadlines again.
+                        Ditch the 20% platform fees and unreliable execution. PAX is the elite network featuring <strong>0% talent commissions</strong>, <strong>automated late penalties</strong>, and <strong>managed milestone escrow</strong>. Stop hoping for results. Guarantee them.
                     </motion.p>
 
                     <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -289,15 +287,15 @@ export default function Home() {
             {/* ── PROBLEM ── */}
             <section id="why" className="py-24 px-6 max-w-6xl mx-auto">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Project execution chaos is everywhere. <br /><span className="text-red-400">This stops now.</span></h2>
-                    <p className="text-white/50 text-lg max-w-2xl mx-auto">Whether you're buying an app, a website, or digital content — you've probably been burned by bad communication or scams. PAX fixes that.</p>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Legacy platforms take 20% and leave you with chaos. <br /><span className="text-red-400">We don't.</span></h2>
+                    <p className="text-white/50 text-lg max-w-2xl mx-auto">Upwork and Fiverr connect you, take a massive cut, and leave you to manage the mess. PAX actively enforces delivery, penalizes delays, and guarantees zero-commission payouts.</p>
                 </motion.div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                     {[
-                        { icon: AlertTriangle, color: "text-red-400 bg-red-400/10", title: "Paid & never delivered", desc: "You send money upfront and the talent disappears. With PAX, funds are held securely until the work is actually done." },
-                        { icon: AlertTriangle, color: "text-orange-400 bg-orange-400/10", title: "Missed Deadlines & Chaos", desc: "Projects drag on forever without proper oversight. PAX's Project Managers step in to enforce deadlines and track daily progress." },
-                        { icon: AlertTriangle, color: "text-yellow-400 bg-yellow-400/10", title: "Worked & never paid", desc: "Talents complete the project but the client refuses to pay. PAX strictly guarantees payouts upon approved milestones." },
+                        { icon: AlertTriangle, color: "text-red-400 bg-red-400/10", title: "The 20% Fee Trap", desc: "Other platforms punish success by taking 10-20% of the freelancer's earnings. PAX charges 0% commission to talent, attracting the absolute best developers and designers." },
+                        { icon: AlertTriangle, color: "text-orange-400 bg-orange-400/10", title: "Missed Deadlines & Chaos", desc: "Projects drag on forever without proper oversight elsewhere. PAX enforces strict deadlines with automated financial penalties for late delivery without approval." },
+                        { icon: AlertTriangle, color: "text-yellow-400 bg-yellow-400/10", title: "Worked & Never Paid", desc: "Clients vanish and leave talents unpaid. PAX locks client funds in an RBI-compliant escrow upfront, guaranteeing instant payout upon milestone approval." },
                     ].map(({ icon: Icon, color, title, desc }, i) => (
                         <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                             className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors">
