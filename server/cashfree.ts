@@ -53,7 +53,7 @@ export async function createMilestonePaymentLink(params: {
   clientPhone:     string;
   talentUpiOrBank?: string;
   returnUrl:       string;   // Where to redirect after payment
-}): Promise<CashfreePaymentLink> {
+}): Promise<{ payment_session_id: string; order_id: string; link_url?: string }> {
 
   if (!APP_ID || !SECRET_KEY) {
     throw new Error('Cashfree credentials not configured. Set CASHFREE_APP_ID and CASHFREE_SECRET_KEY in .env');
@@ -62,32 +62,25 @@ export async function createMilestonePaymentLink(params: {
   // Convert paise to rupees (Cashfree uses INR as decimal)
   const amountInRupees = params.amountInPaise / 100;
 
-  const linkId = `pax-ms-${params.milestoneId.slice(0, 20)}-${Date.now()}`;
+  const orderId = `order_${params.milestoneId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20)}_${Date.now()}`;
 
   const body = {
-    link_id:          linkId,
-    link_amount:      amountInRupees,
-    link_currency:    'INR',
-    link_purpose:     `PAX: ${params.projectTitle} — ${params.milestoneTitle}`,
+    order_id:       orderId,
+    order_amount:   amountInRupees,
+    order_currency: 'INR',
+    order_note:     `PAX: ${params.projectTitle} — ${params.milestoneTitle}`.slice(0, 50),
     customer_details: {
+      customer_id:    `cust_${params.clientPhone.replace(/\D/g, '').slice(-10) || '9999999999'}`,
       customer_name:  params.clientName,
-      customer_email: params.clientEmail,
+      customer_email: params.clientEmail || 'no-reply@paxdot.com',
       customer_phone: params.clientPhone.replace(/\D/g, '').slice(-10) || '9999999999',
     },
-    link_notify: {
-      send_sms:   true,
-      send_email: true,
-    },
-    link_auto_reminders: true,
-    link_return_url: params.returnUrl,
-    link_expiry_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-    link_meta: {
-      milestone_id:  params.milestoneId,
-      project_title: params.projectTitle,
-    },
+    order_meta: {
+      return_url: params.returnUrl,
+    }
   };
 
-  const res = await fetch(`${CASHFREE_BASE_URL}/links`, {
+  const res = await fetch(`${CASHFREE_BASE_URL}/orders`, {
     method:  'POST',
     headers: cashfreeHeaders(),
     body:    JSON.stringify(body),
@@ -96,16 +89,16 @@ export async function createMilestonePaymentLink(params: {
   const data = await res.json() as any;
 
   if (!res.ok) {
-    console.error('[CASHFREE] Payment link creation failed:', data);
+    console.error('[CASHFREE] Order creation failed:', data);
     throw new Error(`Cashfree error: ${data?.message || JSON.stringify(data)}`);
   }
 
-  console.log(`[CASHFREE] ✅ Payment link created for milestone ${params.milestoneId}: ${data.link_url}`);
+  console.log(`[CASHFREE] ✅ Order created for milestone ${params.milestoneId}: ${data.order_id}`);
 
   return {
-    link_id:     data.link_id,
-    link_url:    data.link_url,
-    link_status: data.link_status,
+    payment_session_id: data.payment_session_id,
+    order_id: data.order_id,
+    link_url: `https://checkout.cashfree.com/api/v1/session/${data.payment_session_id}` // Fallback redirect if JS SDK fails
   };
 }
 

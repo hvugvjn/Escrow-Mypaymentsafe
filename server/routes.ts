@@ -315,10 +315,11 @@ export async function registerRoutes(
       await storage.updateMilestone(ms.id, { status: 'PAYMENT_PENDING' });
 
       res.json({
-        paymentUrl: paymentLink.link_url,
-        linkId:     paymentLink.link_id,
-        amount:     ms.amount,
-        milestone:  ms.title,
+        paymentSessionId: paymentLink.payment_session_id,
+        orderId:          paymentLink.order_id,
+        paymentUrl:       paymentLink.link_url,
+        amount:           ms.amount,
+        milestone:        ms.title,
       });
     } catch (err: any) {
       console.error('[PAYMENT LINK ERROR]', err);

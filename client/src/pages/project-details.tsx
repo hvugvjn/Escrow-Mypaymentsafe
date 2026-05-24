@@ -145,8 +145,24 @@ export default function ProjectDetails() {
         body: JSON.stringify({ projectId: project.id })
       });
       const data = await res.json();
-      if (res.ok && data.paymentUrl) {
-        window.location.href = data.paymentUrl;
+      if (res.ok && data.paymentSessionId) {
+        // Initialize Cashfree SDK
+        // Cashfree SDK is loaded in index.html
+        const cashfree = (window as any).Cashfree({
+          mode: "production", // It is safe to use production, if the keys are sandbox Cashfree will handle it or fail gracefully.
+        });
+        
+        let checkoutOptions = {
+          paymentSessionId: data.paymentSessionId,
+          redirectTarget: "_self", 
+        };
+        
+        try {
+          cashfree.checkout(checkoutOptions);
+        } catch (sdkErr) {
+          console.error("SDK Error fallback:", sdkErr);
+          if (data.paymentUrl) window.location.href = data.paymentUrl;
+        }
       } else {
         if (data.message?.includes('authentication Failed')) {
           toast({ 
