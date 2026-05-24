@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Briefcase, MapPin, Phone, Building2, Link as LinkIcon, FileText, Pencil, X, Save, Upload } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { User, Briefcase, MapPin, Phone, Building2, Link as LinkIcon, FileText, Pencil, X, Save, Upload, RefreshCw, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 const COUNTRY_DIAL_CODES: Record<string, string> = {
   "Afghanistan": "+93", "Albania": "+355", "Algeria": "+213", "Andorra": "+376", "Angola": "+244", "Antigua and Barbuda": "+1", "Argentina": "+54", "Armenia": "+374", "Australia": "+61", "Austria": "+43", "Azerbaijan": "+994", "Bahamas": "+1", "Bahrain": "+973", "Bangladesh": "+880", "Barbados": "+1", "Belarus": "+375", "Belgium": "+32", "Belize": "+501", "Benin": "+229", "Bhutan": "+975", "Bolivia": "+591", "Bosnia and Herzegovina": "+387", "Botswana": "+267", "Brazil": "+55", "Brunei": "+673", "Bulgaria": "+359", "Burkina Faso": "+226", "Burundi": "+257", "Côte d'Ivoire": "+225", "Cabo Verde": "+238", "Cambodia": "+855", "Cameroon": "+237", "Canada": "+1", "Central African Republic": "+236", "Chad": "+235", "Chile": "+56", "China": "+86", "Colombia": "+57", "Comoros": "+269", "Congo": "+242", "Costa Rica": "+506", "Croatia": "+385", "Cuba": "+53", "Cyprus": "+357", "Czechia": "+420", "Denmark": "+45", "Djibouti": "+253", "Dominica": "+1", "Dominican Republic": "+1", "Ecuador": "+593", "Egypt": "+20", "El Salvador": "+503", "Equatorial Guinea": "+240", "Eritrea": "+291", "Estonia": "+372", "Eswatini": "+268", "Ethiopia": "+251", "Fiji": "+679", "Finland": "+358", "France": "+33", "Gabon": "+241", "Gambia": "+220", "Georgia": "+995", "Germany": "+49", "Ghana": "+233", "Greece": "+30", "Grenada": "+1", "Guatemala": "+502", "Guinea": "+224", "Guinea-Bissau": "+245", "Guyana": "+592", "Haiti": "+509", "Holy See": "+379", "Honduras": "+504", "Hungary": "+36", "Iceland": "+354", "India": "+91", "Indonesia": "+62", "Iran": "+98", "Iraq": "+964", "Ireland": "+353", "Israel": "+972", "Italy": "+39", "Jamaica": "+1", "Japan": "+81", "Jordan": "+962", "Kazakhstan": "+7", "Kenya": "+254", "Kiribati": "+686", "Kuwait": "+965", "Kyrgyzstan": "+996", "Laos": "+856", "Latvia": "+371", "Lebanon": "+961", "Lesotho": "+266", "Liberia": "+231", "Libya": "+218", "Liechtenstein": "+423", "Lithuania": "+370", "Luxembourg": "+352", "Madagascar": "+261", "Malawi": "+265", "Malaysia": "+60", "Maldives": "+960", "Mali": "+223", "Malta": "+356", "Marshall Islands": "+692", "Mauritania": "+222", "Mauritius": "+230", "Mexico": "+52", "Micronesia": "+691", "Moldova": "+373", "Monaco": "+377", "Mongolia": "+976", "Montenegro": "+382", "Morocco": "+212", "Mozambique": "+258", "Myanmar": "+95", "Namibia": "+264", "Nauru": "+674", "Nepal": "+977", "Netherlands": "+31", "New Zealand": "+64", "Nicaragua": "+505", "Niger": "+227", "Nigeria": "+234", "North Korea": "+850", "North Macedonia": "+389", "Norway": "+47", "Oman": "+968", "Pakistan": "+92", "Palau": "+680", "Palestine State": "+970", "Panama": "+507", "Papua New Guinea": "+675", "Paraguay": "+595", "Peru": "+51", "Philippines": "+63", "Poland": "+48", "Portugal": "+351", "Qatar": "+974", "Romania": "+40", "Russia": "+7", "Rwanda": "+250", "Saint Kitts and Nevis": "+1", "Saint Lucia": "+1", "Saint Vincent and the Grenadines": "+1", "Samoa": "+685", "San Marino": "+378", "Sao Tome and Principe": "+239", "Saudi Arabia": "+966", "Senegal": "+221", "Serbia": "+381", "Seychelles": "+248", "Sierra Leone": "+232", "Singapore": "+65", "Slovakia": "+421", "Slovenia": "+386", "Solomon Islands": "+677", "Somalia": "+252", "South Africa": "+27", "South Korea": "+82", "South Sudan": "+211", "Spain": "+34", "Sri Lanka": "+94", "Sudan": "+249", "Suriname": "+597", "Sweden": "+46", "Switzerland": "+41", "Syria": "+963", "Tajikistan": "+992", "Tanzania": "+255", "Thailand": "+66", "Timor-Leste": "+670", "Togo": "+228", "Tonga": "+676", "Trinidad and Tobago": "+1", "Tunisia": "+216", "Turkey": "+90", "Turkmenistan": "+993", "Tuvalu": "+688", "Uganda": "+256", "Ukraine": "+380", "United Arab Emirates": "+971", "United Kingdom": "+44", "United States of America": "+1", "Uruguay": "+598", "Uzbekistan": "+998", "Vanuatu": "+678", "Venezuela": "+58", "Vietnam": "+84", "Yemen": "+967", "Zambia": "+260", "Zimbabwe": "+263"
@@ -62,10 +64,13 @@ const COUNTRIES = [
 export default function Profile() {
   const { user } = useAuth();
   const updateProfile = useUpdateProfile();
+  const queryClient = useQueryClient();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isSwitchRoleOpen, setIsSwitchRoleOpen] = useState(false);
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
 
   const [formData, setFormData] = useState({
     companyName: user?.companyName ?? "",
@@ -143,6 +148,19 @@ export default function Profile() {
 
     setIsEditing(false);
     setResumeFile(null);
+  };
+
+  const handleSwitchRole = async () => {
+    setIsSwitchingRole(true);
+    const newRole = isBuyer ? 'FREELANCER' : 'BUYER';
+    try {
+      await updateProfile.mutateAsync({ role: newRole as 'BUYER' | 'FREELANCER' });
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setIsSwitchRoleOpen(false);
+    } catch (err) {
+      console.error('Failed to switch role:', err);
+    }
+    setIsSwitchingRole(false);
   };
 
   return (
@@ -484,6 +502,76 @@ export default function Profile() {
 
         </CardContent>
       </Card>
+
+      {/* ─── Switch Role Card ─────────────────────────────── */}
+      <Card className="border-destructive/20 bg-destructive/5">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0 mt-0.5">
+                <RefreshCw className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-base">Switch Account Role</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  You are currently a <strong>{isBuyer ? 'Client' : 'Talent'}</strong>.
+                  Switch to <strong>{isBuyer ? 'Talent' : 'Client'}</strong> to{' '}
+                  {isBuyer ? 'find work and get paid' : 'hire talent and create projects'}.
+                </p>
+                <p className="text-xs text-destructive/80 mt-1 font-medium">
+                  ⚠ Your existing projects will not be affected, but your dashboard view will change.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="border-destructive/40 text-destructive hover:bg-destructive/10 shrink-0 gap-2"
+              onClick={() => setIsSwitchRoleOpen(true)}
+            >
+              <RefreshCw className="w-4 h-4" />
+              Switch to {isBuyer ? 'Talent' : 'Client'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ─── Switch Role Confirmation Dialog ─── */}
+      <Dialog open={isSwitchRoleOpen} onOpenChange={setIsSwitchRoleOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Switch Role to {isBuyer ? 'Talent' : 'Client'}?
+            </DialogTitle>
+            <DialogDescription className="pt-2 space-y-2">
+              <p>
+                You are switching from <strong>{isBuyer ? 'Client' : 'Talent'}</strong> to{' '}
+                <strong>{isBuyer ? 'Talent' : 'Client'}</strong>.
+              </p>
+              <p className="text-sm">
+                {isBuyer
+                  ? 'As Talent, you will be able to join projects using a project code and receive payments.'
+                  : 'As Client, you will be able to create projects, hire talent, and fund escrow.'}
+              </p>
+              <p className="text-sm font-medium text-destructive">
+                Your existing projects and chat history will remain intact.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setIsSwitchRoleOpen(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSwitchRole}
+              disabled={isSwitchingRole}
+              className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
+            >
+              {isSwitchingRole ? 'Switching...' : `Yes, Switch to ${isBuyer ? 'Talent' : 'Client'}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

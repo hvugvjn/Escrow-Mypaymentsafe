@@ -30,13 +30,31 @@ function ProtectedRoute({ component: Component, hideLayout = false }: { componen
 
   useEffect(() => {
     if (!isAuthenticated) {
+      // Save the intended URL so we can redirect back after login
+      if (location !== "/" && location !== "/login") {
+        sessionStorage.setItem("returnTo", location);
+      }
       setLocation("/login");
     } else if (isAuthenticated && user?.email === ADMIN_EMAIL && location !== "/admin") {
       setLocation("/admin");
     } else if (isAuthenticated && !user?.role && location !== "/profile/complete" && user?.email !== ADMIN_EMAIL) {
       setLocation("/profile/complete");
     } else if (isAuthenticated && user?.role && location === "/" && user?.email !== ADMIN_EMAIL) {
-      setLocation("/dashboard");
+      // Check if there's a saved returnTo URL from before login
+      const returnTo = sessionStorage.getItem("returnTo");
+      if (returnTo) {
+        sessionStorage.removeItem("returnTo");
+        setLocation(returnTo);
+      } else {
+        setLocation("/dashboard");
+      }
+    } else if (isAuthenticated && user?.role) {
+      // Also check returnTo after profile completion
+      const returnTo = sessionStorage.getItem("returnTo");
+      if (returnTo && location === "/dashboard") {
+        sessionStorage.removeItem("returnTo");
+        setLocation(returnTo);
+      }
     }
   }, [isAuthenticated, user, location, setLocation]);
 
