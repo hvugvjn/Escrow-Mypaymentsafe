@@ -276,7 +276,7 @@ export default function Home() {
                     </motion.div>
 
                     <motion.div custom={4} variants={fadeUp} className="mt-16 flex flex-wrap justify-center gap-8 text-sm text-white/40">
-                        {["No hidden fees", "Actively Managed Projects", "Dispute resolution", "100% secure"].map((t) => (
+                        {["0% Talent Commission", "Strict Penalty System", "Managed Milestones", "100% Escrow Protection"].map((t) => (
                             <div key={t} className="flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-green-400" />
                                 {t}
@@ -351,11 +351,11 @@ export default function Home() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
-                        { icon: Shield, title: "Automated Escrow", desc: "We securely hold your project capital in a verified vault, releasing funds only when both parties agree the work is completed." },
-                        { icon: Users, title: "Dedicated Project Managers", desc: "Don't have time to chase talents? Our team actively oversees your timelines, reviews deliverables, and ensures everything stays completely on track." },
-                        { icon: Zap, title: "Milestone-Based Payouts", desc: "Large projects are safely broken into bite-sized stages. You comfortably pay bit by bit as actual progress is properly approved." },
-                        { icon: Handshake, title: "Fair Dispute Resolution", desc: "If things go wrong or communication breaks down, PAX instantly steps in to fairly review the project and resolve disagreements." },
-                        { icon: CreditCard, title: "Bank-Grade Transactions", desc: "State-of-the-art encryption strictly protects every single rupee effectively flowing through the platform infrastructure." },
+                        { icon: Shield, title: "0% Commission for Talent", desc: "Unlike platforms taking 20% of your earnings, PAX lets you keep exactly what you earn. We only charge a small processing fee to the client." },
+                        { icon: Zap, title: "Strict Milestone Transfers", desc: "No more waiting for funds. Once a milestone is approved by the client, funds are instantly routed directly to your bank account via RBI-compliant nodal infrastructure." },
+                        { icon: AlertTriangle, title: "Late Penalty System", desc: "We enforce strict deadlines. If talent misses a delivery deadline without approval, an automated penalty is applied, protecting the client's time and investment." },
+                        { icon: Users, title: "Dedicated Project Oversight", desc: "Don't have time to chase talents? Our system actively oversees your timelines, reviews deliverables, and ensures everything stays completely on track." },
+                        { icon: Handshake, title: "Fair Dispute Resolution", desc: "If things go wrong or communication breaks down, PAX instantly steps in to fairly review the project and resolve disagreements based on concrete milestones." },
                         { icon: BadgeCheck, title: "Total Transparency", desc: "Log in anytime. Both parties see every transaction, detailed milestone, and execution status updated in real-time." },
                     ].map(({ icon: Icon, title, desc }, i) => (
                         <motion.div key={i} custom={i % 3} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
