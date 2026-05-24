@@ -108,7 +108,7 @@ export default function ProjectDetails() {
   if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading project details...</div>;
   if (!data || !data.project) return <div className="p-8 text-center text-destructive">Project not found.</div>;
 
-  const { project, milestones, escrow, clientName, talentName } = data;
+  const { project, milestones, escrow, buyerName: clientName, freelancerName: talentName } = data;
   const isClient = user?.role === 'BUYER';
   const isTalent = user?.role === 'FREELANCER';
 
