@@ -12,9 +12,11 @@ import {
   sendWorkSubmittedEmail,
   sendPaymentReleasedEmail
 } from "./email";
+import { createMilestonePaymentLink, createPlatformFeeLink, verifyCashfreeWebhook } from "./cashfree";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import express from "express";
 
 const uploadDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -273,6 +275,158 @@ export async function registerRoutes(
     }
   });
 
+  // ── CREATE CASHFREE PAYMENT LINK (replaces dummy Fund Escrow) ─────────────
+  // Called when client clicks "Approve & Pay" on a submitted milestone
+  app.post('/api/milestones/:id/payment-link', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const milestoneId = req.params.id;
+
+      const [milestone] = await Promise.all([storage.updateMilestone(milestoneId, {})]);
+      const actualMilestone = await storage.getMilestones(milestone?.projectId || '').then(ms => ms.find(m => m.id === milestoneId));
+
+      // Re-fetch correctly
+      const allMs = await storage.getMilestones(req.body.projectId || '');
+      const ms = allMs.find(m => m.id === milestoneId);
+      if (!ms) return res.status(404).json({ message: 'Milestone not found' });
+      if (ms.status !== 'SUBMITTED') return res.status(400).json({ message: 'Milestone must be in SUBMITTED state' });
+
+      const project = await storage.getProject(ms.projectId);
+      if (!project) return res.status(404).json({ message: 'Project not found' });
+      if (project.buyerId !== userId) return res.status(403).json({ message: 'Only the client can approve payment' });
+
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+      const clientName  = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Client';
+      const clientPhone = user.phone?.replace(/\D/g, '').slice(-10) || '9999999999';
+      const returnUrl   = `${process.env.SITE_URL || 'https://paxdot.com'}/projects/${project.id}?payment=done`;
+
+      // Amount: milestones store in cents → convert to paise (same unit for INR)
+      const paymentLink = await createMilestonePaymentLink({
+        milestoneId:    ms.id,
+        projectTitle:   project.title,
+        milestoneTitle: ms.title,
+        amountInPaise:  ms.amount, // stored as cents, works as paise for INR
+        clientName,
+        clientEmail:    user.email || '',
+        clientPhone,
+        returnUrl,
+      });
+
+      // Mark milestone as PAYMENT_PENDING so UI can show correct state
+      await storage.updateMilestone(ms.id, { status: 'PAYMENT_PENDING' });
+
+      res.json({
+        paymentUrl: paymentLink.link_url,
+        linkId:     paymentLink.link_id,
+        amount:     ms.amount,
+        milestone:  ms.title,
+      });
+    } catch (err: any) {
+      console.error('[PAYMENT LINK ERROR]', err);
+      res.status(500).json({ message: err?.message || 'Failed to create payment link' });
+    }
+  });
+
+  // ── CASHFREE WEBHOOK — Auto-releases milestone when payment confirmed ───────
+  // Register BEFORE body-parser so we can read raw body for signature verification
+  app.post('/api/webhooks/cashfree',
+    express.raw({ type: 'application/json' }),
+    async (req, res) => {
+      try {
+        const rawBody  = req.body?.toString() || '';
+        const timestamp = req.headers['x-webhook-timestamp'] as string || '';
+        const signature = req.headers['x-webhook-signature'] as string || '';
+
+        // Verify webhook authenticity
+        const isValid = verifyCashfreeWebhook(rawBody, timestamp, signature);
+        if (!isValid) {
+          console.warn('[WEBHOOK] ❌ Invalid Cashfree webhook signature');
+          return res.status(400).json({ message: 'Invalid signature' });
+        }
+
+        const event = JSON.parse(rawBody);
+        console.log('[WEBHOOK] Cashfree event received:', event?.type);
+
+        // Handle successful payment
+        if (event?.type === 'PAYMENT_SUCCESS_WEBHOOK' || event?.data?.payment?.payment_status === 'SUCCESS') {
+          const linkId    = event?.data?.link?.link_id || event?.data?.order?.order_id || '';
+          const linkMeta  = event?.data?.link?.link_meta || {};
+          const milestoneId = linkMeta?.milestone_id;
+
+          if (milestoneId) {
+            // Get milestone and mark as RELEASED
+            const milestones = await storage.getMilestones(''); // We need to find by ID
+            // Use direct DB approach — fetch milestone details via projectId
+            // Since we don't have getMilestoneById, we update directly
+            const updated = await storage.updateMilestone(milestoneId, { status: 'RELEASED' });
+
+            // Update escrow tracking
+            const escrow = await storage.getEscrow(updated.projectId);
+            if (escrow) {
+              await storage.updateEscrow(escrow.id, {
+                releasedAmount: escrow.releasedAmount + updated.amount,
+                remainingAmount: Math.max(0, escrow.remainingAmount - updated.amount),
+              });
+            }
+
+            // Check if all milestones done
+            const allMs = await storage.getMilestones(updated.projectId);
+            if (allMs.every(m => m.status === 'RELEASED')) {
+              await storage.updateProjectStatus(updated.projectId, 'COMPLETED');
+            } else {
+              await storage.updateProjectStatus(updated.projectId, 'ACTIVE');
+            }
+
+            // Notify talent
+            const project = await storage.getProject(updated.projectId);
+            if (project?.freelancerId) {
+              const talent = await storage.getUser(project.freelancerId);
+              if (talent?.email) {
+                sendPaymentReleasedEmail(talent.email, project.title, updated.amount).catch(console.error);
+              }
+            }
+
+            console.log(`[WEBHOOK] ✅ Milestone ${milestoneId} marked RELEASED via Cashfree payment`);
+          } else if (linkMeta?.is_fee === 'true') {
+            const projectId = linkMeta.project_id;
+            if (projectId) {
+              await storage.updateProjectStatus(projectId, 'ACTIVE');
+              console.log(`[WEBHOOK] ✅ Platform fee paid for project ${projectId}. Marked as ACTIVE.`);
+            }
+          } else {
+            console.log('[WEBHOOK] Payment received but no milestone_id or is_fee in meta. Link ID:', linkId);
+          }
+        }
+
+        res.status(200).json({ received: true });
+      } catch (err) {
+        console.error('[WEBHOOK] Error processing Cashfree webhook:', err);
+        res.status(500).json({ message: 'Webhook processing error' });
+      }
+    }
+  );
+
+  // ── ACTIVATE PROJECT (Free) ──────────────
+  app.post('/api/projects/:id/activate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId  = req.user.claims.sub;
+      const project = await storage.getProject(req.params.id);
+      if (!project) return res.status(404).json({ message: 'Project not found' });
+      if (project.buyerId !== userId && project.createdBy !== userId) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
+      const updated = await storage.updateProjectStatus(project.id, 'ACTIVE');
+      res.json(updated);
+    } catch (err: any) {
+      console.error('[ACTIVATE ERROR]', err);
+      res.status(500).json({ message: err?.message || 'Failed to activate project' });
+    }
+  });
+
+  // ── LEGACY APPROVE (kept for admin use — prefer /payment-link route) ───────
   app.post(api.milestones.approve.path, isAuthenticated, async (req: any, res) => {
     const milestone = await storage.updateMilestone(req.params.id, {
       status: 'RELEASED'

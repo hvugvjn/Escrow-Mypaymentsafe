@@ -114,20 +114,47 @@ export default function ProjectDetails() {
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
 
-  const handleDummyPayment = (e: React.FormEvent) => {
+  const [isCreatingPaymentLink, setIsCreatingPaymentLink] = useState<string | null>(null);
+
+  const handleActivateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessingPayment(true);
-    setTimeout(() => {
-      fundProject.mutate(project.id, {
-        onSuccess: () => {
-          setIsProcessingPayment(false);
-          setIsPaymentOpen(false);
-        },
-        onError: () => {
-          setIsProcessingPayment(false);
-        }
+    try {
+      const res = await fetch(`/api/projects/${project.id}/activate`, {
+        method: 'POST',
       });
-    }, 1500);
+      if (res.ok) {
+        setIsPaymentOpen(false);
+        toast({ title: 'Success', description: 'Project activated successfully.' });
+        // The UI should auto-refresh via react-query on next poll or we could invalidate queries.
+      } else {
+        const data = await res.json();
+        toast({ title: 'Error', description: data.message || 'Failed to activate project', variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
+    }
+    setIsProcessingPayment(false);
+  };
+
+  const handleApproveAndPay = async (milestoneId: string) => {
+    setIsCreatingPaymentLink(milestoneId);
+    try {
+      const res = await fetch(`/api/milestones/${milestoneId}/payment-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: project.id })
+      });
+      const data = await res.json();
+      if (res.ok && data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      } else {
+        toast({ title: 'Error', description: data.message || 'Failed to create payment link', variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
+    }
+    setIsCreatingPaymentLink(null);
   };
 
   const handleSubmitWork = () => {
@@ -190,44 +217,22 @@ export default function ProjectDetails() {
             {isClient && project.status === 'WAITING_FOR_FUNDING' && (
               <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
                 <DialogTrigger asChild>
-                  <Button className="hover-elevate bg-primary text-white shadow-lg shadow-primary/20">
-                    <Lock className="w-4 h-4 mr-2" />
-                    Fund Escrow
+                  <Button className="hover-elevate bg-primary text-white shadow-lg shadow-primary/20 gap-2">
+                    <CheckCircle2 className="w-4 h-4" /> Activate Project
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2"><CreditCard className="w-5 h-5 text-primary" /> Secure Deposit</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-primary" /> Activate Project Workspace</DialogTitle>
                     <DialogDescription>
-                      Enter your payment details to fund the escrow. This is a dummy payment gateway before Stripe integration.
+                      Activate this project to allow the talent to begin working. Milestone payments will be securely managed directly through Cashfree when you approve the work.
                     </DialogDescription>
                   </DialogHeader>
-                  <form onSubmit={handleDummyPayment} className="space-y-4 py-4">
-                    <div className="p-4 bg-muted/50 rounded-lg flex justify-between items-center mb-4 border border-border/50">
-                      <span className="font-semibold text-muted-foreground">Total to Pay</span>
-                      <span className="text-xl font-bold">{formatMoney(escrow?.totalAmount || 0)}</span>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Cardholder Name</Label>
-                      <Input required placeholder="Jane Doe" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Card Number</Label>
-                      <Input required placeholder="0000 0000 0000 0000" maxLength={19} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Expiry Date</Label>
-                        <Input required placeholder="MM/YY" maxLength={5} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>CVV</Label>
-                        <Input required placeholder="123" maxLength={4} type="password" />
-                      </div>
-                    </div>
+                  <form onSubmit={handleActivateProject} className="space-y-4 py-4">
+                    
                     <DialogFooter className="pt-4">
                       <Button type="submit" className="w-full bg-primary" disabled={isProcessingPayment}>
-                        {isProcessingPayment ? "Processing Payment..." : `Pay Now`}
+                        {isProcessingPayment ? "Activating..." : "Activate Now"}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -453,8 +458,8 @@ export default function ProjectDetails() {
 
                       {isClient && m.status === 'SUBMITTED' && (
                         <div className="space-y-2 w-full">
-                          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg" onClick={() => approveMilestone.mutate(m.id)} disabled={approveMilestone.isPending}>
-                            <CheckCircle2 className="w-4 h-4 mr-2" /> Approve & Pay
+                          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg gap-2" onClick={() => handleApproveAndPay(m.id)} disabled={isCreatingPaymentLink === m.id}>
+                            <CheckCircle2 className="w-4 h-4" /> {isCreatingPaymentLink === m.id ? 'Loading...' : 'Approve & Pay'}
                           </Button>
                           <Button variant="outline" className="w-full border-amber-500/50 text-amber-600 hover:bg-amber-50" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
                             Request Revision
