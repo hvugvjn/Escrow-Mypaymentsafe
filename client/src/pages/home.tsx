@@ -256,7 +256,7 @@ export default function Home() {
                     </motion.h1>
 
                     <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-3xl mx-auto mb-8 md:mb-10 leading-relaxed">
-                        Ditch the 20% platform fees and unreliable execution. PAX is the elite network featuring <strong>0% talent commissions</strong>, <strong>automated late penalties</strong>, and <strong>managed milestone escrow</strong>. Stop hoping for results. Guarantee them.
+                        PAX is the premier network for elite talent and ambitious clients. We combine <strong>bank-grade escrow protection</strong>, <strong>automated milestone oversight</strong>, and a <strong>zero-commission talent structure</strong> to guarantee flawless execution.
                     </motion.p>
 
                     <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -287,15 +287,15 @@ export default function Home() {
             {/* ── PROBLEM ── */}
             <section id="why" className="py-24 px-6 max-w-6xl mx-auto">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Legacy platforms take 20% and leave you with chaos. <br /><span className="text-red-400">We don't.</span></h2>
-                    <p className="text-white/50 text-lg max-w-2xl mx-auto">Upwork and Fiverr connect you, take a massive cut, and leave you to manage the mess. PAX actively enforces delivery, penalizes delays, and guarantees zero-commission payouts.</p>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Engineered for predictability. <br /><span className="text-blue-400">Built for scale.</span></h2>
+                    <p className="text-white/50 text-lg max-w-2xl mx-auto">We replace project chaos with structured, milestone-driven execution. Every transaction is secured, every deadline is enforced, and talent is rewarded fully for their excellence.</p>
                 </motion.div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                     {[
-                        { icon: AlertTriangle, color: "text-red-400 bg-red-400/10", title: "The 20% Fee Trap", desc: "Other platforms punish success by taking 10-20% of the freelancer's earnings. PAX charges 0% commission to talent, attracting the absolute best developers and designers." },
-                        { icon: AlertTriangle, color: "text-orange-400 bg-orange-400/10", title: "Missed Deadlines & Chaos", desc: "Projects drag on forever without proper oversight elsewhere. PAX enforces strict deadlines with automated financial penalties for late delivery without approval." },
-                        { icon: AlertTriangle, color: "text-yellow-400 bg-yellow-400/10", title: "Worked & Never Paid", desc: "Clients vanish and leave talents unpaid. PAX locks client funds in an RBI-compliant escrow upfront, guaranteeing instant payout upon milestone approval." },
+                        { icon: Shield, color: "text-blue-400 bg-blue-400/10", title: "Zero-Commission Ecosystem", desc: "We believe talent should keep 100% of their earnings. By removing talent commissions entirely, we attract the industry's most capable professionals to your projects." },
+                        { icon: Zap, color: "text-purple-400 bg-purple-400/10", title: "Strict Deadline Enforcement", desc: "Timelines are non-negotiable. Our platform enforces structured delivery schedules, automatically applying financial penalties to ensure your milestones are met on time." },
+                        { icon: Lock, color: "text-indigo-400 bg-indigo-400/10", title: "RBI-Compliant Escrow", desc: "Project capital is locked in a secure nodal account upfront. Funds are instantly and automatically routed to the talent's bank account the moment you approve the work." },
                     ].map(({ icon: Icon, color, title, desc }, i) => (
                         <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                             className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors">
@@ -349,8 +349,8 @@ export default function Home() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
-                        { icon: Shield, title: "0% Commission for Talent", desc: "Unlike platforms taking 20% of your earnings, PAX lets you keep exactly what you earn. We only charge a small processing fee to the client." },
-                        { icon: Zap, title: "Strict Milestone Transfers", desc: "No more waiting for funds. Once a milestone is approved by the client, funds are instantly routed directly to your bank account via RBI-compliant nodal infrastructure." },
+                        { icon: Shield, title: "0% Talent Commission", desc: "We operate on a zero-commission model for talents, ensuring that top-tier professionals retain the full value of their executed contracts." },
+                        { icon: Zap, title: "Automated Bank Routing", desc: "Upon your approval, milestone funds are seamlessly and instantly routed directly to the talent's registered bank account via trusted nodal infrastructure." },
                         { icon: AlertTriangle, title: "Late Penalty System", desc: "We enforce strict deadlines. If talent misses a delivery deadline without approval, an automated penalty is applied, protecting the client's time and investment." },
                         { icon: Users, title: "Dedicated Project Oversight", desc: "Don't have time to chase talents? Our system actively oversees your timelines, reviews deliverables, and ensures everything stays completely on track." },
                         { icon: Handshake, title: "Fair Dispute Resolution", desc: "If things go wrong or communication breaks down, PAX instantly steps in to fairly review the project and resolve disagreements based on concrete milestones." },
