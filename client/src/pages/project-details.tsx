@@ -400,9 +400,9 @@ export default function ProjectDetails() {
                     {/* Left Side Info */}
                     <div className="flex gap-4">
                       <div className="mt-1">
-                        {m.status === 'APPROVED' ? (
+                        {m.status === 'APPROVED' || m.status === 'RELEASED' ? (
                           <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center"><Check className="w-4 h-4" /></div>
-                        ) : m.status === 'SUBMITTED' ? (
+                        ) : m.status === 'SUBMITTED' || m.status === 'PAYMENT_PENDING' ? (
                           <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center"><Clock className="w-4 h-4" /></div>
                         ) : (
                           <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center p-1"></div>
@@ -411,8 +411,9 @@ export default function ProjectDetails() {
                       <div>
                         <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
                           Step {idx + 1}: {m.title}
-                          {m.status === 'APPROVED' && <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Completed</span>}
+                          {m.status === 'APPROVED' || m.status === 'RELEASED' ? <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Completed</span> : null}
                           {m.status === 'SUBMITTED' && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Under UAT Review</span>}
+                          {m.status === 'PAYMENT_PENDING' && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Payment Pending</span>}
                         </h3>
                         <p className="text-muted-foreground mb-4">{m.description}</p>
 
@@ -480,7 +481,7 @@ export default function ProjectDetails() {
                         </Dialog>
                       )}
 
-                      {isClient && m.status === 'SUBMITTED' && (
+                      {isClient && (m.status === 'SUBMITTED' || m.status === 'PAYMENT_PENDING') && (
                         <div className="space-y-2 w-full">
                           <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg gap-2" onClick={() => handleApproveAndPay(m.id)} disabled={isCreatingPaymentLink === m.id}>
                             <CheckCircle2 className="w-4 h-4" /> {isCreatingPaymentLink === m.id ? 'Loading...' : 'Approve & Pay'}
