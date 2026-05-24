@@ -282,10 +282,7 @@ export async function registerRoutes(
       const userId = req.user.claims.sub;
       const milestoneId = req.params.id;
 
-      const [milestone] = await Promise.all([storage.updateMilestone(milestoneId, {})]);
-      const actualMilestone = await storage.getMilestones(milestone?.projectId || '').then(ms => ms.find(m => m.id === milestoneId));
 
-      // Re-fetch correctly
       const allMs = await storage.getMilestones(req.body.projectId || '');
       const ms = allMs.find(m => m.id === milestoneId);
       if (!ms) return res.status(404).json({ message: 'Milestone not found' });
