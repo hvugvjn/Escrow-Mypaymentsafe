@@ -39,6 +39,7 @@ export default function ProjectDetails() {
   const [isSendingMsg, setIsSendingMsg] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const [receipt, setReceipt] = useState<{ type: string; amount: number; date?: string; milestoneTitle?: string } | null>(null);
+  const [isCreatingPaymentLink, setIsCreatingPaymentLink] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -113,8 +114,6 @@ export default function ProjectDetails() {
   const isTalent = user?.role === 'FREELANCER';
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
-
-  const [isCreatingPaymentLink, setIsCreatingPaymentLink] = useState<string | null>(null);
 
   const handleActivateProject = async (e: React.FormEvent) => {
     e.preventDefault();
