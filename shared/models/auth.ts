@@ -28,6 +28,10 @@ export const users = pgTable("users", {
   portfolioLink: varchar("portfolio_link"),
   bio: text("bio"),
   resumeUrl: varchar("resume_url"),
+  // Bank & Payout Details
+  upiId: varchar("upi_id"),
+  bankAccountNumber: varchar("bank_account_number"),
+  bankIfsc: varchar("bank_ifsc"),
   currentOtp: varchar("current_otp"),
   otpExpiresAt: timestamp("otp_expires_at"),
   passwordHash: varchar("password_hash"),

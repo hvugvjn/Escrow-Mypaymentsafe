@@ -59,7 +59,10 @@ export default function ProfileComplete() {
     phone: "",
     country: "",
     portfolioLink: "",
-    bio: ""
+    bio: "",
+    upiId: "",
+    bankAccountNumber: "",
+    bankIfsc: ""
   });
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [customSkill, setCustomSkill] = useState("");
@@ -316,7 +319,43 @@ export default function ProfileComplete() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  
+                  <div className="space-y-4 pt-2">
+                    <h3 className="font-semibold text-lg border-b pb-2">Payout Details (For receiving funds)</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="upiId">UPI ID (Recommended)</Label>
+                      <Input
+                        id="upiId"
+                        className="bg-muted/50"
+                        placeholder="yourname@bank"
+                        value={formData.upiId}
+                        onChange={e => setFormData({ ...formData, upiId: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="bankAccountNumber">Bank Account Number</Label>
+                        <Input
+                          id="bankAccountNumber"
+                          className="bg-muted/50"
+                          value={formData.bankAccountNumber}
+                          onChange={e => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="bankIfsc">IFSC Code</Label>
+                        <Input
+                          id="bankIfsc"
+                          className="bg-muted/50 uppercase"
+                          value={formData.bankIfsc}
+                          onChange={e => setFormData({ ...formData, bankIfsc: e.target.value.toUpperCase() })}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground italic">Provide either a UPI ID or Bank Details so we can route your escrow payments automatically.</p>
+                  </div>
+
+                  <div className="space-y-2 pt-2">
                     <Label htmlFor="resume">Resume Document (Required)</Label>
                     <Input
                       id="resume"
