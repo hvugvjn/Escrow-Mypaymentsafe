@@ -7,13 +7,14 @@
 //   3. PAX marks milestone RELEASED automatically
 // ============================================================
 
+const APP_ID     = (process.env.CASHFREE_APP_ID || '').trim();
+const SECRET_KEY = (process.env.CASHFREE_SECRET_KEY || '').trim();
+
+const isProdKey = SECRET_KEY?.includes('_prod_');
 const CASHFREE_BASE_URL =
-  process.env.CASHFREE_ENV === 'production'
+  (process.env.CASHFREE_ENV === 'production' || isProdKey)
     ? 'https://api.cashfree.com/pg'
     : 'https://sandbox.cashfree.com/pg';
-
-const APP_ID     = process.env.CASHFREE_APP_ID!;
-const SECRET_KEY = process.env.CASHFREE_SECRET_KEY!;
 const API_VERSION = '2023-08-01';
 
 // ── Common headers for all Cashfree API calls ─────────────────────────────
