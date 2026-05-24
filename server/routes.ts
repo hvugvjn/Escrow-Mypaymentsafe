@@ -355,27 +355,21 @@ export async function registerRoutes(
           const milestoneId = linkMeta?.milestone_id || orderTags?.milestone_id;
 
           if (milestoneId) {
-            // Get milestone and mark as RELEASED
-            const milestones = await storage.getMilestones(''); // We need to find by ID
-            // Use direct DB approach — fetch milestone details via projectId
-            // Since we don't have getMilestoneById, we update directly
-            const updated = await storage.updateMilestone(milestoneId, { status: 'RELEASED' });
+            // Get milestone and mark as FUNDED (Escrow secured)
+            const updated = await storage.updateMilestone(milestoneId, { status: 'FUNDED' });
 
-            // Update escrow tracking
-            const escrow = await storage.getEscrow(updated.projectId);
-            if (escrow) {
-              await storage.updateEscrow(escrow.id, {
-                releasedAmount: escrow.releasedAmount + updated.amount,
-                remainingAmount: Math.max(0, escrow.remainingAmount - updated.amount),
-              });
-            }
-
-            // Check if all milestones done
-            const allMs = await storage.getMilestones(updated.projectId);
-            if (allMs.every(m => m.status === 'RELEASED')) {
-              await storage.updateProjectStatus(updated.projectId, 'COMPLETED');
-            } else {
+            // Ensure project status is ACTIVE
+            if (updated) {
               await storage.updateProjectStatus(updated.projectId, 'ACTIVE');
+              
+              // Notify talent that escrow is secured
+              await createNotification({
+                userId: updated.freelancerId || '',
+                type: 'SYSTEM',
+                title: 'Escrow Secured',
+                message: `Client has funded the escrow for milestone: ${updated.title}. You can now begin work.`,
+                read: false,
+              });
             }
 
             // Notify talent
@@ -406,6 +400,49 @@ export async function registerRoutes(
       }
     }
   );
+
+  // ── APPROVE WORK & RELEASE PAYOUT ──────────────────────────────────────────
+  app.post('/api/milestones/:id/approve', isAuthenticated, async (req: any, res) => {
+    try {
+      const milestoneId = req.params.id;
+      const userId = req.user.claims.sub;
+      
+      const updated = await storage.updateMilestone(milestoneId, { status: 'RELEASED' });
+      
+      // Update escrow tracking
+      const escrow = await storage.getEscrow(updated.projectId);
+      if (escrow) {
+        await storage.updateEscrow(escrow.id, {
+          releasedAmount: escrow.releasedAmount + updated.amount,
+          remainingAmount: Math.max(0, escrow.remainingAmount - updated.amount),
+        });
+      }
+
+      // Check if all milestones done
+      const allMs = await storage.getMilestones(updated.projectId);
+      if (allMs.every(m => m.status === 'RELEASED')) {
+        await storage.updateProjectStatus(updated.projectId, 'COMPLETED');
+      }
+
+      // Notify talent
+      if (updated.freelancerId) {
+        await createNotification({
+          userId: updated.freelancerId,
+          type: 'SYSTEM',
+          title: 'Work Approved - Payout Released',
+          message: `Your work for milestone '${updated.title}' has been approved. The payout is being processed to your bank account!`,
+          read: false,
+        });
+      }
+
+      // TODO: Trigger Cashfree Payouts API here to automatically route funds to the talent
+
+      res.json(updated);
+    } catch (err: any) {
+      console.error('[APPROVE ERROR]', err);
+      res.status(500).json({ message: err.message || 'Failed to approve work' });
+    }
+  });
 
   // ── ACTIVATE PROJECT (Free) ──────────────
   app.post('/api/projects/:id/activate', isAuthenticated, async (req: any, res) => {

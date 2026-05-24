@@ -136,7 +136,20 @@ export default function ProjectDetails() {
     setIsProcessingPayment(false);
   };
 
-  const handleApproveAndPay = async (milestoneId: string) => {
+  const handleApproveWork = async (milestoneId: string) => {
+    try {
+      const res = await fetch(`/api/milestones/${milestoneId}/approve`, {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error('Failed to approve work');
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId] });
+      toast({ title: 'Success', description: 'Work approved. Funds are being released to the talent!' });
+    } catch (err) {
+      toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
+    }
+  };
+
+  const handleSecureEscrow = async (milestoneId: string) => {
     setIsCreatingPaymentLink(milestoneId);
     try {
       const res = await fetch(`/api/milestones/${milestoneId}/payment-link`, {
@@ -402,6 +415,8 @@ export default function ProjectDetails() {
                       <div className="mt-1">
                         {m.status === 'APPROVED' || m.status === 'RELEASED' ? (
                           <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center"><Check className="w-4 h-4" /></div>
+                        ) : m.status === 'FUNDED' ? (
+                          <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center"><DollarSign className="w-4 h-4" /></div>
                         ) : m.status === 'SUBMITTED' || m.status === 'PAYMENT_PENDING' ? (
                           <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center"><Clock className="w-4 h-4" /></div>
                         ) : (
@@ -412,8 +427,9 @@ export default function ProjectDetails() {
                         <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
                           Step {idx + 1}: {m.title}
                           {m.status === 'APPROVED' || m.status === 'RELEASED' ? <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Completed</span> : null}
+                          {m.status === 'FUNDED' && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Funded & Secured</span>}
                           {m.status === 'SUBMITTED' && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Under UAT Review</span>}
-                          {m.status === 'PAYMENT_PENDING' && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Payment Pending</span>}
+                          {m.status === 'PAYMENT_PENDING' && <span className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Payment Pending</span>}
                         </h3>
                         <p className="text-muted-foreground mb-4">{m.description}</p>
 
@@ -453,7 +469,20 @@ export default function ProjectDetails() {
 
                     {/* Right Side Actions */}
                     <div className="flex flex-col gap-2 sm:flex-row md:flex-col md:min-w-[160px] md:items-end w-full md:w-auto">
-                      {isTalent && (m.status === 'PENDING' || m.status === 'REVISION_REQUESTED') && project.status === 'ACTIVE' && (
+                      {/* 1. Client Funds Escrow */}
+                      {isClient && (m.status === 'PENDING' || m.status === 'PAYMENT_PENDING') && (
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg gap-2" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
+                          <DollarSign className="w-4 h-4" /> {isCreatingPaymentLink === m.id ? 'Loading...' : 'Fund & Secure Escrow'}
+                        </Button>
+                      )}
+
+                      {/* 2. Talent sees pending escrow */}
+                      {isTalent && (m.status === 'PENDING' || m.status === 'PAYMENT_PENDING') && (
+                        <p className="text-sm text-muted-foreground text-center bg-muted/50 p-2 rounded-lg border border-border/50">Waiting for Client to Fund</p>
+                      )}
+
+                      {/* 3. Talent Submits Work */}
+                      {isTalent && (m.status === 'FUNDED' || m.status === 'REVISION_REQUESTED') && project.status === 'ACTIVE' && (
                         <Dialog open={isSubmitOpen && selectedMilestoneId === m.id} onOpenChange={(open) => {
                           setIsSubmitOpen(open);
                           if (open) setSelectedMilestoneId(m.id);
@@ -481,10 +510,11 @@ export default function ProjectDetails() {
                         </Dialog>
                       )}
 
-                      {isClient && (m.status === 'SUBMITTED' || m.status === 'PAYMENT_PENDING') && (
+                      {/* 4. Client Approves Work */}
+                      {isClient && m.status === 'SUBMITTED' && (
                         <div className="space-y-2 w-full">
-                          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg gap-2" onClick={() => handleApproveAndPay(m.id)} disabled={isCreatingPaymentLink === m.id}>
-                            <CheckCircle2 className="w-4 h-4" /> {isCreatingPaymentLink === m.id ? 'Loading...' : 'Approve & Pay'}
+                          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg gap-2" onClick={() => handleApproveWork(m.id)}>
+                            <CheckCircle2 className="w-4 h-4" /> Approve & Release Payout
                           </Button>
                           <Button variant="outline" className="w-full border-amber-500/50 text-amber-600 hover:bg-amber-50" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
                             Request Revision
