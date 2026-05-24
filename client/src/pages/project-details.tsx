@@ -148,7 +148,16 @@ export default function ProjectDetails() {
       if (res.ok && data.paymentUrl) {
         window.location.href = data.paymentUrl;
       } else {
-        toast({ title: 'Error', description: data.message || 'Failed to create payment link', variant: 'destructive' });
+        if (data.message?.includes('authentication Failed')) {
+          toast({ 
+            title: 'Configuration Error', 
+            description: 'The Cashfree API Keys provided to the server are invalid or expired. Please update CASHFREE_APP_ID and CASHFREE_SECRET_KEY in your Render dashboard.', 
+            variant: 'destructive',
+            duration: 10000
+          });
+        } else {
+          toast({ title: 'Error', description: data.message || 'Failed to create payment link', variant: 'destructive' });
+        }
       }
     } catch (err) {
       toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
