@@ -22,7 +22,7 @@ export default function Home() {
         <div className="min-h-screen bg-[#0a0f1e] text-white font-sans overflow-x-hidden">
 
             {/* ── NAV ── */}
-            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 md:py-4 bg-[#0a0f1e]/80 backdrop-blur-md border-b border-white/5">
+            <nav className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 md:py-4 border-b border-white/5 transition-colors duration-200 ${mobileMenuOpen ? 'bg-[#0a0f1e]' : 'bg-[#0a0f1e]/80 backdrop-blur-md'}`} style={{ backgroundColor: mobileMenuOpen ? '#0a0f1e' : undefined }}>
                 <div className="flex items-center gap-8">
                     <PaxLogo className="text-3xl" white />
                     
@@ -262,14 +262,15 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-40 bg-[#0a0f1e]/98 pt-24 pb-8 px-6 overflow-y-auto flex flex-col lg:hidden border-b border-white/5"
+                        className="fixed inset-0 z-40 bg-[#0a0f1e] pt-24 pb-8 px-6 overflow-y-auto flex flex-col lg:hidden border-b border-white/5"
+                        style={{ backgroundColor: '#0a0f1e' }}
                     >
-                        <div className="flex-1 space-y-4 mt-2">
+                        <div className="flex-1 space-y-4 mt-4">
                             {/* Category 1: Hire Freelancers */}
-                            <div className="border-b border-white/5 pb-3">
+                            <div className={`border-b border-white/5 pb-3 transition-all duration-200 ${expandedAccordion === 'hire' ? 'bg-white/[0.03] border border-white/10 rounded-2xl p-4 my-2 shadow-lg shadow-black/25' : 'py-1'}`}>
                                 <button
                                     onClick={() => toggleAccordion('hire')}
-                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                    className="w-full flex items-center justify-between py-2 text-lg font-bold text-white/90 hover:text-white"
                                 >
                                     <span>Hire Freelancers</span>
                                     {expandedAccordion === 'hire' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
@@ -329,10 +330,10 @@ export default function Home() {
                             </div>
 
                             {/* Category 2: Find Work */}
-                            <div className="border-b border-white/5 pb-3">
+                            <div className={`border-b border-white/5 pb-3 transition-all duration-200 ${expandedAccordion === 'find' ? 'bg-white/[0.03] border border-white/10 rounded-2xl p-4 my-2 shadow-lg shadow-black/25' : 'py-1'}`}>
                                 <button
                                     onClick={() => toggleAccordion('find')}
-                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                    className="w-full flex items-center justify-between py-2 text-lg font-bold text-white/90 hover:text-white"
                                 >
                                     <span>Find Work</span>
                                     {expandedAccordion === 'find' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
@@ -371,10 +372,10 @@ export default function Home() {
                             </div>
 
                             {/* Category 3: Why PAX */}
-                            <div className="border-b border-white/5 pb-3">
+                            <div className={`border-b border-white/5 pb-3 transition-all duration-200 ${expandedAccordion === 'why' ? 'bg-white/[0.03] border border-white/10 rounded-2xl p-4 my-2 shadow-lg shadow-black/25' : 'py-1'}`}>
                                 <button
                                     onClick={() => toggleAccordion('why')}
-                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                    className="w-full flex items-center justify-between py-2 text-lg font-bold text-white/90 hover:text-white"
                                 >
                                     <span>Why PAX</span>
                                     {expandedAccordion === 'why' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
@@ -400,10 +401,10 @@ export default function Home() {
                             </div>
 
                             {/* Category 4: What's New */}
-                            <div className="border-b border-white/5 pb-3">
+                            <div className={`border-b border-white/5 pb-3 transition-all duration-200 ${expandedAccordion === 'new' ? 'bg-white/[0.03] border border-white/10 rounded-2xl p-4 my-2 shadow-lg shadow-black/25' : 'py-1'}`}>
                                 <button
                                     onClick={() => toggleAccordion('new')}
-                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                    className="w-full flex items-center justify-between py-2 text-lg font-bold text-white/90 hover:text-white"
                                 >
                                     <span>What's new</span>
                                     {expandedAccordion === 'new' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
