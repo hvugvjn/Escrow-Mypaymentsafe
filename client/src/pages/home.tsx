@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { motion } from "framer-motion";
-import { Shield, CheckCircle2, Lock, Zap, Users, Globe, ArrowRight, Star, CreditCard, AlertTriangle, BadgeCheck, Handshake } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Shield, CheckCircle2, Lock, Zap, Users, Globe, ArrowRight, Star, CreditCard, AlertTriangle, BadgeCheck, Handshake, Menu, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaxLogo } from "@/components/pax-logo";
 
@@ -10,6 +11,13 @@ const fadeUp = {
 };
 
 export default function Home() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null);
+
+    const toggleAccordion = (name: string) => {
+        setExpandedAccordion(expandedAccordion === name ? null : name);
+    };
+
     return (
         <div className="min-h-screen bg-[#0a0f1e] text-white font-sans overflow-x-hidden">
 
@@ -223,17 +231,219 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                     <Link href="/login">
                         <Button variant="ghost" className="hidden sm:flex text-white hover:bg-white/10">Log In</Button>
                     </Link>
                     <Link href="/login">
-                        <Button className="bg-white text-[#0a0f1e] hover:bg-white/90 font-bold rounded-full px-6 shadow-xl shadow-white/10">
+                        <Button className="bg-white text-[#0a0f1e] hover:bg-white/90 font-bold rounded-full px-5 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base font-bold shadow-xl shadow-white/10">
                             Sign up
                         </Button>
                     </Link>
+                    
+                    <button
+                        onClick={() => {
+                            setMobileMenuOpen(!mobileMenuOpen);
+                            if (mobileMenuOpen) setExpandedAccordion(null);
+                        }}
+                        className="lg:hidden p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                        aria-label="Toggle navigation menu"
+                    >
+                        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
                 </div>
             </nav>
+
+            {/* ── MOBILE MENU OVERLAY ── */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-40 bg-[#0a0f1e]/98 pt-24 pb-8 px-6 overflow-y-auto flex flex-col lg:hidden border-b border-white/5"
+                    >
+                        <div className="flex-1 space-y-4 mt-2">
+                            {/* Category 1: Hire Freelancers */}
+                            <div className="border-b border-white/5 pb-3">
+                                <button
+                                    onClick={() => toggleAccordion('hire')}
+                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                >
+                                    <span>Hire Freelancers</span>
+                                    {expandedAccordion === 'hire' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
+                                </button>
+                                
+                                <AnimatePresence>
+                                    {expandedAccordion === 'hire' && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden pl-2 pr-2 py-2 space-y-4"
+                                        >
+                                            <div className="space-y-2">
+                                                <h4 className="font-bold text-xs text-blue-400 uppercase tracking-wider">Admin & Support</h4>
+                                                <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
+                                                    <li><Link href="/info/hire-cold-callers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Cold callers</a></Link></li>
+                                                    <li><Link href="/info/hire-content-moderators" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Moderators</a></Link></li>
+                                                    <li><Link href="/info/hire-lead-generation-specialists" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Lead Gen</a></Link></li>
+                                                    <li><Link href="/info/hire-virtual-assistants" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Virtual Assistants</a></Link></li>
+                                                </ul>
+                                            </div>
+                                            
+                                            <div className="space-y-2">
+                                                <h4 className="font-bold text-xs text-blue-400 uppercase tracking-wider">Design & Creative</h4>
+                                                <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
+                                                    <li><Link href="/info/hire-graphic-designers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Graphic Design</a></Link></li>
+                                                    <li><Link href="/info/hire-illustrators" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Illustrators</a></Link></li>
+                                                    <li><Link href="/info/hire-ux-designers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">UX Designers</a></Link></li>
+                                                    <li><Link href="/info/hire-web-designers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Web Designers</a></Link></li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <h4 className="font-bold text-xs text-blue-400 uppercase tracking-wider">Development & Tech</h4>
+                                                <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
+                                                    <li><Link href="/info/hire-mobile-app-developers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Mobile Apps</a></Link></li>
+                                                    <li><Link href="/info/hire-python-developers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Python Devs</a></Link></li>
+                                                    <li><Link href="/info/hire-software-developers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Software Devs</a></Link></li>
+                                                    <li><Link href="/info/hire-web-developers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Web Devs</a></Link></li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <h4 className="font-bold text-xs text-blue-400 uppercase tracking-wider">Marketing</h4>
+                                                <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
+                                                    <li><Link href="/info/hire-digital-marketers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Digital Marketers</a></Link></li>
+                                                    <li><Link href="/info/hire-seo-experts" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">SEO Experts</a></Link></li>
+                                                    <li><Link href="/info/hire-social-media-managers" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Social Media</a></Link></li>
+                                                    <li><Link href="/info/how-to-hire" onClick={() => setMobileMenuOpen(false)}><a className="text-primary font-bold block py-1">Explore all &rarr;</a></Link></li>
+                                                </ul>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Category 2: Find Work */}
+                            <div className="border-b border-white/5 pb-3">
+                                <button
+                                    onClick={() => toggleAccordion('find')}
+                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                >
+                                    <span>Find Work</span>
+                                    {expandedAccordion === 'find' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
+                                </button>
+                                
+                                <AnimatePresence>
+                                    {expandedAccordion === 'find' && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden pl-2 pr-2 py-2 space-y-4"
+                                        >
+                                            <div className="space-y-2">
+                                                <h4 className="font-bold text-xs text-blue-400 uppercase tracking-wider">Admin & support jobs</h4>
+                                                <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
+                                                    <li><Link href="/info/chat-support-jobs" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Chat Support</a></Link></li>
+                                                    <li><Link href="/info/cold-calling-jobs" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Cold Calling</a></Link></li>
+                                                    <li><Link href="/info/virtual-assistant-jobs" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Virtual Assistant</a></Link></li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <h4 className="font-bold text-xs text-blue-400 uppercase tracking-wider">Development & Tech jobs</h4>
+                                                <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
+                                                    <li><Link href="/info/mobile-app-development-jobs" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Mobile Dev</a></Link></li>
+                                                    <li><Link href="/info/software-development-jobs" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Software Dev</a></Link></li>
+                                                    <li><Link href="/info/web-development-jobs" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white block py-1">Web Dev</a></Link></li>
+                                                    <li><Link href="/info/how-it-works-talent" onClick={() => setMobileMenuOpen(false)}><a className="text-primary font-bold block py-1">Explore all &rarr;</a></Link></li>
+                                                </ul>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Category 3: Why PAX */}
+                            <div className="border-b border-white/5 pb-3">
+                                <button
+                                    onClick={() => toggleAccordion('why')}
+                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                >
+                                    <span>Why PAX</span>
+                                    {expandedAccordion === 'why' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
+                                </button>
+                                
+                                <AnimatePresence>
+                                    {expandedAccordion === 'why' && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden pl-2 pr-2 py-2"
+                                        >
+                                            <ul className="space-y-3 text-sm text-white/70">
+                                                <li><Link href="/info/trust-and-safety" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white flex flex-col"><span className="font-semibold text-white">Trust & Safety</span><span className="text-xs text-white/50">Bank-grade security</span></a></Link></li>
+                                                <li><Link href="/info/managed-escrow" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white flex flex-col"><span className="font-semibold text-white">Managed Escrow</span><span className="text-xs text-white/50">Absolute financial safety</span></a></Link></li>
+                                                <li><Link href="/info/project-oversight" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white flex flex-col"><span className="font-semibold text-white">Project Oversight</span><span className="text-xs text-white/50">Zero micromanagement</span></a></Link></li>
+                                            </ul>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Category 4: What's New */}
+                            <div className="border-b border-white/5 pb-3">
+                                <button
+                                    onClick={() => toggleAccordion('new')}
+                                    className="w-full flex items-center justify-between py-3 text-lg font-bold text-white/90 hover:text-white"
+                                >
+                                    <span>What's new</span>
+                                    {expandedAccordion === 'new' ? <ChevronUp className="w-5 h-5 text-blue-400" /> : <ChevronDown className="w-5 h-5 text-white/50" />}
+                                </button>
+                                
+                                <AnimatePresence>
+                                    {expandedAccordion === 'new' && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden pl-2 pr-2 py-2"
+                                        >
+                                            <ul className="space-y-3 text-sm text-white/70">
+                                                <li><Link href="/info/blog" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white flex flex-col"><span className="font-semibold text-white">Blog</span><span className="text-xs text-white/50">Trends & strategies</span></a></Link></li>
+                                                <li><Link href="/info/press-and-media" onClick={() => setMobileMenuOpen(false)}><a className="hover:text-white flex flex-col"><span className="font-semibold text-white">Press Releases</span><span className="text-xs text-white/50">Our latest announcements</span></a></Link></li>
+                                            </ul>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+
+                        {/* CTA Buttons in mobile menu */}
+                        <div className="mt-8 pt-6 border-t border-white/5 flex flex-col gap-3">
+                            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                                <Button variant="outline" className="w-full border-white/10 text-white hover:bg-white/10 py-5 rounded-full font-bold text-sm">
+                                    Log In
+                                </Button>
+                            </Link>
+                            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                                <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-5 rounded-full font-bold text-sm shadow-xl shadow-blue-500/25">
+                                    Sign up
+                                </Button>
+                            </Link>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* ── HERO ── */}
             <section className="relative min-h-screen flex flex-col items-center justify-center px-6 text-center pt-24 overflow-hidden">
