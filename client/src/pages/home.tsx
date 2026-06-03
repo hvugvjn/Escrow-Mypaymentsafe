@@ -6,7 +6,7 @@ import {
     BadgeCheck, AlertTriangle, Handshake, Menu, X,
     ChevronDown, ChevronUp, TrendingUp, Clock, FileText,
     IndianRupee, Building2, Code2, Layers, ShieldCheck,
-    Timer, BarChart3, Star
+    Timer, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaxLogo } from "@/components/pax-logo";
@@ -201,10 +201,8 @@ export default function Home() {
 
                     {/* Headline */}
                     <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
-                        Your client owes you<br />
-                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">₹40 Lakhs.</span>
-                        <br />
-                        <span className="text-white/90">PAX makes sure they pay it.</span>
+                        Execute Complex Projects with<br />
+                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">100% Payment Certainty.</span>
                     </motion.h1>
 
                     {/* Subheadline */}
@@ -473,56 +471,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ── TESTIMONIALS / SOCIAL PROOF ── */}
-            <section className="py-24 px-6 bg-white/[0.02] border-y border-white/5">
-                <div className="max-w-6xl mx-auto">
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
-                            Agencies that stopped chasing<br />
-                            <span className="text-blue-400">and started closing.</span>
-                        </h2>
-                    </motion.div>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {[
-                            {
-                                quote: "We had a ₹28L project where the client delayed sign-off for 3 months after delivery. PAX's escrow would have released our funds the day we met the milestone. That one project nearly bankrupt us.",
-                                name: "Arjun Mehta",
-                                role: "Co-founder, Bengaluru SaaS Agency",
-                                avatar: "AM"
-                            },
-                            {
-                                quote: "Our DSO was 72 days. Engineers needed salaries on the 1st. The mismatch was killing us. The moment we started using escrow-first contracts, that entire anxiety disappeared.",
-                                name: "Priya Nair",
-                                role: "Director of Operations, Chennai Dev Shop",
-                                avatar: "PN"
-                            },
-                            {
-                                quote: "A client added 14 features to a ₹15L contract without a single change order. We delivered them all for free to protect the relationship. Never again. PAX's change order system is non-negotiable now.",
-                                name: "Rohan Sharma",
-                                role: "Founder, Hyderabad Digital Studio",
-                                avatar: "RS"
-                            }
-                        ].map(({ quote, name, role, avatar }, i) => (
-                            <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                                className="bg-white/[0.04] border border-white/8 rounded-2xl p-6 flex flex-col gap-5">
-                                <div className="flex gap-1">
-                                    {[...Array(5)].map((_, s) => <Star key={s} className="w-4 h-4 text-yellow-400 fill-yellow-400" />)}
-                                </div>
-                                <p className="text-white/65 text-sm leading-relaxed italic">"{quote}"</p>
-                                <div className="flex items-center gap-3 mt-auto">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
-                                        {avatar}
-                                    </div>
-                                    <div>
-                                        <div className="text-white text-sm font-semibold">{name}</div>
-                                        <div className="text-white/35 text-xs">{role}</div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+
 
             {/* ── PRICING TRANSPARENCY ── */}
             <section className="py-24 px-6 max-w-4xl mx-auto">
