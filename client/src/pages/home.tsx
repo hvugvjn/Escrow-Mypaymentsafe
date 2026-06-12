@@ -201,8 +201,8 @@ export default function Home() {
 
                     {/* Headline */}
                     <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
-                        The safer way to<br />
-                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">hire & get hired.</span>
+                        Execute Complex Projects with<br />
+                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">100% Payment Certainty.</span>
                     </motion.h1>
 
                     <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/55 max-w-2xl mx-auto mb-10 leading-relaxed">
