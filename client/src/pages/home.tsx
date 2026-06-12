@@ -196,26 +196,30 @@ export default function Home() {
                     {/* Badge */}
                     <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/25 rounded-full px-4 py-2 text-sm text-blue-300 mb-8 font-medium">
                         <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                        Financial Infrastructure for B2B Project Delivery
+                        Secure Escrow for Clients & Freelancers
                     </motion.div>
 
                     {/* Headline */}
                     <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
-                        Execute Complex Projects with<br />
-                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">100% Payment Certainty.</span>
+                        The safer way to<br />
+                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">hire & get hired.</span>
                     </motion.h1>
 
-                    {/* Subheadline */}
                     <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/55 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        PAX is the escrow-first payment platform built for Indian software agencies and digital studios. We lock client funds upfront, enforce milestone deadlines, and release payments the moment work is approved — eliminating Net-60 delays and subjective sign-off disputes forever.
+                        PAX protects both sides of every project. Clients get their money locked safely before work starts. Freelancers get paid automatically the moment their work is approved. No surprises. No disputes. No stress.
                     </motion.p>
 
                     {/* CTAs */}
                     <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href="/login">
                             <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full px-9 py-6 text-base shadow-2xl shadow-blue-500/30 transition-all">
-                                Protect Your Next Project
+                                Post a Project
                                 <ArrowRight className="ml-2 w-4 h-4" />
+                            </Button>
+                        </Link>
+                        <Link href="/login">
+                            <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 rounded-full px-9 py-6 text-base">
+                                Find Work as a Freelancer
                             </Button>
                         </Link>
                         <a href="#how">
@@ -237,44 +241,40 @@ export default function Home() {
                 </motion.div>
             </section>
 
-            {/* ── THE PAIN ── */}
+            {/* ── THE PROBLEM ── */}
             <section className="py-24 px-6 max-w-6xl mx-auto">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-1.5 text-sm text-red-400 mb-6 font-medium">
-                        <AlertTriangle className="w-4 h-4" />
-                        The Problem Every Agency Knows
-                    </div>
                     <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">
-                        You delivered the work.<br />
-                        <span className="text-red-400">They haven't paid.</span>
+                        You deserve better than<br />
+                        <span className="text-red-400">broken promises.</span>
                     </h2>
                     <p className="text-white/50 text-lg max-w-2xl mx-auto leading-relaxed">
-                        Indian software agencies lose an average of <strong className="text-white">56 days</strong> to payment delays on every major contract. Clients hold approval hostage. Scope creep bleeds budgets. DSO kills cash flow. And you've already paid your developers.
+                        Whether you're a client or a freelancer, you've probably been let down before. PAX is built so that never happens again — for either side.
                     </p>
                 </motion.div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                     {[
                         {
-                            icon: Clock,
-                            color: "text-red-400 bg-red-400/10 border-red-400/20",
-                            title: "The 56-Day Payment Gap",
-                            desc: "The average B2B invoice in India goes unpaid for 56 days past the agreed date. For a ₹30L project, that's your entire operations cost for two months — funded by you, not your client.",
-                            stat: "56 days avg delay"
+                            icon: Shield,
+                            color: "text-blue-400 bg-blue-400/10 border-blue-400/20",
+                            title: "Clients: Paid & nothing delivered",
+                            desc: "You pay upfront and the freelancer goes dark. With PAX, your money sits locked in escrow and is only released when you personally approve the completed work.",
+                            stat: "You stay in control, always"
                         },
                         {
-                            icon: FileText,
-                            color: "text-orange-400 bg-orange-400/10 border-orange-400/20",
-                            title: "\u2018Subjective Milestone\u2019 Trap",
-                            desc: "A client's definition of 'done' is never the same as yours. They delay the approval, claim the UI 'doesn't feel right,' and your final 30% — already earned — sits frozen for months.",
-                            stat: "₹10.8L Cr in stuck receivables"
+                            icon: Zap,
+                            color: "text-purple-400 bg-purple-400/10 border-purple-400/20",
+                            title: "Freelancers: Worked & never paid",
+                            desc: "You deliver excellent work and the client delays, disputes, or disappears. PAX guarantees your payment is locked in escrow before you even start.",
+                            stat: "Your earnings, guaranteed"
                         },
                         {
-                            icon: TrendingUp,
-                            color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
-                            title: "Scope Creep Bleeds Profit",
-                            desc: "One 'quick change request' before milestone sign-off becomes three. You do it free to maintain the relationship. Then you do it again. Your 22% margin becomes 8% and you're cash-flow negative.",
-                            stat: "30% of agency margin lost to scope creep"
+                            icon: Lock,
+                            color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20",
+                            title: "Both sides: No accountability",
+                            desc: "Missed deadlines, vague deliverables, and no one to step in. PAX structures every project with clear milestones, enforces deadlines, and mediates any disputes fairly.",
+                            stat: "PAX has your back"
                         },
                     ].map(({ icon: Icon, color, title, desc, stat }, i) => (
                         <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
@@ -301,10 +301,10 @@ export default function Home() {
                     <div className="grid md:grid-cols-4 gap-6 relative">
                         <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
                         {[
-                            { icon: Layers, step: "01", title: "Define Binary Milestones", desc: "Agency and client agree on objective, measurable completion criteria — not feelings. Deployed to staging. Tests passing. Artifacts uploaded. PAX locks these in." },
-                            { icon: Lock, step: "02", title: "Client Deposits into Escrow", desc: "Client transfer the full milestone amount into a secure RBI-compliant nodal account. Work begins only when money is confirmed locked — not promised." },
-                            { icon: Code2, step: "03", title: "Agency Executes & Logs", desc: "Agency delivers work against the agreed deliverables. Progress, artifacts, and completion evidence are logged directly in PAX. Change orders are raised in-platform, not over WhatsApp." },
-                            { icon: CheckCircle2, step: "04", title: "Approve → Instant Payout", desc: "Client reviews against the objective checklist and approves. PAX instantly routes the exact payment to the agency's registered bank account. No invoice chasing." },
+                            { icon: Users, step: "01", title: "Post & Agree on Milestones", desc: "Client and freelancer agree on the scope and break it into clear, specific milestones with deadlines. PAX keeps everyone on the same page." },
+                            { icon: Lock, step: "02", title: "Client Funds the Escrow", desc: "The client deposits the milestone amount into a secure, verified escrow account. The freelancer sees the money is locked and work can begin with confidence." },
+                            { icon: Zap, step: "03", title: "Freelancer Delivers the Work", desc: "The freelancer completes and submits the work through the platform. Progress and deliverables are tracked and visible to both sides at all times." },
+                            { icon: CheckCircle2, step: "04", title: "Approve & Get Paid Instantly", desc: "The client reviews and approves the work. PAX instantly routes the full payment directly to the freelancer's bank account. No waiting, no chasing." },
                         ].map(({ icon: Icon, step, title, desc }, i) => (
                             <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                                 className="flex flex-col items-center text-center">
