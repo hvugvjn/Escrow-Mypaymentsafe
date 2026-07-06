@@ -4,49 +4,51 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Shield, CheckCircle2, Lock, Zap, Users, ArrowRight,
     BadgeCheck, AlertTriangle, Handshake, Menu, X,
-    ChevronDown, ChevronUp, TrendingUp, Clock, FileText,
-    IndianRupee, Building2, Code2, Layers, ShieldCheck,
-    Timer, BarChart3
+    ChevronDown, ChevronUp, Clock, FileText,
+    Building2, ShieldCheck, Timer, BarChart3,
+    Globe, Truck, Scale, Anchor, FileCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaxLogo } from "@/components/pax-logo";
 
 const fadeUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.1 } }),
+    hidden: { opacity: 0, y: 20 },
+    visible: (i = 0) => ({ 
+        opacity: 1, 
+        y: 0, 
+        transition: { duration: 0.6, delay: i * 0.1, ease: "easeOut" } 
+    }),
 };
 
 const NAV_ITEMS = [
     {
-        label: "For Agencies",
-        key: "agencies",
+        label: "How It Protects",
+        key: "protects",
         links: [
-            { label: "Guaranteed Payments", sub: "Get paid the moment work is approved", href: "/info/guaranteed-payments" },
-            { label: "Change Order Management", sub: "Lock scope creep in real-time", href: "/info/managed-escrow" },
-            { label: "Dispute Protection", sub: "Expert arbitration, not silence", href: "/info/dispute-resolution" },
-            { label: "Automated Invoicing", sub: "Replace Jira-to-PDF manual chasing", href: "/info/how-it-works-talent" },
-            { label: "Zero Commission Model", sub: "Keep 100% of every contract", href: "/info/guaranteed-payments" },
+            { label: "Buyer Security", sub: "Verify cargo or digital work before funds release", href: "/info/managed-escrow" },
+            { label: "Seller Guarantees", sub: "Fulfill contracts with verified upfront funding", href: "/info/guaranteed-payments" },
+            { label: "Neutral Arbitration", sub: "Legal & technical resolution when disputes arise", href: "/info/dispute-resolution" },
+            { label: "RBI Compliance", sub: "Safe transactional infrastructure & nodal vaults", href: "/info/trust-and-safety" },
         ],
     },
     {
-        label: "For Clients",
-        key: "clients",
+        label: "Trade Solutions",
+        key: "solutions",
         links: [
-            { label: "Secure Milestone Escrow", sub: "Funds locked until you approve", href: "/info/managed-escrow" },
-            { label: "Project Oversight", sub: "We track delivery so you don't have to", href: "/info/project-oversight" },
-            { label: "Objective Completion Gates", sub: "Binary criteria, no guesswork", href: "/info/managed-escrow" },
-            { label: "Agency Vetting", sub: "Work only with verified execution partners", href: "/info/find-top-talents" },
-            { label: "VIP Pay-on-Delivery", sub: "For enterprise contracts above ₹50L", href: "/info/vip-pay-on-delivery" },
+            { label: "Import & Export", sub: "Secure cross-border logistics & supplier advances", href: "/info/pax-for-enterprise" },
+            { label: "B2B Goods & Trade", sub: "Domestic wholesale, manufacturing & inventory", href: "/info/managed-escrow" },
+            { label: "Service Contracts", sub: "Safeguard agency & high-value contractor milestones", href: "/info/project-oversight" },
+            { label: "Enterprise Escrow", sub: "Tailored structures for high-volume transactions", href: "/info/vip-pay-on-delivery" },
         ],
     },
     {
-        label: "Why PAX",
-        key: "why",
+        label: "Resources",
+        key: "resources",
         links: [
-            { label: "Trust & Safety", sub: "Bank-grade security, RBI-compliant escrow", href: "/info/trust-and-safety" },
-            { label: "How It Works", sub: "4-step escrow milestone framework", href: "/info/how-to-hire" },
-            { label: "PAX for Enterprise", sub: "₹50L+ contracts with dedicated oversight", href: "/info/pax-for-enterprise" },
-            { label: "Success Stories", sub: "Agencies that eliminated payment delays", href: "/info/success-stories" },
+            { label: "How Escrow Works", sub: "4-step secure transaction workflow", href: "/info/how-to-hire" },
+            { label: "Success Stories", sub: "Traders who eliminated credit risk with PAX", href: "/info/success-stories" },
+            { label: "PAX Blog", sub: "Latest insights on trade risk management", href: "/info/blog" },
+            { label: "Press Center", sub: "Latest announcements and media assets", href: "/info/press-and-media" },
         ],
     },
 ];
@@ -60,29 +62,31 @@ export default function Home() {
         setExpandedAccordion(expandedAccordion === name ? null : name);
 
     return (
-        <div className="min-h-screen bg-[#060b18] text-white font-sans overflow-x-hidden">
-
-            {/* ── NAV ── */}
-            <nav className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 md:px-16 py-4 border-b border-white/5 transition-colors duration-200 ${mobileMenuOpen ? "bg-[#060b18]" : "bg-[#060b18]/80 backdrop-blur-md"}`}>
+        <div className="min-h-screen bg-[#030816] text-[#f5f7fa] font-sans overflow-x-hidden">
+            {/* Subtle Grid Background */}
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at center, white 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+            
+            {/* ── NAVIGATION ── */}
+            <nav className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-16 py-4 border-b border-white/5 transition-colors duration-200 ${mobileMenuOpen ? "bg-[#030816]" : "bg-[#030816]/90 backdrop-blur-md"}`}>
                 <div className="flex items-center gap-10">
-                    <PaxLogo className="text-3xl" white />
+                    <PaxLogo className="text-2xl" white />
 
                     {/* Desktop Nav */}
-                    <div className="hidden lg:flex items-center gap-1 text-sm font-medium text-white/70">
+                    <div className="hidden lg:flex items-center gap-2 text-sm font-medium text-white/70">
                         {NAV_ITEMS.map((item) => (
                             <div
                                 key={item.key}
-                                className="relative group py-4"
+                                className="relative group py-2"
                                 onMouseEnter={() => setOpenNav(item.key)}
                                 onMouseLeave={() => setOpenNav(null)}
                             >
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+                                <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/5 transition-all cursor-pointer">
                                     {item.label}
                                     <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${openNav === item.key ? "rotate-180" : ""}`} />
                                 </button>
 
                                 {/* Dropdown */}
-                                <div className={`absolute top-full left-0 mt-1 w-72 bg-[#0d1628]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 transition-all duration-200 p-3 ${openNav === item.key ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
+                                <div className={`absolute top-full left-0 mt-1 w-80 bg-[#091122]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-200 p-3 ${openNav === item.key ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
                                     {item.links.map((link) => (
                                         <Link key={link.href} href={link.href}>
                                             <a className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group/link">
@@ -94,22 +98,18 @@ export default function Home() {
                                 </div>
                             </div>
                         ))}
-
-                        <Link href="/info/pax-for-enterprise">
-                            <a className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/5 transition-all">Pricing</a>
-                        </Link>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <Link href="/login">
-                        <Button variant="ghost" className="hidden sm:flex text-white/70 hover:text-white hover:bg-white/10 text-sm">
+                        <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/5 text-sm">
                             Log In
                         </Button>
                     </Link>
                     <Link href="/login">
-                        <Button className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-full px-5 py-2 text-sm shadow-lg shadow-blue-600/25 transition-all">
-                            Get Started Free
+                        <Button className="bg-[#122b5e] hover:bg-[#1a3d80] text-white font-semibold rounded-lg px-5 py-2 text-sm border border-white/15 shadow-lg shadow-blue-900/25 transition-all">
+                            Get Started
                         </Button>
                     </Link>
                     <button
@@ -130,7 +130,7 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-40 bg-[#060b18] pt-20 pb-8 px-6 overflow-y-auto flex flex-col lg:hidden"
+                        className="fixed inset-0 z-40 bg-[#030816] pt-20 pb-8 px-6 overflow-y-auto flex flex-col lg:hidden"
                     >
                         <div className="flex-1 space-y-2 mt-4">
                             {NAV_ITEMS.map((item) => (
@@ -173,8 +173,8 @@ export default function Home() {
                                 <Button variant="outline" className="w-full border-white/10 text-white hover:bg-white/10 py-5 rounded-full font-bold text-sm">Log In</Button>
                             </Link>
                             <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                                <Button className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-full font-bold text-sm shadow-xl shadow-blue-500/25">
-                                    Get Started Free
+                                <Button className="w-full bg-[#122b5e] hover:bg-[#1a3d80] text-white py-5 rounded-full font-bold text-sm shadow-xl">
+                                    Get Started
                                 </Button>
                             </Link>
                         </div>
@@ -182,362 +182,345 @@ export default function Home() {
                 )}
             </AnimatePresence>
 
-            {/* ── HERO ── */}
-            <section className="relative min-h-screen flex flex-col items-center justify-center px-6 text-center pt-24 overflow-hidden">
-                {/* Background */}
+            {/* ── HERO SECTION ── */}
+            <section className="relative min-h-screen flex flex-col items-center justify-center px-6 text-center pt-24 overflow-hidden bg-[#030816]">
+                {/* Background Radial Glow */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[550px] bg-blue-600/15 rounded-full blur-[130px]" />
-                    <div className="absolute top-1/3 left-1/4 w-[350px] h-[350px] bg-indigo-600/10 rounded-full blur-[100px]" />
-                    <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-purple-600/8 rounded-full blur-[100px]" />
+                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-blue-900/20 rounded-full blur-[140px]" />
+                    <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-indigo-900/10 rounded-full blur-[100px]" />
                 </div>
-                <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: "radial-gradient(circle at center, white 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
                 <motion.div className="relative z-10 max-w-5xl mx-auto" initial="hidden" animate="visible" variants={fadeUp}>
                     {/* Badge */}
-                    <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/25 rounded-full px-4 py-2 text-sm text-blue-300 mb-8 font-medium">
-                        <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                        Secure Escrow for Clients & Freelancers
+                    <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 bg-[#122b5e]/40 border border-blue-500/20 rounded-full px-4 py-1.5 text-xs text-blue-300 mb-8 font-medium">
+                        <Globe className="w-3.5 h-3.5 text-blue-400" />
+                        RBI-Compliant Transaction & Escrow Infrastructure
                     </motion.div>
 
                     {/* Headline */}
-                    <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
-                        Execute Complex Projects with<br />
-                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">100% Payment Certainty.</span>
+                    <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] mb-6 tracking-tight text-white font-sans">
+                        Execute Trade with <br />
+                        <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-[#54a6ff] bg-clip-text text-transparent">Absolute Financial Trust.</span>
                     </motion.h1>
 
-                    <motion.p custom={2} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/55 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        PAX protects both sides of every project. Clients get their money locked safely before work starts. Freelancers get paid automatically the moment their work is approved. No surprises. No disputes. No stress.
+                    {/* Quotable Catchphrase */}
+                    <motion.div custom={2} variants={fadeUp} className="my-6 max-w-3xl mx-auto border-l-2 border-blue-500/30 pl-4 md:pl-6 text-left py-1">
+                        <span className="text-[#54a6ff] font-semibold block text-sm tracking-wider uppercase mb-1">The PAX Principle</span>
+                        <p className="text-lg md:text-xl font-medium text-white/90 italic leading-relaxed">
+                            "Where trust is absent, escrow provides absolute certainty."
+                        </p>
+                    </motion.div>
+
+                    {/* Mature Copy */}
+                    <motion.p custom={3} variants={fadeUp} className="text-base sm:text-lg md:text-xl text-white/60 max-w-3xl mx-auto mb-10 leading-relaxed">
+                        PAX is the regulated milestone escrow system designed for transactions between unknown buyers and sellers. 
+                        Whether importing bulk cargo, funding domestic wholesale shipments, or contract engineering high-value software, 
+                        PAX secures the contract value in a verified banking vault. Sellers ship with guaranteed payment security, 
+                        while buyers release funds only upon verified inspection or delivery validation.
                     </motion.p>
 
                     {/* CTAs */}
-                    <motion.div custom={3} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <motion.div custom={4} variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href="/login">
-                            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full px-9 py-6 text-base shadow-2xl shadow-blue-500/30 transition-all">
-                                Post a Project
+                            <Button size="lg" className="bg-[#122b5e] hover:bg-[#1a3d80] text-white font-bold rounded-xl px-8 py-6 text-base border border-white/10 shadow-xl shadow-blue-900/35 transition-all">
+                                Create Secure Escrow
                                 <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
                         </Link>
                         <Link href="/login">
-                            <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 rounded-full px-9 py-6 text-base">
-                                Find Work as a Freelancer
+                            <Button size="lg" variant="outline" className="border-white/15 text-white hover:bg-white/5 rounded-xl px-8 py-6 text-base">
+                                Register as Buyer / Seller
                             </Button>
                         </Link>
-                        <a href="#how">
-                            <Button size="lg" variant="outline" className="border-white/15 text-white hover:bg-white/8 rounded-full px-9 py-6 text-base transition-all">
-                                See How It Works
-                            </Button>
-                        </a>
                     </motion.div>
 
-                    {/* Trust signals */}
-                    <motion.div custom={4} variants={fadeUp} className="mt-14 flex flex-wrap justify-center gap-6 text-sm text-white/35">
-                        {["RBI-Compliant Nodal Escrow", "0% Agency Commission", "Objective Milestone Gating", "Change Order Lock-In", "Expert Dispute Arbitration"].map((t) => (
-                            <div key={t} className="flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                                {t}
-                            </div>
-                        ))}
+                    {/* Trust Indicators */}
+                    <motion.div custom={5} variants={fadeUp} className="mt-16 flex flex-wrap justify-center gap-y-3 gap-x-8 text-xs font-medium text-white/40 tracking-wider uppercase">
+                        <div className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-blue-400" />
+                            Logistics & Customs Auditing
+                        </div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/15 self-center hidden sm:block" />
+                        <div className="flex items-center gap-2">
+                            <Scale className="w-4 h-4 text-blue-400" />
+                            Impartial Dispute Arbitration
+                        </div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/15 self-center hidden sm:block" />
+                        <div className="flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-blue-400" />
+                            RBI-Regulated Escrow Accounts
+                        </div>
                     </motion.div>
                 </motion.div>
             </section>
 
-            {/* ── THE PROBLEM ── */}
-            <section className="py-24 px-6 max-w-6xl mx-auto">
-                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">
-                        You deserve better than<br />
-                        <span className="text-red-400">broken promises.</span>
+            {/* ── THE TRUST GAP SECTION ── */}
+            <section className="py-28 px-6 max-w-6xl mx-auto border-t border-white/5">
+                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-20">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight text-white">
+                        Unknown Partners. <br />
+                        <span className="text-[#54a6ff]">Zero Financial Risk.</span>
                     </h2>
-                    <p className="text-white/50 text-lg max-w-2xl mx-auto leading-relaxed">
-                        Whether you're a client or a freelancer, you've probably been let down before. PAX is built so that never happens again — for either side.
+                    <p className="text-white/50 text-lg max-w-3xl mx-auto leading-relaxed">
+                        Transacting with new partners presents unavoidable credit and delivery risks. 
+                        PAX neutralizes the trust deficit by holding funds independently until agreed parameters are satisfied.
                     </p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-3 gap-8">
                     {[
                         {
-                            icon: Shield,
-                            color: "text-blue-400 bg-blue-400/10 border-blue-400/20",
-                            title: "Clients: Paid & nothing delivered",
-                            desc: "You pay upfront and the freelancer goes dark. With PAX, your money sits locked in escrow and is only released when you personally approve the completed work.",
-                            stat: "You stay in control, always"
+                            icon: AlertTriangle,
+                            color: "text-red-400 bg-red-400/10 border-red-500/20",
+                            title: "The Buyer's Dilemma",
+                            desc: "Sending upfront deposits to unverified international suppliers or service providers leaves you vulnerable to delayed logistics, defective merchandise, or complete fraud.",
+                            tagline: "Deposit Secured, Never Pre-paid"
                         },
                         {
-                            icon: Zap,
-                            color: "text-purple-400 bg-purple-400/10 border-purple-400/20",
-                            title: "Freelancers: Worked & never paid",
-                            desc: "You deliver excellent work and the client delays, disputes, or disappears. PAX guarantees your payment is locked in escrow before you even start.",
-                            stat: "Your earnings, guaranteed"
-                        },
-                        {
-                            icon: Lock,
-                            color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20",
-                            title: "Both sides: No accountability",
-                            desc: "Missed deadlines, vague deliverables, and no one to step in. PAX structures every project with clear milestones, enforces deadlines, and mediates any disputes fairly.",
-                            stat: "PAX has your back"
-                        },
-                    ].map(({ icon: Icon, color, title, desc, stat }, i) => (
-                        <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                            className={`bg-white/[0.03] border rounded-2xl p-6 ${color.split(" ").slice(1).join(" ")} border-opacity-30`}>
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 border ${color}`}>
-                                <Icon className="w-6 h-6" />
-                            </div>
-                            <h3 className="font-bold text-lg mb-2 text-white">{title}</h3>
-                            <p className="text-white/50 text-sm leading-relaxed mb-4">{desc}</p>
-                            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest border-t border-white/5 pt-3">{stat}</div>
-                        </motion.div>
-                    ))}
-                </div>
-            </section>
-
-            {/* ── HOW IT WORKS ── */}
-            <section id="how" className="py-24 px-6 bg-white/[0.02] border-y border-white/5">
-                <div className="max-w-6xl mx-auto">
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">How <span className="text-blue-400">PAX</span> works</h2>
-                        <p className="text-white/50 text-lg max-w-xl mx-auto">Four steps that convert a ₹10–50 Lakh project from a handshake into a guaranteed payout.</p>
-                    </motion.div>
-
-                    <div className="grid md:grid-cols-4 gap-6 relative">
-                        <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-                        {[
-                            { icon: Users, step: "01", title: "Post & Agree on Milestones", desc: "Client and freelancer agree on the scope and break it into clear, specific milestones with deadlines. PAX keeps everyone on the same page." },
-                            { icon: Lock, step: "02", title: "Client Funds the Escrow", desc: "The client deposits the milestone amount into a secure, verified escrow account. The freelancer sees the money is locked and work can begin with confidence." },
-                            { icon: Zap, step: "03", title: "Freelancer Delivers the Work", desc: "The freelancer completes and submits the work through the platform. Progress and deliverables are tracked and visible to both sides at all times." },
-                            { icon: CheckCircle2, step: "04", title: "Approve & Get Paid Instantly", desc: "The client reviews and approves the work. PAX instantly routes the full payment directly to the freelancer's bank account. No waiting, no chasing." },
-                        ].map(({ icon: Icon, step, title, desc }, i) => (
-                            <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                                className="flex flex-col items-center text-center">
-                                <div className="relative mb-6">
-                                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-600/25 to-indigo-600/25 border border-blue-500/25 flex items-center justify-center">
-                                        <Icon className="w-10 h-10 text-blue-400" />
-                                    </div>
-                                    <span className="absolute -top-3 -right-3 bg-blue-600 text-white text-xs font-black w-7 h-7 rounded-full flex items-center justify-center">{step}</span>
-                                </div>
-                                <h3 className="font-bold text-base mb-2 text-white">{title}</h3>
-                                <p className="text-white/45 text-sm leading-relaxed">{desc}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── FEATURES ── */}
-            <section id="features" className="py-24 px-6 max-w-6xl mx-auto">
-                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
-                        Built for agencies that are{" "}
-                        <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">done being burned.</span>
-                    </h2>
-                    <p className="text-white/50 text-lg max-w-xl mx-auto">Every feature was designed to eliminate one specific way an agency loses money.</p>
-                </motion.div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {[
-                        {
-                            icon: IndianRupee,
-                            title: "Upfront Escrow Lock",
-                            desc: "Client money sits in a RBI-regulated nodal account before your team writes a single line of code. You know you are getting paid before you start.",
-                            tag: "For Agencies"
-                        },
-                        {
-                            icon: FileText,
-                            title: "In-Platform Change Orders",
-                            desc: "Client wants to add a feature mid-sprint? PAX generates a Change Order Card: 'Deposit ₹1.2L and extend deadline by 5 days.' One click to accept. No awkward negotiation calls.",
-                            tag: "Scope Creep Solved"
+                            icon: Clock,
+                            color: "text-amber-400 bg-amber-400/10 border-amber-500/20",
+                            title: "The Seller's Dilemma",
+                            desc: "Allocating raw materials, manufacturing custom cargo, or dedicating engineering time without advance funding exposes you to delayed payments, default, or unilateral cancellation.",
+                            tagline: "Guaranteed Upfront Verification"
                         },
                         {
                             icon: ShieldCheck,
-                            title: "Objective Completion Gates",
-                            desc: "Milestones are completed against a binary checklist — not a client's mood. Code deployed? Tests passing? Files uploaded? Gate opens. Payment releases.",
-                            tag: "No More Subjectivity"
+                            color: "text-blue-400 bg-blue-400/10 border-blue-500/20",
+                            title: "The PAX Solution",
+                            desc: "An objective financial gateway. The buyer funds the escrow vault; the seller fulfills cargo dispatch or digital milestone deliveries; PAX verifies compliance and releases funds.",
+                            tagline: "100% Risk Neutralization"
                         },
-                        {
-                            icon: Timer,
-                            title: "Deadline Penalty Enforcement",
-                            desc: "If the agency misses a delivery deadline without an approved extension, PAX automatically applies a financial penalty — protecting the client's timeline.",
-                            tag: "For Clients"
-                        },
-                        {
-                            icon: Handshake,
-                            title: "Structured Dispute Resolution",
-                            desc: "Conflict arises? Funds freeze. PAX opens a 7-day in-app negotiation window, then escalates to a neutral technical auditor — ensuring a fair, documented resolution.",
-                            tag: "Dispute Framework"
-                        },
-                        {
-                            icon: BarChart3,
-                            title: "Real-Time Project Dashboard",
-                            desc: "Both parties see every transaction, every milestone, every deliverable log — updated live. No PDF invoice attachments. No WhatsApp status chasing.",
-                            tag: "Full Transparency"
-                        },
-                    ].map(({ icon: Icon, title, desc, tag }, i) => (
-                        <motion.div key={i} custom={i % 3} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                            className="group bg-white/[0.04] hover:bg-gradient-to-br hover:from-blue-600/10 hover:to-indigo-600/10 border border-white/8 hover:border-blue-500/30 rounded-2xl p-6 transition-all duration-300">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 flex items-center justify-center group-hover:scale-110 transition-transform border border-blue-500/20">
-                                    <Icon className="w-5 h-5 text-blue-400" />
+                    ].map(({ icon: Icon, color, title, desc, tagline }, i) => (
+                        <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                            className="bg-white/[0.02] border border-white/10 hover:border-white/20 rounded-2xl p-8 transition-all flex flex-col justify-between">
+                            <div>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 border ${color}`}>
+                                    <Icon className="w-6 h-6" />
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400/60 bg-blue-400/5 border border-blue-400/15 rounded-full px-2.5 py-1">{tag}</span>
+                                <h3 className="font-bold text-xl mb-3 text-white">{title}</h3>
+                                <p className="text-white/55 text-sm leading-relaxed mb-6">{desc}</p>
                             </div>
-                            <h3 className="font-bold text-base mb-2 text-white">{title}</h3>
-                            <p className="text-white/45 text-sm leading-relaxed">{desc}</p>
+                            <div className="text-xs font-semibold text-blue-400 uppercase tracking-widest border-t border-white/5 pt-4">{tagline}</div>
                         </motion.div>
                     ))}
                 </div>
             </section>
 
-            {/* ── WHO IT'S FOR ── */}
-            <section className="py-24 px-6 bg-white/[0.02] border-y border-white/5">
+            {/* ── TRADE SOLUTIONS & USE CASES ── */}
+            <section className="py-28 px-6 bg-white/[0.01] border-y border-white/5">
                 <div className="max-w-6xl mx-auto">
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
-                            Built for the <span className="text-blue-400">₹10L–₹5Cr contract</span> segment
-                        </h2>
-                        <p className="text-white/50 text-lg">Too large to ignore. Too complex for a handshake. Too important to risk.</p>
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-20">
+                        <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white tracking-tight">Structured Escrow for All Trade Segments</h2>
+                        <p className="text-white/50 text-lg max-w-2xl mx-auto">Different assets require different checks. PAX gates payouts against specialized verification criteria.</p>
                     </motion.div>
 
-                    <div className="grid md:grid-cols-2 gap-8">
+                    <div className="grid md:grid-cols-3 gap-8">
                         {[
                             {
-                                icon: Building2,
-                                audience: "Software & Digital Agencies",
-                                color: "blue",
-                                points: [
-                                    "Custom software development shops (5–200 engineers)",
-                                    "Digital product and UX studios",
-                                    "Offshore development centres serving US/EU clients",
-                                    "Marketing & performance agencies on retainer projects",
-                                    "Animation and media production houses",
-                                ],
-                                cta: "Protect your agency's cash flow",
-                                href: "/login"
+                                icon: Anchor,
+                                title: "Import & Export Logistics",
+                                desc: "Safeguard international trade. Funds are locked before production begins. Final disbursement is gated against Bill of Lading (BoL), customs clearance forms, and port loading validation.",
+                                features: ["Logistics Tracking Integrations", "Bill of Lading Inspections", "Customs clearance gates"]
                             },
                             {
-                                icon: Users,
-                                audience: "Enterprise & Growth-Stage Clients",
-                                color: "indigo",
-                                points: [
-                                    "Funded startups outsourcing core product development",
-                                    "Mid-market companies building internal tools",
-                                    "Enterprises managing 3–10 agency relationships simultaneously",
-                                    "International businesses engaging Indian dev teams",
-                                    "Government & institutional project owners",
-                                ],
-                                cta: "Guarantee delivery before you pay",
-                                href: "/login"
+                                icon: Truck,
+                                title: "B2B Goods & Wholesale",
+                                desc: "Protect bulk domestic raw material orders, hardware procurement, and distribution agreements. Escrow releases upon delivery confirmation and quality inspection reports.",
+                                features: ["Quality Inspection Holds", "Weight & Volume Validation", "Delivery Note Gates"]
+                            },
+                            {
+                                icon: FileCheck,
+                                title: "Service & IT Contracts",
+                                desc: "Secure digital collaborations, software development agencies, and consultants. Milestones release dynamically using code validation, UAT checklist audits, and deployment tests.",
+                                features: ["Objective UAT Checklists", "Change Order locks", "Code repository verification"]
                             }
-                        ].map(({ icon: Icon, audience, color, points, cta, href }, i) => (
+                        ].map(({ icon: Icon, title, desc, features }, i) => (
                             <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                                className={`bg-white/[0.03] border border-${color}-500/20 rounded-3xl p-8`}>
-                                <div className={`w-12 h-12 rounded-xl bg-${color}-600/15 border border-${color}-500/25 flex items-center justify-center mb-5`}>
-                                    <Icon className={`w-6 h-6 text-${color}-400`} />
+                                className="bg-[#091122]/50 border border-white/5 hover:border-blue-500/20 rounded-2xl p-8 transition-all group">
+                                <div className="w-12 h-12 rounded-xl bg-blue-900/20 border border-blue-500/25 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                                    <Icon className="w-6 h-6 text-blue-400" />
                                 </div>
-                                <h3 className="text-xl font-black text-white mb-5">{audience}</h3>
-                                <ul className="space-y-3 mb-8">
-                                    {points.map((p, pi) => (
-                                        <li key={pi} className="flex items-start gap-3 text-sm text-white/60">
-                                            <CheckCircle2 className={`w-4 h-4 text-${color}-400 mt-0.5 flex-shrink-0`} />
-                                            {p}
+                                <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+                                <p className="text-white/50 text-sm leading-relaxed mb-6">{desc}</p>
+                                <ul className="space-y-2 border-t border-white/5 pt-4">
+                                    {features.map((f, fi) => (
+                                        <li key={fi} className="flex items-center gap-2.5 text-xs text-white/60 font-medium">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+                                            {f}
                                         </li>
                                     ))}
                                 </ul>
-                                <Link href={href}>
-                                    <Button className={`bg-${color}-600 hover:bg-${color}-500 text-white rounded-full px-6 font-semibold text-sm w-full`}>
-                                        {cta} <ArrowRight className="ml-2 w-4 h-4" />
-                                    </Button>
-                                </Link>
                             </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* ── STATS ── */}
-            <section className="py-24 px-6 max-w-6xl mx-auto">
-                <div className="grid md:grid-cols-4 gap-8 text-center">
+            {/* ── THE 4-STEP ESCROW WORKFLOW ── */}
+            <section className="py-28 px-6 max-w-6xl mx-auto">
+                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-20">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white tracking-tight">The Escrow Workflow</h2>
+                    <p className="text-white/50 text-lg max-w-xl mx-auto">From agreement to final clearance — structured protection for unknown trading parties.</p>
+                </motion.div>
+
+                <div className="grid md:grid-cols-4 gap-8 relative">
+                    {/* Visual Connector Line */}
+                    <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-[2px] bg-gradient-to-r from-transparent via-[#1a3d80] to-transparent z-0" />
                     {[
-                        { value: "₹10.8L Cr", label: "B2B receivables stuck in India annually", sub: "RBI Working Paper, 2023" },
-                        { value: "56 days", label: "Average payment delay past agreed terms", sub: "MSME Payment Council data" },
-                        { value: "82%", label: "SMB failures caused by cash flow gaps", sub: "Multi-year U.S. Banking Study" },
-                        { value: "0%", label: "Commission charged to agencies, ever", sub: "PAX core commitment" },
-                    ].map(({ value, label, sub }, i) => (
+                        { icon: FileText, step: "01", title: "Define Verification Terms", desc: "Buyer and Seller mutually set the project or logistics milestones, defining clear gates (e.g., shipping paperwork upload, quality reports, dev deployment)." },
+                        { icon: Lock, step: "02", title: "Fund the Escrow Vault", desc: "The Buyer deposits the milestone amount into the PAX secure escrow account. The Seller receives bank-backed confirmation that funds are locked." },
+                        { icon: Truck, step: "03", title: "Deliver or Ship Cargo", desc: "The Seller manufactures/ships the physical goods, or executes the digital services, tracking all progress and documentation in the PAX dashboard." },
+                        { icon: CheckCircle2, step: "04", title: "Inspect and Disburse", desc: "Upon port arrival, inspection check, or UAT validation, the Buyer approves the delivery. PAX instantly releases the funds directly to the Seller's account." },
+                    ].map(({ icon: Icon, step, title, desc }, i) => (
                         <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                            className="bg-white/[0.03] border border-white/8 rounded-2xl p-6">
-                            <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent mb-2">{value}</div>
-                            <div className="text-white/80 text-sm font-semibold mb-1">{label}</div>
-                            <div className="text-white/25 text-xs">{sub}</div>
+                            className="flex flex-col items-center text-center relative z-10">
+                            <div className="relative mb-6">
+                                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#0c1836] to-[#050c1e] border border-blue-500/20 flex items-center justify-center">
+                                    <Icon className="w-8 h-8 text-blue-400" />
+                                </div>
+                                <span className="absolute -top-2.5 -right-2.5 bg-[#122b5e] border border-white/10 text-white text-[10px] font-black w-6.5 h-6.5 rounded-full flex items-center justify-center">{step}</span>
+                            </div>
+                            <h3 className="font-bold text-base mb-2 text-white">{title}</h3>
+                            <p className="text-white/40 text-xs leading-relaxed max-w-xs">{desc}</p>
                         </motion.div>
                     ))}
                 </div>
             </section>
 
-
-
-            {/* ── PRICING TRANSPARENCY ── */}
-            <section className="py-24 px-6 max-w-4xl mx-auto">
-                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-12">
-                    <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
-                        Simple, <span className="text-blue-400">transparent</span> pricing
-                    </h2>
-                    <p className="text-white/50 text-lg">No hidden fees. No commissions on agency earnings. Ever.</p>
-                </motion.div>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                        className="bg-white/[0.04] border border-white/10 rounded-2xl p-8">
-                        <div className="text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">Standard</div>
-                        <div className="text-4xl font-black text-white mb-1">1.5% <span className="text-lg font-normal text-white/40">of escrow value</span></div>
-                        <p className="text-white/40 text-sm mb-6">Charged to client on funds deposited. Agency pays zero.</p>
-                        <ul className="space-y-3">
-                            {["Unlimited milestones", "In-platform change orders", "Escrow protection", "Dispute negotiation window", "Real-time dashboard"].map((f) => (
-                                <li key={f} className="flex items-center gap-2 text-sm text-white/65">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0" />{f}
-                                </li>
-                            ))}
-                        </ul>
+            {/* ── SECURITY & FEATURES ── */}
+            <section className="py-28 px-6 bg-white/[0.01] border-y border-white/5">
+                <div className="max-w-6xl mx-auto">
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-20">
+                        <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white tracking-tight">Enterprise Trust Safeguards</h2>
+                        <p className="text-white/50 text-lg max-w-2xl mx-auto">Designed for robust transaction security, regulatory adherence, and operational compliance.</p>
                     </motion.div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[
+                            {
+                                icon: ShieldCheck,
+                                title: "RBI-Regulated Safeguards",
+                                desc: "All escrow accounts are structured via RBI-compliant nodal banking partners. Funds sit protected inside authorized commercial banks.",
+                                tag: "Regulatory"
+                            },
+                            {
+                                icon: Scale,
+                                title: "Independent Arbitration",
+                                desc: "If transaction parameters are disputed, PAX freezes the funds and brings in trade-specific inspectors or technical auditors to resolve issues impartially.",
+                                tag: "Disputes"
+                            },
+                            {
+                                icon: Timer,
+                                title: "Fulfillment SLA Checks",
+                                desc: "Auto-enforce penalties or partial refunds if suppliers miss shipping schedules or software deadlines without mutual client consent.",
+                                tag: "Timeline Protection"
+                            },
+                            {
+                                icon: Building2,
+                                title: "Multicurparent Setup",
+                                desc: "Configure escrows in INR, USD, and major currencies. Handle local domestic B2B trade or global container imports with ease.",
+                                tag: "Global Trade"
+                            },
+                            {
+                                icon: FileText,
+                                title: "Dynamic Change Orders",
+                                desc: "Need to alter cargo volume, freight costs, or milestone scope? Adjust contract values mid-project with automated dual-consent validation.",
+                                tag: "Agility"
+                            },
+                            {
+                                icon: BarChart3,
+                                title: "Full Transaction Logs",
+                                desc: "Every agreement revision, funding receipt, shipping upload, and audit check is fully logged for tax, customs, and corporate records.",
+                                tag: "Audit Ready"
+                            },
+                        ].map(({ icon: Icon, title, desc, tag }, i) => (
+                            <motion.div key={i} custom={i % 3} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                                className="bg-[#091122]/40 border border-white/5 rounded-xl p-6 transition-all hover:bg-[#0b162e]">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="w-10 h-10 rounded-lg bg-blue-900/10 border border-blue-500/20 flex items-center justify-center">
+                                        <Icon className="w-5 h-5 text-blue-400" />
+                                    </div>
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400/60 bg-blue-400/5 border border-blue-400/15 rounded-full px-2.5 py-1">{tag}</span>
+                                </div>
+                                <h3 className="font-bold text-base mb-2 text-white">{title}</h3>
+                                <p className="text-white/40 text-xs leading-relaxed">{desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── TRANSACTION PRICING ── */}
+            <section className="py-28 px-6 max-w-4xl mx-auto">
+                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white tracking-tight">Transparent Escrow Fees</h2>
+                    <p className="text-white/50 text-lg">No hidden costs, no multi-layered commissions. Clear pricing for clear trade protection.</p>
+                </motion.div>
+                <div className="grid md:grid-cols-2 gap-8">
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                        className="bg-white/[0.02] border border-white/10 rounded-2xl p-8 flex flex-col justify-between">
+                        <div>
+                            <div className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Standard Trade</div>
+                            <div className="text-4xl font-bold text-white mb-2">1.5% <span className="text-base font-normal text-white/40">of Escrow Value</span></div>
+                            <p className="text-white/45 text-sm mb-6 leading-relaxed">Charged on deposits into the vault. Can be split between Buyer and Seller by agreement.</p>
+                            <ul className="space-y-3.5 mb-8">
+                                {["Unlimited trade milestones", "Standard change order updates", "Logistics document gates", "Standard 7-day negotiation window", "Complete audit trail logs"].map((f) => (
+                                    <li key={f} className="flex items-center gap-2.5 text-xs text-white/70">
+                                        <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />{f}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <Link href="/login">
+                            <Button className="w-full bg-[#122b5e] hover:bg-[#1a3d80] text-white rounded-lg py-5 border border-white/5 font-semibold text-sm">Create Standard Escrow</Button>
+                        </Link>
+                    </motion.div>
+
                     <motion.div custom={1} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                        className="bg-gradient-to-br from-blue-600/15 to-indigo-600/15 border border-blue-500/30 rounded-2xl p-8 relative overflow-hidden">
-                        <div className="absolute top-4 right-4 bg-blue-600 text-white text-xs font-black px-3 py-1 rounded-full">Enterprise</div>
-                        <div className="text-blue-400 text-sm font-bold uppercase tracking-widest mb-3">PAX Enterprise</div>
-                        <div className="text-4xl font-black text-white mb-1">Custom <span className="text-lg font-normal text-white/40">pricing</span></div>
-                        <p className="text-white/40 text-sm mb-6">For agencies &amp; clients managing ₹50L+ in annual contract value.</p>
-                        <ul className="space-y-3">
-                            {["Everything in Standard", "Dedicated account manager", "Human arbitrator on demand", "Priority dispute resolution", "Custom SLA agreements", "Volume pricing"].map((f) => (
-                                <li key={f} className="flex items-center gap-2 text-sm text-white/65">
-                                    <CheckCircle2 className="w-4 h-4 text-indigo-400 flex-shrink-0" />{f}
-                                </li>
-                            ))}
-                        </ul>
+                        className="bg-gradient-to-br from-blue-900/10 to-indigo-900/10 border border-blue-500/25 rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div className="absolute top-4 right-4 bg-blue-600/20 border border-blue-500/30 text-blue-300 text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">High-Volume</div>
+                            <div className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">PAX Enterprise</div>
+                            <div className="text-4xl font-bold text-white mb-2">Custom <span className="text-base font-normal text-white/40">Pricing</span></div>
+                            <p className="text-white/45 text-sm mb-6 leading-relaxed">For import/export firms, manufacturing hubs, and trade networks with over ₹50L+ in transaction volume.</p>
+                            <ul className="space-y-3.5 mb-8">
+                                {["Custom contract terms & APIs", "Priority logistics verification integrations", "On-demand industry expert arbitration", "Dedicated account trade managers", "Custom multi-user permissions"].map((f) => (
+                                    <li key={f} className="flex items-center gap-2.5 text-xs text-white/70">
+                                        <CheckCircle2 className="w-4 h-4 text-[#54a6ff] flex-shrink-0" />{f}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                         <Link href="/info/pax-for-enterprise">
-                            <Button className="mt-6 w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold">
-                                Talk to us <ArrowRight className="ml-2 w-4 h-4" />
+                            <Button className="w-full bg-[#122b5e] hover:bg-[#1a3d80] text-white border border-white/5 rounded-lg py-5 font-semibold text-sm">
+                                Talk to Trade Specialist <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
                         </Link>
                     </motion.div>
                 </div>
             </section>
 
-            {/* ── CTA ── */}
-            <section className="py-24 px-4 md:px-6">
+            {/* ── FINAL CALL TO ACTION ── */}
+            <section className="py-28 px-4 md:px-6">
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                    className="max-w-3xl mx-auto text-center bg-gradient-to-br from-blue-600/20 to-indigo-600/15 border border-blue-500/20 rounded-3xl p-10 md:p-14 relative overflow-hidden">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
+                    className="max-w-3xl mx-auto text-center bg-gradient-to-br from-[#09152e] to-[#040916] border border-blue-500/20 rounded-3xl p-10 md:p-14 relative overflow-hidden">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[2px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
                     <BadgeCheck className="w-12 h-12 text-blue-400 mx-auto mb-6" />
-                    <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
-                        Start your first<br />protected project today.
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white tracking-tight">
+                        Securing B2B Transactions,<br />Every Step of the Way.
                     </h2>
                     <p className="text-white/55 text-lg mb-8 max-w-xl mx-auto">
-                        Free to get started. No credit card required. Your next ₹10L+ contract, fully protected from the moment the brief is signed.
+                        Open your account in minutes. Secure your raw materials, wholesale inventory, or tech milestones from the moment negotiations conclude.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href="/login">
-                            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full px-10 py-6 text-base shadow-2xl shadow-blue-500/30">
-                                Create Free Account <ArrowRight className="ml-2 w-4 h-4" />
+                            <Button size="lg" className="bg-[#122b5e] hover:bg-[#1a3d80] text-white font-bold rounded-xl px-8 py-6 text-base border border-white/10 shadow-xl shadow-blue-900/35">
+                                Open Secure Account <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
                         </Link>
                         <Link href="/info/pax-for-enterprise">
-                            <Button size="lg" variant="outline" className="border-white/15 text-white hover:bg-white/8 rounded-full px-10 py-6 text-base">
-                                Book a Demo
+                            <Button size="lg" variant="outline" className="border-white/15 text-white hover:bg-white/5 rounded-xl px-8 py-6 text-base">
+                                Contact Sales Team
                             </Button>
                         </Link>
                     </div>
@@ -545,90 +528,56 @@ export default function Home() {
             </section>
 
             {/* ── FOOTER ── */}
-            <footer className="bg-[#030710] border-t border-white/5 pt-16 pb-8 px-6 md:px-12">
+            <footer className="bg-[#02050f] border-t border-white/5 pt-16 pb-8 px-6 md:px-12">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
-                        {/* Brand column */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
+                        {/* Brand Column */}
                         <div className="col-span-2 md:col-span-1 space-y-4">
-                            <PaxLogo className="text-2xl" white />
-                            <p className="text-white/25 text-xs leading-relaxed max-w-[200px]">
-                                Financial infrastructure for B2B project delivery in India.
+                            <PaxLogo className="text-xl" white />
+                            <p className="text-white/30 text-xs leading-relaxed max-w-[200px]">
+                                Secure banking and transaction escrow infrastructure for commercial B2B trade.
                             </p>
                             <div className="flex gap-4">
                                 <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-white/30 hover:text-white text-xs font-medium transition-colors">Twitter</a>
                                 <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="text-white/30 hover:text-white text-xs font-medium transition-colors">LinkedIn</a>
-                                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-white/30 hover:text-white text-xs font-medium transition-colors">Instagram</a>
                             </div>
                         </div>
 
-                        {/* For Agencies */}
+                        {/* Solutions Columns */}
                         <div className="space-y-4">
-                            <h4 className="text-white font-bold text-xs tracking-widest uppercase">For Agencies</h4>
+                            <h4 className="text-white font-semibold text-xs tracking-wider uppercase">How It Protects</h4>
                             <ul className="space-y-3 text-xs text-white/35">
-                                {[
-                                    { label: "How It Works", href: "/info/how-it-works-talent" },
-                                    { label: "Guaranteed Payments", href: "/info/guaranteed-payments" },
-                                    { label: "Change Order System", href: "/info/managed-escrow" },
-                                    { label: "Dispute Protection", href: "/info/dispute-resolution" },
-                                    { label: "Zero Commission", href: "/info/guaranteed-payments" },
-                                ].map(l => (
-                                    <li key={l.href}><Link href={l.href}><a className="hover:text-white transition-colors">{l.label}</a></Link></li>
-                                ))}
+                                <li><Link href="/info/managed-escrow"><a className="hover:text-white transition-colors">Buyer Protection</a></Link></li>
+                                <li><Link href="/info/guaranteed-payments"><a className="hover:text-white transition-colors">Seller Guarantees</a></Link></li>
+                                <li><Link href="/info/dispute-resolution"><a className="hover:text-white transition-colors">Arbitration Panel</a></Link></li>
+                                <li><Link href="/info/trust-and-safety"><a className="hover:text-white transition-colors">RBI Nodal Guidelines</a></Link></li>
                             </ul>
                         </div>
 
-                        {/* For Clients */}
                         <div className="space-y-4">
-                            <h4 className="text-white font-bold text-xs tracking-widest uppercase">For Clients</h4>
+                            <h4 className="text-white font-semibold text-xs tracking-wider uppercase">Use Cases</h4>
                             <ul className="space-y-3 text-xs text-white/35">
-                                {[
-                                    { label: "How to Use PAX", href: "/info/how-to-hire" },
-                                    { label: "Secure Escrow", href: "/info/managed-escrow" },
-                                    { label: "Project Oversight", href: "/info/project-oversight" },
-                                    { label: "VIP Pay-on-Delivery", href: "/info/vip-pay-on-delivery" },
-                                    { label: "PAX for Enterprise", href: "/info/pax-for-enterprise" },
-                                ].map(l => (
-                                    <li key={l.href}><Link href={l.href}><a className="hover:text-white transition-colors">{l.label}</a></Link></li>
-                                ))}
+                                <li><Link href="/info/pax-for-enterprise"><a className="hover:text-white transition-colors">Import & Export</a></Link></li>
+                                <li><Link href="/info/managed-escrow"><a className="hover:text-white transition-colors">B2B Goods & Inventory</a></Link></li>
+                                <li><Link href="/info/project-oversight"><a className="hover:text-white transition-colors">Digital & Tech Contracts</a></Link></li>
+                                <li><Link href="/info/vip-pay-on-delivery"><a className="hover:text-white transition-colors">Enterprise High-Value</a></Link></li>
                             </ul>
                         </div>
 
-                        {/* Resources */}
                         <div className="space-y-4">
-                            <h4 className="text-white font-bold text-xs tracking-widest uppercase">Resources</h4>
+                            <h4 className="text-white font-semibold text-xs tracking-wider uppercase">Legal & Contact</h4>
                             <ul className="space-y-3 text-xs text-white/35">
-                                {[
-                                    { label: "Trust & Safety", href: "/info/trust-and-safety" },
-                                    { label: "Dispute Resolution", href: "/info/dispute-resolution" },
-                                    { label: "Blog", href: "/info/blog" },
-                                    { label: "Press & Media", href: "/info/press-and-media" },
-                                    { label: "Help & Support", href: "/support" },
-                                ].map(l => (
-                                    <li key={l.href}><Link href={l.href}><a className="hover:text-white transition-colors">{l.label}</a></Link></li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Legal */}
-                        <div className="space-y-4">
-                            <h4 className="text-white font-bold text-xs tracking-widest uppercase">Legal</h4>
-                            <ul className="space-y-3 text-xs text-white/35">
-                                {[
-                                    { label: "Privacy Policy", href: "/privacy" },
-                                    { label: "Terms of Service", href: "/terms" },
-                                    { label: "Escrow Terms", href: "/escrow-terms" },
-                                    { label: "About PAX", href: "/info/about-pax" },
-                                    { label: "Contact Us", href: "/support" },
-                                ].map(l => (
-                                    <li key={l.href}><Link href={l.href}><a className="hover:text-white transition-colors">{l.label}</a></Link></li>
-                                ))}
+                                <li><Link href="/privacy"><a className="hover:text-white transition-colors">Privacy Policy</a></Link></li>
+                                <li><Link href="/terms"><a className="hover:text-white transition-colors">Terms of Service</a></Link></li>
+                                <li><Link href="/support"><a className="hover:text-white transition-colors">Contact Support</a></Link></li>
+                                <li><Link href="/info/about-pax"><a className="hover:text-white transition-colors">About PAX</a></Link></li>
                             </ul>
                         </div>
                     </div>
 
                     <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <p className="text-white/20 text-xs">© 2025 PAX Escrow Technologies Pvt. Ltd. — RBI-Compliant Nodal Escrow. Designed for absolute trust.</p>
-                        <p className="text-white/15 text-xs">PAX is not a bank. Escrow services provided via registered payment partners.</p>
+                        <p className="text-white/20 text-xs">© 2026 PAX Escrow Technologies Pvt. Ltd. — RBI-Compliant Nodal Account. Designed for absolute trust.</p>
+                        <p className="text-white/15 text-xs">PAX is a transaction protection service, not a banking institution. Escrows are serviced by licensed nodal partners.</p>
                     </div>
                 </div>
             </footer>
