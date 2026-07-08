@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
@@ -292,95 +292,103 @@ export default function ProjectDetails() {
     <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500 overflow-x-hidden">
 
       {/* Top Header Section */}
-      <Card className="border-border/50 shadow-sm overflow-hidden bg-[#0b1426]/30 border-white/5">
-        <div className="p-4 md:p-8 flex flex-col gap-4 bg-[#0b1426]/20 border-b border-white/5">
+      <Card className="border border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden bg-gradient-to-r from-blue-950/20 via-[#03091e]/85 to-slate-950/20 backdrop-blur-md">
+        <div className="p-5 md:p-8 flex flex-col gap-4 bg-[#0b1426]/30 border-b border-white/[0.04]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <div className="flex items-center gap-2.5 mb-2 flex-wrap">
                 <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white">{project.title}</h1>
                 <StatusBadge status={project.status} />
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-muted-foreground font-medium text-sm">Trade Code:</p>
-                <div className="flex items-center bg-slate-950/60 border border-white/10 rounded overflow-hidden">
-                  <span className="font-mono px-2 py-1 font-bold text-white tracking-widest text-sm">{project.projectCode}</span>
+                <p className="text-white/40 font-medium text-xs uppercase tracking-wider">Trade Code:</p>
+                <div className="flex items-center bg-black/60 border border-white/10 rounded-lg overflow-hidden shadow-inner">
+                  <span className="font-mono px-3 py-1 font-bold text-blue-400 tracking-widest text-xs">{project.projectCode}</span>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(project.projectCode);
                       toast({ title: "Copied!", description: "Trade code copied to clipboard." });
                     }}
-                    className="bg-primary/20 hover:bg-primary/30 text-primary px-2 py-1 transition-colors border-l border-white/10 flex items-center gap-1 text-xs font-medium"
+                    className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1 transition-all border-l border-white/10 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider"
                     title="Copy Code"
                   >
-                    <Copy className="w-3 h-3" /> Copy
+                    <Copy className="w-3.5 h-3.5" /> Copy
                   </button>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" onClick={handleShare} className="gap-2 border-white/10 text-white bg-slate-950/40 hover:bg-slate-950/60">
-                <Share2 className="w-4 h-4" /> Share Contract
+              <Button variant="outline" onClick={handleShare} className="gap-2 border-white/10 text-white bg-slate-950/40 hover:bg-slate-950/60 hover:border-white/20 transition-all font-semibold rounded-lg text-xs">
+                <Share2 className="w-4 h-4 text-blue-400" /> Share Contract
               </Button>
             </div>
           </div>
         </div>
 
         {/* Metadata Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 md:p-8 bg-slate-950/20">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Importer (Buyer)</p>
-            <div className="flex items-center gap-2 font-medium text-white/90">
-              <Users className="w-4 h-4 text-muted-foreground" /> {clientName}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 md:p-8 bg-black/40 border-t border-white/[0.04]">
+          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Importer (Buyer)</p>
+            <div className="flex items-center gap-2 font-bold text-white text-sm">
+              <Users className="w-4 h-4 text-blue-400" /> {clientName}
             </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Exporter (Seller)</p>
-            <div className="flex items-center gap-2 font-medium text-white/90">
-              <User className="w-4 h-4 text-muted-foreground" /> {talentName}
+          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Exporter (Seller)</p>
+            <div className="flex items-center gap-2 font-bold text-white text-sm">
+              <User className="w-4 h-4 text-emerald-400" /> {talentName}
             </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Target Delivery Date</p>
-            <div className="flex items-center gap-2 font-medium text-white/90">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
+          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Delivery Target</p>
+            <div className="flex items-center gap-2 font-bold text-white text-sm">
+              <Calendar className="w-4 h-4 text-indigo-400" />
               {project.expiresAt ? format(new Date(project.expiresAt), 'MMM d, yyyy') : 'TBD'}
             </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Cargo Priority</p>
-            <div className="flex items-center gap-2 font-medium text-amber-500 font-bold">
-              Standard Commercial
+          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Trade Priority</p>
+            <div className="flex items-center gap-2 font-bold text-amber-500 text-sm">
+              <Clock className="w-4 h-4 text-amber-500 animate-pulse" /> High Priority
             </div>
           </div>
         </div>
       </Card>
 
       {/* Visual Cargo Tracker */}
-      <Card className="border-border/50 shadow-sm p-4 md:p-8 bg-[#0b1426]/30 border-white/5">
-        <h3 className="font-display font-semibold text-base md:text-lg mb-5 md:mb-8 text-white">Cargo Logistics & Escrow Tracking</h3>
+      <Card className="border border-blue-500/10 shadow-[0_8px_30px_rgba(30,58,138,0.06)] p-5 md:p-8 bg-gradient-to-b from-[#0a1128]/70 to-[#04091a]/90 backdrop-blur-md">
+        <h3 className="font-display font-semibold text-base md:text-lg mb-6 text-white flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> Cargo Logistics & Escrow Tracking
+        </h3>
         <div className="overflow-x-auto -mx-1 px-1 pb-2">
-          <div className="flex items-center justify-between relative min-w-[500px] max-w-4xl mx-auto">
+          <div className="flex items-center justify-between relative min-w-[500px] max-w-4xl mx-auto pt-2 pb-4">
             {/* Connector Line */}
-            <div className="absolute top-1/2 left-0 right-0 h-1 bg-white/5 -translate-y-[28px] z-0 rounded-full"></div>
-            <div className="absolute top-1/2 left-0 h-1 bg-blue-500 -translate-y-[28px] z-0 rounded-full transition-all duration-1000" style={{ width: `${(currentStep / 3) * 100}%` }}></div>
+            <div className="absolute top-1/2 left-0 right-0 h-[3px] bg-white/5 -translate-y-[28px] z-0 rounded-full"></div>
+            <div className="absolute top-1/2 left-0 h-[3px] bg-blue-500 -translate-y-[28px] z-0 rounded-full transition-all duration-1000" style={{ width: `${(currentStep / 3) * 100}%` }}></div>
 
             {[
-              { label: "Contract Created", num: 1 },
-              { label: "Deposit Secured", num: 2 },
-              { label: "Cargo Dispatched", num: 3 },
-              { label: "Trade Settled", num: 4 },
+              { label: "Contract Created", icon: FileText, num: 1 },
+              { label: "Deposit Secured", icon: ShieldCheck, num: 2 },
+              { label: "Cargo Dispatched", icon: Truck, num: 3 },
+              { label: "Trade Settled", icon: CheckCircle2, num: 4 },
             ].map((step, idx) => {
               const isCompleted = idx < currentStep;
               const isCurrent = idx === currentStep;
+              const StepIcon = step.icon;
               return (
-                <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
-                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold shadow-sm transition-all shadow-md text-sm ${isCompleted ? "bg-emerald-500 text-white" :
-                    isCurrent ? "bg-blue-600 text-white ring-4 ring-blue-500/20" :
-                      "bg-slate-900 text-white/40 border-2 border-white/10"
-                    }`}>
-                    {isCompleted ? <Check className="w-4 h-4 md:w-6 md:h-6" /> : step.num}
+                <div key={idx} className="relative z-10 flex flex-col items-center gap-3">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold shadow-lg transition-all duration-300 ${
+                    isCompleted ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-emerald-500/20 scale-105" :
+                    isCurrent ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-blue-600/35 ring-4 ring-blue-500/15 scale-110" :
+                    "bg-[#04091a] text-white/30 border border-white/10"
+                  }`}>
+                    {isCompleted ? <Check className="w-5 h-5 text-white" /> : <StepIcon className="w-5 h-5" />}
                   </div>
-                  <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${isCurrent ? "text-blue-400 font-bold" : "text-white/50"}`}>{step.label}</span>
+                  <span className={`text-xs md:text-sm font-semibold whitespace-nowrap tracking-wide transition-all ${
+                    isCurrent ? "text-blue-400 font-bold" : 
+                    isCompleted ? "text-emerald-400/80" : 
+                    "text-white/40"
+                  }`}>{step.label}</span>
                 </div>
               );
             })}
@@ -390,37 +398,52 @@ export default function ProjectDetails() {
 
       {/* Unified Document Checklist & Vault */}
       {m && (
-        <Card className="border-border/50 shadow-sm overflow-hidden bg-[#0b1426]/30 border-white/5">
-          <CardHeader className="border-b border-white/5 bg-[#0b1426]/50">
+        <Card className="border border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden bg-[#03091e]/85 backdrop-blur-md">
+          <CardHeader className="border-b border-white/[0.05] bg-[#0b1426]/50 py-4 px-6">
             <CardTitle className="text-lg text-white flex items-center gap-2">
               <FileCheck className="w-5 h-5 text-blue-400" /> Required Cargo Documentation Checklist
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-white/80">
-                <thead className="text-xs text-white/40 uppercase bg-slate-900/60 rounded-lg">
+                <thead className="text-xs text-white/40 uppercase bg-slate-950/60">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">Document Type</th>
-                    <th className="px-4 py-3 font-semibold">Required By</th>
-                    <th className="px-4 py-3 font-semibold">Status</th>
-                    <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                    <th className="px-5 py-4 font-bold tracking-wider">Document Type</th>
+                    <th className="px-5 py-4 font-bold tracking-wider">Required By</th>
+                    <th className="px-5 py-4 font-bold tracking-wider">Status</th>
+                    <th className="px-5 py-4 font-bold tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-white/[0.04]">
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-4 py-4 font-medium text-white">Commercial Invoice & Packing List</td>
-                    <td className="px-4 py-4 text-white/50">Exporter ({talentName})</td>
-                    <td className="px-4 py-4">
+                    <td className="px-5 py-5 font-semibold text-white/95">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">
+                          CI
+                        </div>
+                        <span>Commercial Invoice & Packing List</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Exporter ({talentName})</td>
+                    <td className="px-5 py-5">
                       {m.submissionUrl ? (
-                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Uploaded</span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                          ✓ Uploaded
+                        </span>
                       ) : (
-                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Cargo Dispatch</span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                          ⏳ Awaiting Dispatch
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-4 text-right">
+                    <td className="px-5 py-5 text-right">
                       {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View File</a>
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
+                          View File <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
                       ) : (
                         <span className="text-white/20">—</span>
                       )}
@@ -428,37 +451,33 @@ export default function ProjectDetails() {
                   </tr>
 
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-4 py-4 font-medium text-white">Bill of Lading (BoL) / Shipping Receipt</td>
-                    <td className="px-4 py-4 text-white/50">Exporter ({talentName})</td>
-                    <td className="px-4 py-4">
+                    <td className="px-5 py-5 font-semibold text-white/95">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">
+                          BL
+                        </div>
+                        <span>Bill of Lading (BoL) / Shipping Receipt</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Exporter ({talentName})</td>
+                    <td className="px-5 py-5">
                       {m.submissionUrl ? (
-                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Uploaded</span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                          ✓ Uploaded
+                        </span>
                       ) : (
-                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Cargo Dispatch</span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                          ⏳ Awaiting Dispatch
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-4 text-right">
+                    <td className="px-5 py-5 text-right">
                       {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View File</a>
-                      ) : (
-                        <span className="text-white/20">—</span>
-                      )}
-                    </td>
-                  </tr>
-
-                  <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-4 py-4 font-medium text-white">Quality Certificate (SGS Inspection)</td>
-                    <td className="px-4 py-4 text-white/50">Exporter ({talentName})</td>
-                    <td className="px-4 py-4">
-                      {m.submissionUrl ? (
-                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Certified</span>
-                      ) : (
-                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Cargo Dispatch</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Certificate</a>
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
+                          View File <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
                       ) : (
                         <span className="text-white/20">—</span>
                       )}
@@ -466,18 +485,64 @@ export default function ProjectDetails() {
                   </tr>
 
                   <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-4 py-4 font-medium text-white">Import customs declaration (Bill of Entry)</td>
-                    <td className="px-4 py-4 text-white/50">Importer ({clientName})</td>
-                    <td className="px-4 py-4">
+                    <td className="px-5 py-5 font-semibold text-white/95">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xs">
+                          QC
+                        </div>
+                        <span>Quality Certificate (SGS Inspection)</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Exporter ({talentName})</td>
+                    <td className="px-5 py-5">
+                      {m.submissionUrl ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                          ✓ Certified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                          ⏳ Awaiting Dispatch
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-5 text-right">
+                      {m.submissionUrl ? (
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
+                          View File <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      ) : (
+                        <span className="text-white/20">—</span>
+                      )}
+                    </td>
+                  </tr>
+
+                  <tr className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-5 py-5 font-semibold text-white/95">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
+                          BE
+                        </div>
+                        <span>Import customs declaration (Bill of Entry)</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Importer ({clientName})</td>
+                    <td className="px-5 py-5">
                       {currentStep === 3 ? (
-                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Cleared</span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          ✓ Cleared
+                        </span>
                       ) : (
-                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Port Arrival</span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                          ⏳ Awaiting Arrival
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-4 text-right font-medium">
+                    <td className="px-5 py-5 text-right font-medium">
                       {currentStep === 3 ? (
-                        <span className="text-emerald-400">Customs Cleared</span>
+                        <span className="text-emerald-400 text-xs font-bold bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/15">Customs Cleared</span>
                       ) : (
                         <span className="text-white/20">—</span>
                       )}
