@@ -277,13 +277,13 @@ export default function ProjectDetails() {
         {/* Metadata Row (Clean spacious columns separated by slate border) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 md:p-8 bg-slate-50/50 border-t border-slate-100">
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Company</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Importer (Buyer)</p>
             <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
               <Users className="w-4 h-4 text-slate-400" /> {displayClientName}
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Freelancer</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Exporter (Seller)</p>
             <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
               <User className="w-4 h-4 text-slate-400" /> {displayTalentName}
             </div>
