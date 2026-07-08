@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { useProject, useFundProject } from "@/hooks/use-projects";
+import { useProject, useFundProject, useJoinProject } from "@/hooks/use-projects";
 import { useSubmitMilestone, useApproveMilestone, useRequestRevision } from "@/hooks/use-milestones";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,8 @@ export default function ProjectDetails() {
   const submitMilestone = useSubmitMilestone();
   const approveMilestone = useApproveMilestone();
   const requestRevision = useRequestRevision();
+  const joinProject = useJoinProject();
+  const [joinCode, setJoinCode] = useState("");
 
   const [submitUrl, setSubmitUrl] = useState("");
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
@@ -111,9 +113,64 @@ export default function ProjectDetails() {
   if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading project details...</div>;
   if (!data || !data.project) return <div className="p-8 text-center text-destructive">Project not found.</div>;
 
-  const { project, milestones, escrow, buyerName: clientName, freelancerName: talentName } = data;
+  const { project, milestones, escrow, clientName, talentName } = data;
   const isClient = user?.role === 'BUYER';
   const isTalent = user?.role === 'FREELANCER';
+
+  const isParticipant = project.createdBy === user?.id || project.buyerId === user?.id || project.freelancerId === user?.id;
+
+  const handleJoinInvited = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinCode.trim()) return;
+    try {
+      await joinProject.mutateAsync(joinCode.trim().toUpperCase());
+      toast({ title: "Joined!", description: "You have successfully joined the trade contract." });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
+    } catch (err) { }
+  };
+
+  if (!isParticipant && project.status === 'WAITING_FOR_ACCEPTANCE') {
+    return (
+      <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in duration-300">
+        <Card className="border-blue-500/20 bg-[#0b1426]/40 border-white/10 shadow-2xl">
+          <CardHeader className="text-center pb-2">
+            <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/25 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Anchor className="w-6 h-6" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-white">Join Trade Contract</CardTitle>
+            <p className="text-xs text-white/50 mt-1">You have been invited to join this trade escrow workspace.</p>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="p-4 rounded-xl bg-slate-950/40 border border-white/5 space-y-2">
+              <p className="text-xs text-white/40 uppercase font-semibold">Contract Title</p>
+              <h3 className="text-sm font-bold text-white">{project.title}</h3>
+              <p className="text-xs text-white/60 leading-relaxed mt-1">{project.description}</p>
+              <p className="text-xs text-white/40 mt-2">
+                Created by: <span className="font-semibold text-white/80">{clientName || 'Trade Partner'}</span>
+              </p>
+            </div>
+
+            <form onSubmit={handleJoinInvited} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="joinCode" className="text-white text-xs uppercase font-semibold">Enter Join Code</Label>
+                <Input
+                  id="joinCode"
+                  placeholder="6-CHARACTER CODE"
+                  className="h-12 text-center text-lg tracking-widest font-mono bg-slate-950/50 border-white/10 text-white font-bold"
+                  value={joinCode}
+                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                />
+              </div>
+              <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold" disabled={joinProject.isPending || joinCode.length < 6}>
+                {joinProject.isPending ? "Joining Workspace..." : "Accept & Join Contract"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
 

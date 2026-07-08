@@ -10,7 +10,7 @@ export interface IStorage {
   getProject(id: string): Promise<Project | undefined>;
   getProjectByCode(code: string): Promise<Project | undefined>;
   getUserProjects(userId: string): Promise<Project[]>;
-  createProject(project: InsertProject): Promise<Project>;
+  createProject(project: typeof projects.$inferInsert): Promise<Project>;
   updateProjectStatus(id: string, status: string): Promise<Project>;
   joinProject(id: string, userId: string, role: string): Promise<Project>;
 
@@ -75,7 +75,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(projects).where(or(eq(projects.createdBy, userId), eq(projects.buyerId, userId), eq(projects.freelancerId, userId)));
   }
 
-  async createProject(project: InsertProject): Promise<Project> {
+  async createProject(project: typeof projects.$inferInsert): Promise<Project> {
     const [newProject] = await db.insert(projects).values(project).returning();
     return newProject;
   }

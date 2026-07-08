@@ -32,6 +32,10 @@ const storageEngine = multer.diskStorage({
 });
 const upload = multer({ storage: storageEngine });
 
+async function createNotification(data: { userId: string; type: string; title: string; message: string; read: boolean }) {
+  console.log(`[NOTIFICATION] User: ${data.userId} | ${data.title}: ${data.message}`);
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -90,7 +94,9 @@ export async function registerRoutes(
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
     const userId = req.user.claims.sub;
-    if (project.createdBy !== userId && project.buyerId !== userId && project.freelancerId !== userId) {
+    const isParticipant = project.createdBy === userId || project.buyerId === userId || project.freelancerId === userId;
+    const isAwaitingAcceptance = project.status === 'WAITING_FOR_ACCEPTANCE';
+    if (!isParticipant && !isAwaitingAcceptance) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -362,15 +368,17 @@ export async function registerRoutes(
             // Ensure project status is ACTIVE
             if (updated) {
               await storage.updateProjectStatus(updated.projectId, 'ACTIVE');
-              
-              // Notify talent that escrow is secured
-              await createNotification({
-                userId: updated.freelancerId || '',
-                type: 'SYSTEM',
-                title: 'Escrow Secured',
-                message: `Client has funded the escrow for milestone: ${updated.title}. You can now begin work.`,
-                read: false,
-              });
+              const project = await storage.getProject(updated.projectId);
+              if (project?.freelancerId) {
+                // Notify talent that escrow is secured
+                await createNotification({
+                  userId: project.freelancerId,
+                  type: 'SYSTEM',
+                  title: 'Escrow Secured',
+                  message: `Client has funded the escrow for milestone: ${updated.title}. You can now begin work.`,
+                  read: false,
+                });
+              }
             }
 
             // Notify talent
@@ -426,9 +434,10 @@ export async function registerRoutes(
       }
 
       // Notify talent
-      if (updated.freelancerId) {
+      const project = await storage.getProject(updated.projectId);
+      if (project?.freelancerId) {
         await createNotification({
-          userId: updated.freelancerId,
+          userId: project.freelancerId,
           type: 'SYSTEM',
           title: 'Work Approved - Payout Released',
           message: `Your work for milestone '${updated.title}' has been approved. The payout is being processed to your bank account!`,

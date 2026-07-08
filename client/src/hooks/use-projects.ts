@@ -28,8 +28,8 @@ export function useProject(id: string) {
         project: any;
         milestones: any[];
         escrow: any | null;
-        buyerName: string;
-        freelancerName: string;
+        clientName: string;
+        talentName: string;
       };
     },
     enabled: !!id,

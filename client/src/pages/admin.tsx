@@ -373,7 +373,7 @@ export default function AdminDashboard() {
           <section>
             <h2 className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Platform Overview</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-              <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub={`${stats.buyers} clients · ${stats.freelancers} talents`} color="bg-violet-500" />
+              <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub={`${stats.clients} clients · ${stats.talents} talents`} color="bg-violet-500" />
               <StatCard icon={FolderOpen} label="All Projects" value={stats.totalProjects} sub={`${stats.statusCounts["ACTIVE"] || 0} active`} color="bg-blue-500" />
               <StatCard icon={DollarSign} label="Total Escrow Value" value={fmt(stats.totalEscrowValue)} sub={`${stats.fundedEscrows} funded`} color="bg-emerald-500" />
               <StatCard icon={TrendingUp} label="Total Released" value={fmt(stats.totalReleased)} sub="across all projects" color="bg-orange-500" />
