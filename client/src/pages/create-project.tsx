@@ -12,9 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Trash2, ShieldCheck, Anchor, Truck, ArrowRight } from "lucide-react";
+import { CalendarIcon, Anchor, Truck, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CURRENCIES, getCurrencySymbol } from "@/lib/currencies";
 
@@ -41,37 +40,27 @@ export default function CreateProject() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [currency, setCurrency] = useState("USD");
-  const [expiresAt, setExpiresAt] = useState<Date>(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+  const [expiresAt, setExpiresAt] = useState<Date>(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
   const { toast } = useToast();
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const [milestones, setMilestones] = useState([{
-    title: "",
-    description: "",
-    amountInput: "",
-    deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-  }]);
-
-  const handleAddMilestone = () => {
-    setMilestones([...milestones, {
-      title: "",
-      description: "",
-      amountInput: "",
-      deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-    }]);
-  };
-
-  const handleRemoveMilestone = (index: number) => {
-    setMilestones(milestones.filter((_, i) => i !== index));
-  };
+  // Simplified Tracking State
+  const [totalValue, setTotalValue] = useState("");
+  const [requiredDocs, setRequiredDocs] = useState({
+    invoice: true,
+    packingList: true,
+    billOfLading: true,
+    inspectionCertificate: true,
+    billOfEntry: true,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || milestones.some(m => !m.title || !m.amountInput || !m.deadline)) {
+    if (!title || !description || !totalValue) {
       toast({
         title: "Validation Error",
-        description: "Please fill out all contract fields and milestone details.",
+        description: "Please fill out all contract fields and enter the total trade value.",
         variant: "destructive"
       });
       return;
@@ -105,19 +94,29 @@ export default function CreateProject() {
         tradeType,
       } as any);
 
-      // 2. Create Milestones sequentially
-      for (const m of milestones) {
-        await createMilestone.mutateAsync({
-          projectId: project.id,
-          data: {
-            title: m.title,
-            description: m.description,
-            amount: Math.round(parseFloat(m.amountInput) * 100), // Convert to cents
-            deadline: m.deadline,
-            projectId: project.id
-          }
-        });
-      }
+      // 2. Create single milestone tracking checklist in description
+      const docsString = Object.entries(requiredDocs)
+        .filter(([_, v]) => v)
+        .map(([k]) => {
+          if (k === 'invoice') return 'Commercial Invoice';
+          if (k === 'packingList') return 'Packing List';
+          if (k === 'billOfLading') return 'Bill of Lading';
+          if (k === 'inspectionCertificate') return 'Quality Certificate (SGS)';
+          if (k === 'billOfEntry') return 'Bill of Entry (Customs)';
+          return k;
+        })
+        .join(', ');
+
+      await createMilestone.mutateAsync({
+        projectId: project.id,
+        data: {
+          title: "Cargo Escrow Settlement",
+          description: `Gated by: ${docsString}`,
+          amount: Math.round(parseFloat(totalValue) * 100), // Convert to cents
+          deadline: expiresAt,
+          projectId: project.id
+        }
+      });
 
       setLocation(`/projects/${project.id}`);
     } catch (err) {
@@ -141,21 +140,7 @@ export default function CreateProject() {
           <div 
             onClick={() => {
               setTradeType("import");
-              setTitle("Import Contract");
-              setMilestones([
-                {
-                  title: "Advance Sourcing Deposit",
-                  description: "Pre-production deposit to secure raw materials and trigger manufacturing (30% of contract value recommended).",
-                  amountInput: "",
-                  deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                },
-                {
-                  title: "Cargo Port Dispatch Release",
-                  description: "Disburses upon loading at port. Exporter must upload Bill of Lading (BoL) and pre-shipment Quality inspection (70% value recommended).",
-                  amountInput: "",
-                  deadline: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000)
-                }
-              ]);
+              setTitle("Import Trade Escrow Agreement");
             }}
             className="group relative flex flex-col p-8 rounded-2xl border border-white/10 bg-[#050c1b]/60 hover:bg-[#071128] hover:border-blue-500/40 cursor-pointer transition-all duration-200 shadow-xl"
           >
@@ -164,7 +149,7 @@ export default function CreateProject() {
             </div>
             <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">Import Transaction</h3>
             <p className="text-sm text-white/50 leading-relaxed mb-6">
-              You are the <strong>Buyer / Importer</strong> securing goods or cargo from a vendor. Payouts release only after custom clearance, weights check, or delivery inspection.
+              You are the <strong>Buyer / Importer</strong> securing goods or cargo from a vendor. Payouts release only after customs clearance, weights check, or delivery inspection.
             </p>
             <div className="mt-auto text-xs font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
               Select Import <ArrowRight className="w-3.5 h-3.5" />
@@ -175,21 +160,7 @@ export default function CreateProject() {
           <div 
             onClick={() => {
               setTradeType("export");
-              setTitle("Export Contract");
-              setMilestones([
-                {
-                  title: "Escrow Payment Security Lock",
-                  description: "Confirms Importer has deposited 100% of transaction value in secure escrow vault before Exporter ships cargo.",
-                  amountInput: "",
-                  deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                },
-                {
-                  title: "Customs Entry & Delivery Release",
-                  description: "Final release upon arrival. Buyer/Seller verifies customs Bill of Entry and warehouse arrival report.",
-                  amountInput: "",
-                  deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                }
-              ]);
+              setTitle("Export Trade Escrow Agreement");
             }}
             className="group relative flex flex-col p-8 rounded-2xl border border-white/10 bg-[#050c1b]/60 hover:bg-[#071128] hover:border-emerald-500/40 cursor-pointer transition-all duration-200 shadow-xl"
           >
@@ -209,7 +180,7 @@ export default function CreateProject() {
     );
   }
 
-  // Step 2: Set milestones and details
+  // Step 2: Set contract details
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
@@ -217,7 +188,7 @@ export default function CreateProject() {
           <h1 className="text-2xl md:text-3xl font-display font-bold text-white">
             Create {tradeType === "import" ? "Import" : "Export"} Escrow
           </h1>
-          <p className="text-muted-foreground text-sm">Fill in contract details and configure verification stages.</p>
+          <p className="text-muted-foreground text-sm">Fill in contract details and configure verification gates.</p>
         </div>
         <Button variant="outline" onClick={() => setTradeType(null)} className="text-xs">
           Change Trade Direction
@@ -226,55 +197,54 @@ export default function CreateProject() {
 
       {preSelectedFreelancer && (
         <Card className="bg-blue-50/50 border-blue-200 shadow-sm border-dashed">
-          <CardContent className="py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                <Plus className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-blue-900">Assigning to Partner</p>
-                <p className="text-xs text-blue-700/70 font-medium">
-                  {preSelectedFreelancer.firstName || preSelectedFreelancer.companyName || preSelectedFreelancer.email}
-                </p>
-              </div>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+              {preSelectedFreelancer.firstName?.[0] || 'U'}
             </div>
-            <Badge variant="outline" className="bg-white border-blue-200 text-blue-700">PRE-SELECTED</Badge>
+            <div>
+              <p className="text-sm font-semibold text-blue-800">Assigned Partner: {preSelectedFreelancer.firstName} {preSelectedFreelancer.lastName}</p>
+              <p className="text-xs text-blue-600/80">This trade contract will be linked directly to this user.</p>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <Card>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card className="border-border/60 shadow-sm">
           <CardHeader>
-            <CardTitle>Trade Contract Details</CardTitle>
+            <CardTitle className="text-xl text-white">Trade Contract Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Contract Title</Label>
+              <Label htmlFor="title">Contract Title</Label>
               <Input 
+                id="title" 
                 required 
                 value={title} 
                 onChange={e => setTitle(e.target.value)} 
-                placeholder={tradeType === "import" ? "e.g. Copper Import - Batch A" : "e.g. Steel Pipe Export - Delivery 1"} 
+                placeholder="e.g. Bulk Wheat Shipment Mumbai to Dubai" 
+                className="text-white bg-slate-950/40 border-white/10"
               />
             </div>
             <div className="space-y-2">
-              <Label>Contract Terms & Specifications</Label>
+              <Label htmlFor="description">Contract Terms & Specifications</Label>
               <Textarea 
+                id="description" 
                 required 
                 value={description} 
                 onChange={e => setDescription(e.target.value)} 
-                placeholder="Describe the specs, quality criteria, logistics freights, and weight inspection terms" 
+                placeholder="Describe the specs, quality criteria, logistics freights, and weight inspection terms..." 
+                className="text-white bg-slate-950/40 border-white/10"
                 rows={4} 
               />
             </div>
             <div className="space-y-2">
               <Label>Contract Currency</Label>
               <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-white bg-[#030816] border-white/10">
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
-                <SelectContent className="max-h-64">
+                <SelectContent className="max-h-64 bg-[#0b1426] text-white border-white/10">
                   {CURRENCIES.map(c => (
                     <SelectItem key={c.code} value={c.code}>
                       <span className="flex items-center gap-2">
@@ -287,19 +257,19 @@ export default function CreateProject() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">All milestone release amounts will use this currency.</p>
+              <p className="text-xs text-muted-foreground">All escrow calculations will use this currency.</p>
             </div>
             <div className="space-y-2 flex flex-col">
               <Label>Contract Expiration Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !expiresAt && "text-muted-foreground")}>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal border-white/10 text-white bg-slate-950/40", !expiresAt && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {expiresAt ? format(expiresAt, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={expiresAt} onSelect={(d) => d && setExpiresAt(d)} initialFocus />
+                <PopoverContent className="w-auto p-0 bg-[#0b1426] border-white/10">
+                  <Calendar mode="single" selected={expiresAt} onSelect={(d) => d && setExpiresAt(d)} initialFocus className="text-white bg-[#0b1426]" />
                 </PopoverContent>
               </Popover>
             </div>
@@ -309,95 +279,104 @@ export default function CreateProject() {
                 if (e.target.files && e.target.files[0]) {
                   setDocumentFile(e.target.files[0]);
                 }
-              }} />
+              }} className="text-white bg-slate-950/40 border-white/10" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Milestone Selection block */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-display font-bold text-white">Trade Verification Stages</h2>
-            <Button type="button" variant="outline" onClick={handleAddMilestone} className="hover-elevate">
-              <Plus className="w-4 h-4 mr-2" /> Add Stage
-            </Button>
-          </div>
+        {/* Unified Payout Value & Checklist Block */}
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">Escrow Payment & Document Gates</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="totalValue">Total Trade Escrow Value ({currency})</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">
+                  {getCurrencySymbol(currency)}
+                </span>
+                <Input 
+                  id="totalValue"
+                  type="number" 
+                  step="0.01" 
+                  min="0.01" 
+                  required 
+                  className="pl-8 text-white bg-slate-950/40 border-white/10" 
+                  value={totalValue} 
+                  onChange={e => setTotalValue(e.target.value)} 
+                  placeholder="0.00" 
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This total amount will be locked in the secure nodal vault and released only when documents are cleared.
+              </p>
+            </div>
 
-          {milestones.map((milestone, index) => (
-            <Card key={index} className="relative overflow-visible border-border/60 shadow-sm">
-              {milestones.length > 1 && (
-                <Button type="button" variant="destructive" size="icon" className="absolute -top-3 -right-3 h-8 w-8 rounded-full shadow-md z-10" onClick={() => handleRemoveMilestone(index)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
-              <CardContent className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Trade Stage Title</Label>
-                    <Input 
-                      required 
-                      value={milestone.title} 
-                      onChange={e => {
-                        const newM = [...milestones];
-                        newM[index].title = e.target.value;
-                        setMilestones(newM);
-                      }} 
-                      placeholder={tradeType === "import" ? "e.g. Loading at Origin Port" : "e.g. Dispatch & Shipping Documents"} 
-                    />
-                  </div>
-                  <div className="space-y-2 flex flex-col">
-                    <Label>Target Date / Deadline</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !milestone.deadline && "text-muted-foreground")}>
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {milestone.deadline ? format(milestone.deadline, "PPP") : <span>Pick a date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={milestone.deadline} onSelect={(d) => {
-                          if (d) {
-                            const newM = [...milestones];
-                            newM[index].deadline = d;
-                            setMilestones(newM);
-                          }
-                        }} initialFocus />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Gate Release Requirements / Inspection terms</Label>
-                    <Textarea 
-                      required 
-                      value={milestone.description} 
-                      onChange={e => {
-                        const newM = [...milestones];
-                        newM[index].description = e.target.value;
-                        setMilestones(newM);
-                      }} 
-                      placeholder="e.g. Releases when customs entry passes or BoL is loaded"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Stage Release Amount ({currency})</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">{getCurrencySymbol(currency)}</span>
-                      <Input type="number" step="0.01" min="0.01" required className="pl-8" value={milestone.amountInput} onChange={e => {
-                        const newM = [...milestones];
-                        newM[index].amountInput = e.target.value;
-                        setMilestones(newM);
-                      }} placeholder="0.00" />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            <div className="space-y-3 pt-2">
+              <Label>Required Verification Documents</Label>
+              <p className="text-xs text-muted-foreground mb-4">
+                Select the documentation the parties must upload to verify cargo status before funds release.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#050c1b]/50 p-4 rounded-xl border border-white/5">
+                <label className="flex items-center gap-3 cursor-pointer group text-sm text-white/80 hover:text-white">
+                  <input 
+                    type="checkbox" 
+                    checked={requiredDocs.invoice} 
+                    onChange={e => setRequiredDocs({...requiredDocs, invoice: e.target.checked})}
+                    className="w-4 h-4 rounded border-white/10 bg-transparent text-blue-600 focus:ring-blue-500" 
+                  />
+                  <span>Commercial Invoice & Packing List</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer group text-sm text-white/80 hover:text-white">
+                  <input 
+                    type="checkbox" 
+                    checked={requiredDocs.packingList} 
+                    onChange={e => setRequiredDocs({...requiredDocs, packingList: e.target.checked})}
+                    className="w-4 h-4 rounded border-white/10 bg-transparent text-blue-600 focus:ring-blue-500" 
+                  />
+                  <span>Freight Cargo Packing Specification</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer group text-sm text-white/80 hover:text-white">
+                  <input 
+                    type="checkbox" 
+                    checked={requiredDocs.billOfLading} 
+                    onChange={e => setRequiredDocs({...requiredDocs, billOfLading: e.target.checked})}
+                    className="w-4 h-4 rounded border-white/10 bg-transparent text-blue-600 focus:ring-blue-500" 
+                  />
+                  <span>Bill of Lading (BoL) / Transit Docket</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer group text-sm text-white/80 hover:text-white">
+                  <input 
+                    type="checkbox" 
+                    checked={requiredDocs.inspectionCertificate} 
+                    onChange={e => setRequiredDocs({...requiredDocs, inspectionCertificate: e.target.checked})}
+                    className="w-4 h-4 rounded border-white/10 bg-transparent text-blue-600 focus:ring-blue-500" 
+                  />
+                  <span>Quality Certificate (SGS Inspection)</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer group text-sm text-white/80 hover:text-white">
+                  <input 
+                    type="checkbox" 
+                    checked={requiredDocs.billOfEntry} 
+                    onChange={e => setRequiredDocs({...requiredDocs, billOfEntry: e.target.checked})}
+                    className="w-4 h-4 rounded border-white/10 bg-transparent text-blue-600 focus:ring-blue-500" 
+                  />
+                  <span>Import Bill of Entry (Customs Clearance)</span>
+                </label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="flex justify-end pt-4">
           <Button type="submit" size="lg" className="w-full px-8 hover-elevate bg-blue-600 hover:bg-blue-700 text-white font-bold" disabled={createProject.isPending || createMilestone.isPending || isUploading}>
-            {createProject.isPending || isUploading ? "Creating Contract..." : "Create Escrow Contract"}
+            {createProject.isPending || isUploading ? "Creating Escrow Contract..." : "Create Escrow Contract"}
           </Button>
         </div>
       </form>

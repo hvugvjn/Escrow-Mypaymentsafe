@@ -10,13 +10,13 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, Mail, Anchor, Truck } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
 import { PaxLogo } from "@/components/pax-logo";
+import { Anchor, Truck } from "lucide-react";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -127,7 +127,7 @@ export default function ProjectDetails() {
       if (res.ok) {
         setIsPaymentOpen(false);
         toast({ title: 'Success', description: 'Project activated successfully.' });
-        // The UI should auto-refresh via react-query on next poll or we could invalidate queries.
+        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
       } else {
         const data = await res.json();
         toast({ title: 'Error', description: data.message || 'Failed to activate project', variant: 'destructive' });
@@ -145,7 +145,7 @@ export default function ProjectDetails() {
       });
       if (!res.ok) throw new Error('Failed to approve work');
       queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
-      toast({ title: 'Success', description: 'Work approved. Funds are being released to the talent!' });
+      toast({ title: 'Success', description: 'Work approved. Funds are being released to the exporter!' });
     } catch (err) {
       toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
     }
@@ -161,10 +161,8 @@ export default function ProjectDetails() {
       });
       const data = await res.json();
       if (res.ok && data.paymentSessionId) {
-        // Initialize Cashfree SDK
-        // Cashfree SDK is loaded in index.html
         const cashfree = (window as any).Cashfree({
-          mode: "production", // It is safe to use production, if the keys are sandbox Cashfree will handle it or fail gracefully.
+          mode: "production",
         });
         
         let checkoutOptions = {
@@ -182,7 +180,7 @@ export default function ProjectDetails() {
         if (data.message?.includes('authentication Failed')) {
           toast({ 
             title: 'Configuration Error', 
-            description: 'The Cashfree API Keys provided to the server are invalid or expired. Please update CASHFREE_APP_ID and CASHFREE_SECRET_KEY in your Render dashboard.', 
+            description: 'The Cashfree API Keys provided to the server are invalid or expired. Please update CASHFREE_APP_ID and CASHFREE_SECRET_KEY.', 
             variant: 'destructive',
             duration: 10000
           });
@@ -202,50 +200,53 @@ export default function ProjectDetails() {
         onSuccess: () => {
           setIsSubmitOpen(false);
           setSubmitUrl("");
+          queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
         }
       });
     }
   };
 
-  // Determine active flow step (0 to 5)
+  // Determine active logistics step (0 to 3)
+  const m = milestones?.[0];
   let currentStep = 0;
-  if (project.status === 'WAITING_FOR_FUNDING') currentStep = 1;
-  else if (project.status === 'ACTIVE') currentStep = 3;
-  else if (project.status === 'UNDER_REVIEW') currentStep = 4;
-  else if (project.status === 'COMPLETED') currentStep = 5;
+  if (project.status === 'COMPLETED' || m?.status === 'RELEASED' || m?.status === 'APPROVED') {
+    currentStep = 3;
+  } else if (m?.submissionUrl) {
+    currentStep = 2;
+  } else if (project.status !== 'WAITING_FOR_FUNDING' && project.status !== 'PAYMENT_PENDING') {
+    currentStep = 1;
+  }
 
-  const flowSteps = [
-    { label: "Created", num: 1 },
-    { label: "Assigned", num: 2 },
-    { label: "Funded", num: 3 },
-    { label: "In Dev", num: 4 },
-    { label: "UAT", num: 5 },
-    { label: "Closed", num: 6 },
-  ];
+  // Pre-load selected milestone ID for uploads
+  useEffect(() => {
+    if (m?.id && !selectedMilestoneId) {
+      setSelectedMilestoneId(m.id);
+    }
+  }, [m]);
 
   return (
     <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500 overflow-x-hidden">
 
       {/* Top Header Section */}
-      <Card className="border-border/50 shadow-sm overflow-hidden">
-        <div className="p-4 md:p-8 flex flex-col gap-4 bg-background border-b border-border/50">
+      <Card className="border-border/50 shadow-sm overflow-hidden bg-[#0b1426]/30 border-white/5">
+        <div className="p-4 md:p-8 flex flex-col gap-4 bg-[#0b1426]/20 border-b border-white/5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight">{project.title}</h1>
+                <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white">{project.title}</h1>
                 <StatusBadge status={project.status} />
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-muted-foreground font-medium text-sm">Join Code:</p>
-                <div className="flex items-center bg-muted/50 border border-border/50 rounded overflow-hidden">
-                  <span className="font-mono px-2 py-1 font-bold text-foreground tracking-widest text-sm">{project.projectCode}</span>
+                <p className="text-muted-foreground font-medium text-sm">Trade Code:</p>
+                <div className="flex items-center bg-slate-950/60 border border-white/10 rounded overflow-hidden">
+                  <span className="font-mono px-2 py-1 font-bold text-white tracking-widest text-sm">{project.projectCode}</span>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(project.projectCode);
-                      toast({ title: "Copied!", description: "Join code copied to clipboard." });
+                      toast({ title: "Copied!", description: "Trade code copied to clipboard." });
                     }}
-                    className="bg-primary/10 hover:bg-primary/20 text-primary px-2 py-1 transition-colors border-l border-border/50 flex items-center gap-1 text-xs font-medium"
-                    title="Copy Join Code"
+                    className="bg-primary/20 hover:bg-primary/30 text-primary px-2 py-1 transition-colors border-l border-white/10 flex items-center gap-1 text-xs font-medium"
+                    title="Copy Code"
                   >
                     <Copy className="w-3 h-3" /> Copy
                   </button>
@@ -253,108 +254,69 @@ export default function ProjectDetails() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-            {isClient && project.status === 'WAITING_FOR_FUNDING' && (
-              <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
-                <DialogTrigger asChild>
-                  <Button className="hover-elevate bg-primary text-white shadow-lg shadow-primary/20 gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> Activate Project
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-primary" /> Activate Project Workspace</DialogTitle>
-                    <DialogDescription>
-                      Activate this project to allow the talent to begin working. Milestone payments will be securely managed directly through Cashfree when you approve the work.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleActivateProject} className="space-y-4 py-4">
-                    
-                    <DialogFooter className="pt-4">
-                      <Button type="submit" className="w-full bg-primary" disabled={isProcessingPayment}>
-                        {isProcessingPayment ? "Activating..." : "Activate Now"}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            )}
-            <Button variant="outline" onClick={handleShare} className="gap-2">
-              <Share2 className="w-4 h-4" /> Share
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" aria-label="More options">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleShare}>
-                  <Copy className="w-4 h-4 mr-2" /> Copy Project Link
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.open(`/projects/${project.id}`, '_blank')}>
-                  <ExternalLink className="w-4 h-4 mr-2" /> Open in New Tab
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-muted-foreground" disabled>
-                  <Flag className="w-4 h-4 mr-2" /> Report Issue
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <Button variant="outline" onClick={handleShare} className="gap-2 border-white/10 text-white bg-slate-950/40 hover:bg-slate-950/60">
+                <Share2 className="w-4 h-4" /> Share Contract
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Metadata Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 md:p-8 bg-muted/5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 md:p-8 bg-slate-950/20">
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Company</p>
-            <div className="flex items-center gap-2 font-medium">
+            <p className="text-sm font-medium text-muted-foreground">Importer (Buyer)</p>
+            <div className="flex items-center gap-2 font-medium text-white/90">
               <Users className="w-4 h-4 text-muted-foreground" /> {clientName}
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Talent</p>
-            <div className="flex items-center gap-2 font-medium">
+            <p className="text-sm font-medium text-muted-foreground">Exporter (Seller)</p>
+            <div className="flex items-center gap-2 font-medium text-white/90">
               <User className="w-4 h-4 text-muted-foreground" /> {talentName}
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Overall Due Date</p>
-            <div className="flex items-center gap-2 font-medium">
+            <p className="text-sm font-medium text-muted-foreground">Target Delivery Date</p>
+            <div className="flex items-center gap-2 font-medium text-white/90">
               <Calendar className="w-4 h-4 text-muted-foreground" />
               {project.expiresAt ? format(new Date(project.expiresAt), 'MMM d, yyyy') : 'TBD'}
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Priority</p>
-            <div className="flex items-center gap-2 font-medium text-amber-600">
-              High
+            <p className="text-sm font-medium text-muted-foreground">Cargo Priority</p>
+            <div className="flex items-center gap-2 font-medium text-amber-500 font-bold">
+              Standard Commercial
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Visual Workflow Stages */}
-      <Card className="border-border/50 shadow-sm p-4 md:p-8">
-        <h3 className="font-display font-semibold text-base md:text-lg mb-5 md:mb-8">Workflow Stages</h3>
+      {/* Visual Cargo Tracker */}
+      <Card className="border-border/50 shadow-sm p-4 md:p-8 bg-[#0b1426]/30 border-white/5">
+        <h3 className="font-display font-semibold text-base md:text-lg mb-5 md:mb-8 text-white">Cargo Logistics & Escrow Tracking</h3>
         <div className="overflow-x-auto -mx-1 px-1 pb-2">
-          <div className="flex items-center justify-between relative min-w-[400px] max-w-4xl mx-auto">
+          <div className="flex items-center justify-between relative min-w-[500px] max-w-4xl mx-auto">
             {/* Connector Line */}
-            <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted -translate-y-[28px] z-0 rounded-full"></div>
-            <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-[28px] z-0 rounded-full transition-all duration-1000" style={{ width: `${(currentStep / 5) * 100}%` }}></div>
+            <div className="absolute top-1/2 left-0 right-0 h-1 bg-white/5 -translate-y-[28px] z-0 rounded-full"></div>
+            <div className="absolute top-1/2 left-0 h-1 bg-blue-500 -translate-y-[28px] z-0 rounded-full transition-all duration-1000" style={{ width: `${(currentStep / 3) * 100}%` }}></div>
 
-            {flowSteps.map((step, idx) => {
+            {[
+              { label: "Contract Created", num: 1 },
+              { label: "Deposit Secured", num: 2 },
+              { label: "Cargo Dispatched", num: 3 },
+              { label: "Trade Settled", num: 4 },
+            ].map((step, idx) => {
               const isCompleted = idx < currentStep;
               const isCurrent = idx === currentStep;
               return (
                 <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
                   <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold shadow-sm transition-all shadow-md text-sm ${isCompleted ? "bg-emerald-500 text-white" :
-                    isCurrent ? "bg-primary text-primary-foreground ring-4 ring-primary/20" :
-                      "bg-muted text-muted-foreground border-2 border-border/50"
+                    isCurrent ? "bg-blue-600 text-white ring-4 ring-blue-500/20" :
+                      "bg-slate-900 text-white/40 border-2 border-white/10"
                     }`}>
                     {isCompleted ? <Check className="w-4 h-4 md:w-6 md:h-6" /> : step.num}
                   </div>
-                  <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${isCurrent ? "text-primary" : "text-muted-foreground"}`}>{step.label}</span>
+                  <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${isCurrent ? "text-blue-400 font-bold" : "text-white/50"}`}>{step.label}</span>
                 </div>
               );
             })}
@@ -362,655 +324,296 @@ export default function ProjectDetails() {
         </div>
       </Card>
 
-      {/* Tabbed Interface */}
-      <Tabs defaultValue="milestones" className="w-full">
-        <div className="overflow-x-auto -mx-3 sm:mx-0">
-          <TabsList className="w-max min-w-full justify-start h-auto p-0 bg-transparent border-b rounded-none gap-2 sm:gap-4 mb-6 md:mb-8 px-3 sm:px-0">
-            <TabsTrigger value="details" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Details</TabsTrigger>
-            <TabsTrigger value="milestones" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Verification Stages & Checklists</TabsTrigger>
-            <TabsTrigger value="activity" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Activity</TabsTrigger>
-            <TabsTrigger value="payments" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Payments</TabsTrigger>
-            <TabsTrigger value="chat" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap flex items-center gap-1.5">
-              <MessageCircle className="w-4 h-4" /> Chat
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      {/* Unified Document Checklist & Vault */}
+      {m && (
+        <Card className="border-border/50 shadow-sm overflow-hidden bg-[#0b1426]/30 border-white/5">
+          <CardHeader className="border-b border-white/5 bg-[#0b1426]/50">
+            <CardTitle className="text-lg text-white flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-blue-400" /> Required Cargo Documentation Checklist
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-white/80">
+                <thead className="text-xs text-white/40 uppercase bg-slate-900/60 rounded-lg">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Document Type</th>
+                    <th className="px-4 py-3 font-semibold">Required By</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  <tr className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-4 py-4 font-medium text-white">Commercial Invoice & Packing List</td>
+                    <td className="px-4 py-4 text-white/50">Exporter ({talentName})</td>
+                    <td className="px-4 py-4">
+                      {m.submissionUrl ? (
+                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Uploaded</span>
+                      ) : (
+                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Cargo Dispatch</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      {m.submissionUrl ? (
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View File</a>
+                      ) : (
+                        <span className="text-white/20">—</span>
+                      )}
+                    </td>
+                  </tr>
 
-        <TabsContent value="details" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <Card className="border-border/50">
-            <CardContent className="p-8 space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Project Description</h3>
-                <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed bg-muted/20 p-6 rounded-xl border border-border/50">{project.description}</p>
-              </div>
+                  <tr className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-4 py-4 font-medium text-white">Bill of Lading (BoL) / Shipping Receipt</td>
+                    <td className="px-4 py-4 text-white/50">Exporter ({talentName})</td>
+                    <td className="px-4 py-4">
+                      {m.submissionUrl ? (
+                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Uploaded</span>
+                      ) : (
+                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Cargo Dispatch</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      {m.submissionUrl ? (
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View File</a>
+                      ) : (
+                        <span className="text-white/20">—</span>
+                      )}
+                    </td>
+                  </tr>
 
-              {project.documentUrl && (
+                  <tr className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-4 py-4 font-medium text-white">Quality Certificate (SGS Inspection)</td>
+                    <td className="px-4 py-4 text-white/50">Exporter ({talentName})</td>
+                    <td className="px-4 py-4">
+                      {m.submissionUrl ? (
+                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Certified</span>
+                      ) : (
+                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Cargo Dispatch</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      {m.submissionUrl ? (
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline font-semibold">View Certificate</a>
+                      ) : (
+                        <span className="text-white/20">—</span>
+                      )}
+                    </td>
+                  </tr>
+
+                  <tr className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-4 py-4 font-medium text-white">Import customs declaration (Bill of Entry)</td>
+                    <td className="px-4 py-4 text-white/50">Importer ({clientName})</td>
+                    <td className="px-4 py-4">
+                      {currentStep === 3 ? (
+                        <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Cleared</span>
+                      ) : (
+                        <span className="text-amber-400/80 flex items-center gap-1">⏳ Awaiting Port Arrival</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-right font-medium">
+                      {currentStep === 3 ? (
+                        <span className="text-emerald-400">Customs Cleared</span>
+                      ) : (
+                        <span className="text-white/20">—</span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Document Warning or Overdue Info */}
+            {m.status === 'PENDING' && isPast(new Date(m.deadline)) && (
+              <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Master Documents</h3>
-                  <a href={project.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 p-4 border border-border/50 rounded-xl hover:bg-muted/50 transition-colors w-full md:w-auto">
-                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Project_Requirements.pdf</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Click to view or download master agreement</p>
-                    </div>
-                  </a>
+                  <p className="font-semibold text-sm">Late Cargo Documentation Alert</p>
+                  <p className="text-xs mt-0.5 opacity-90">This trade contract has exceeded its delivery deadline. Please communicate with your partner via chat.</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </div>
+            )}
 
-        <TabsContent value="milestones" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-4">
-          {milestones.length === 0 && <p className="text-center text-muted-foreground py-8">No trade stages defined.</p>}
+            {/* Unified Bottom Action Panel */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#030816]/40 p-5 rounded-xl border border-white/5 mt-4">
+              <div className="text-left w-full sm:w-auto">
+                <p className="text-xs text-white/40 font-medium uppercase tracking-wider">Escrow Status</p>
+                <h4 className="text-lg font-bold text-white mt-0.5">
+                  {currentStep === 0 ? "Awaiting Deposit" : 
+                   currentStep === 1 ? "Escrow Locked & Manufacturing" : 
+                   currentStep === 2 ? "Cargo Dispatched (Under Verification)" : 
+                   "Trade Settled & Released"}
+                </h4>
+                <p className="text-xs text-white/50 mt-1">
+                  Value locked: <span className="font-semibold text-white">{formatMoney(m.amount)}</span>
+                </p>
+              </div>
 
-          {milestones.map((m, idx) => {
-            const isOverdue = m.status === 'PENDING' && isPast(new Date(m.deadline));
-            return (
-              <Card key={m.id} className={`overflow-hidden transition-all ${isOverdue ? "border-destructive/50 shadow-destructive/10 shadow-lg" : "border-border/50 hover:border-primary/20 shadow-sm"}`}>
-                <div className="p-6">
-                  <div className="flex flex-col gap-4 md:flex-row md:gap-6 justify-between items-start">
-
-                    {/* Left Side Info */}
-                    <div className="flex gap-4">
-                      <div className="mt-1">
-                        {m.status === 'APPROVED' || m.status === 'RELEASED' ? (
-                          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center"><Check className="w-4 h-4" /></div>
-                        ) : m.status === 'FUNDED' ? (
-                          <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center"><DollarSign className="w-4 h-4" /></div>
-                        ) : m.status === 'SUBMITTED' || m.status === 'PAYMENT_PENDING' ? (
-                          <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center"><Clock className="w-4 h-4" /></div>
-                        ) : (
-                          <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center p-1"></div>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-                          Stage {idx + 1}: {m.title}
-                          {m.status === 'APPROVED' || m.status === 'RELEASED' ? <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Completed</span> : null}
-                          {m.status === 'FUNDED' && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Funded & Secured</span>}
-                          {m.status === 'SUBMITTED' && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Documents Under Verification</span>}
-                          {m.status === 'PAYMENT_PENDING' && <span className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Payment Pending</span>}
-                        </h3>
-                        <p className="text-muted-foreground mb-4">{m.description}</p>
-
-                        {/* Sub-checklist / Status */}
-                        <div className="flex flex-wrap gap-4 text-sm font-medium text-muted-foreground/80">
-                          <div className="flex items-center gap-1.5 p-2 bg-muted/30 rounded-lg border">
-                            <Calendar className="w-4 h-4" />
-                            Due: <span className={isOverdue ? "text-destructive font-bold" : "text-foreground"}>{format(new Date(m.deadline), 'MMM d, yyyy')}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 p-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 rounded-lg border border-emerald-200 dark:border-emerald-900/50">
-                            <DollarSign className="w-4 h-4" /> Escrow Allocation: {formatMoney(m.amount)}
-                          </div>
-                        </div>
-
-                        {/* B2B Partner Document Checkboard */}
-                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border/50 pt-4 w-full">
-                          {/* Exporter Checklist (Seller) */}
-                          <div className="space-y-2 bg-[#050c1b]/30 p-4 rounded-xl border border-white/5">
-                            <h4 className="font-semibold text-xs text-[#f5f7fa] flex items-center gap-1.5 uppercase tracking-wider">
-                              <Anchor className="w-3.5 h-3.5 text-blue-400" /> Exporter Checklist ({talentName})
-                            </h4>
-                            <ul className="space-y-1.5 text-xs text-muted-foreground">
-                              <li className="flex items-center justify-between">
-                                <span>Commercial Invoice & Packing List</span>
-                                {m.submissionUrl ? (
-                                  <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Provided</span>
-                                ) : (
-                                  <span className="text-amber-400/80">⏳ Pending Upload</span>
-                                )}
-                              </li>
-                              <li className="flex items-center justify-between">
-                                <span>Bill of Lading (BoL) / Shipping Receipt</span>
-                                {m.submissionUrl ? (
-                                  <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Provided</span>
-                                ) : (
-                                  <span className="text-amber-400/80">⏳ Pending Upload</span>
-                                )}
-                              </li>
-                              <li className="flex items-center justify-between">
-                                <span>Pre-Shipment Quality inspection (SGS)</span>
-                                {m.submissionUrl ? (
-                                  <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Certified</span>
-                                ) : (
-                                  <span className="text-amber-400/80">⏳ Pending Upload</span>
-                                )}
-                              </li>
-                            </ul>
-                          </div>
-
-                          {/* Importer Checklist (Buyer) */}
-                          <div className="space-y-2 bg-[#050c1b]/30 p-4 rounded-xl border border-white/5">
-                            <h4 className="font-semibold text-xs text-[#f5f7fa] flex items-center gap-1.5 uppercase tracking-wider">
-                              <Truck className="w-3.5 h-3.5 text-emerald-400" /> Importer Checklist ({clientName})
-                            </h4>
-                            <ul className="space-y-1.5 text-xs text-muted-foreground">
-                              <li className="flex items-center justify-between">
-                                <span>Escrow Funding Secured</span>
-                                {m.status !== 'PENDING' && m.status !== 'PAYMENT_PENDING' ? (
-                                  <span className="text-emerald-400 font-semibold">✓ Deposited</span>
-                                ) : (
-                                  <span className="text-amber-400/80">⏳ Awaiting Payment</span>
-                                )}
-                              </li>
-                              <li className="flex items-center justify-between">
-                                <span>Customs Declaration (Bill of Entry)</span>
-                                {m.status === 'APPROVED' || m.status === 'RELEASED' ? (
-                                  <span className="text-emerald-400 font-semibold">✓ Cleared</span>
-                                ) : (
-                                  <span className="text-amber-400/80">⏳ Awaiting Release</span>
-                                )}
-                              </li>
-                              <li className="flex items-center justify-between">
-                                <span>Cargo Inspection & Release Approval</span>
-                                {m.status === 'APPROVED' || m.status === 'RELEASED' ? (
-                                  <span className="text-emerald-400 font-semibold">✓ Approved</span>
-                                ) : (
-                                  <span className="text-amber-400/80">⏳ Pending Verification</span>
-                                )}
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-
-                        {/* Penalty Warning for Overdue */}
-                        {isOverdue && (
-                          <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg flex items-start gap-3">
-                            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-                            <div>
-                              <p className="font-semibold text-sm">Late Cargo Documentation Upload</p>
-                              <p className="text-xs mt-0.5 opacity-90">This trade stage has missed its deadline. Further delays may trigger platform dispute penalties.</p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Delivery Link Display */}
-                        {m.submissionUrl && (
-                          <div className="mt-4 p-4 border border-border/50 rounded-xl bg-muted/10">
-                            <p className="text-sm font-medium mb-2 opacity-80">Verified Stage Documents / Delivery Papers:</p>
-                            <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary bg-primary/5 hover:bg-primary/10 transition-colors px-3 py-1.5 rounded-lg border border-primary/20 text-sm font-medium">
-                              <FileCheck className="w-4 h-4" /> Open Verified Document Link
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Right Side Actions */}
-                    <div className="flex flex-col gap-2 sm:flex-row md:flex-col md:min-w-[160px] md:items-end w-full md:w-auto">
-                      {/* 1. Client Funds Escrow */}
-                      {isClient && (m.status === 'PENDING' || m.status === 'PAYMENT_PENDING') && (
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg gap-2" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
-                          <DollarSign className="w-4 h-4" /> {isCreatingPaymentLink === m.id ? 'Loading...' : 'Fund & Secure Escrow'}
-                        </Button>
-                      )}
-
-                      {/* 2. Talent sees pending escrow */}
-                      {isTalent && (m.status === 'PENDING' || m.status === 'PAYMENT_PENDING') && (
-                        <p className="text-sm text-muted-foreground text-center bg-muted/50 p-2 rounded-lg border border-border/50">Waiting for Client to Fund</p>
-                      )}
-
-                      {/* 3. Talent Submits Work */}
-                      {isTalent && (m.status === 'FUNDED' || m.status === 'REVISION_REQUESTED') && project.status === 'ACTIVE' && (
-                        <Dialog open={isSubmitOpen && selectedMilestoneId === m.id} onOpenChange={(open) => {
-                          setIsSubmitOpen(open);
-                          if (open) setSelectedMilestoneId(m.id);
-                        }}>
-                          <DialogTrigger asChild>
-                            <Button className="w-full shad-btn-primary shadow-lg shadow-primary/20">Upload Documents</Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Upload Trade Verification Documents</DialogTitle>
-                              <DialogDescription>Provide a link to your shipping documents (e.g. Bill of Lading, Packing List, Quality Certificates held on Drive, Dropbox, or custom host) for Importer verification.</DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="space-y-2">
-                                <Label>Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
-                                <Input value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" />
-                              </div>
-                            </div>
-                            <DialogFooter>
-                              <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-primary">
-                                {submitMilestone.isPending ? "Submitting..." : "Submit Trade Documents"}
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      )}
-
-                      {/* 4. Client Approves Work */}
-                      {isClient && m.status === 'SUBMITTED' && (
-                        <div className="space-y-2 w-full">
-                          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg gap-2" onClick={() => handleApproveWork(m.id)}>
-                            <CheckCircle2 className="w-4 h-4" /> Verify Documents & Release Escrow
-                          </Button>
-                          <Button variant="outline" className="w-full border-amber-500/50 text-amber-600 hover:bg-amber-50" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
-                            File Document/Quality Dispute
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </TabsContent>
-
-        <TabsContent value="activity" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <Card className="border-border/50">
-            <CardHeader className="border-b">
-              <CardTitle className="text-xl">Activity Feed & Comments</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {/* Mock timeline for dashboard effect */}
-              <div className="p-4 md:p-8 space-y-6 md:space-y-8">
-
-                {/* Activity Iterations based on milestones */}
-                {milestones.filter((m: any) => m.status === 'APPROVED').map((m: any, i: number) => (
-                  <div key={`app-${i}`} className="flex gap-4">
-                    <div className="mt-1 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">{clientName}</span>
-                        <span className="text-muted-foreground text-sm">verified trade documents & released escrow funds</span>
-                      </div>
-                      <div className="mt-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg font-medium inline-block">
-                        ✓ Payment of {formatMoney(m.amount)} released to {talentName}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {milestones.filter((m: any) => m.status === 'SUBMITTED').map((m: any, i: number) => (
-                  <div key={`sub-${i}`} className="flex gap-4">
-                    <div className="mt-1 w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Check className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">{talentName}</span>
-                        <span className="text-muted-foreground text-sm">uploaded trade documents for {m.title}</span>
-                      </div>
-                      <p className="mt-1 text-muted-foreground bg-muted/30 p-3 rounded-lg border inline-block mt-2">Verification documents have been uploaded and are ready for verification.</p>
-                    </div>
-                  </div>
-                ))}
-
-                {/* System Notifications based on escrow */}
-                {escrow?.funded && (
-                  <div className="flex gap-4 relative">
-                    <div className="mt-1 w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 z-10">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">System</span>
-                        <span className="text-muted-foreground text-sm">secured project funding in Vault</span>
-                      </div>
-                      <div className="mt-2 p-3 bg-muted border rounded-lg text-sm text-muted-foreground">
-                        Initial Escrow Funded with {formatMoney(escrow.totalAmount)}. Project officially ACTIVE.
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                {/* 1. Importer Locks Escrow Funds */}
+                {isClient && currentStep === 0 && (
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg gap-2 w-full sm:w-auto" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
+                    <Lock className="w-4 h-4" /> {isCreatingPaymentLink === m.id ? 'Loading...' : `Lock Trade Funds (${formatMoney(m.amount)})`}
+                  </Button>
                 )}
 
-              {/* Activity Comment Box — wired to chat */}
-              <div className="border-t pt-6 mt-8">
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold shrink-0">{user?.firstName?.[0] || '?'}</div>
-                  <div className="flex-1">
-                    <Input
-                      className="w-full h-12 bg-muted/50 border-input"
-                      placeholder="Add a comment or update..."
-                      value={chatInput}
-                      onChange={e => setChatInput(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                    />
-                    <div className="flex justify-end mt-3">
-                      <Button size="sm" onClick={handleSendMessage} disabled={!chatInput.trim() || isSendingMsg}>
-                        {isSendingMsg ? 'Posting...' : 'Post Update'}
+                {/* 2. Exporter Uploads Cargo Documentation */}
+                {isTalent && currentStep === 1 && (
+                  <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg gap-2 w-full sm:w-auto">
+                        <Send className="w-4 h-4" /> Upload Cargo Documents
                       </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </DialogTrigger>
+                    <DialogContent className="bg-[#0b1426] border-white/10 text-white">
+                      <DialogHeader>
+                        <DialogTitle className="text-white">Upload Cargo Shipping Documents</DialogTitle>
+                        <DialogDescription className="text-white/60">
+                          Provide the access link to your Commercial Invoice, packing specifications, and carrier Bill of Lading.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="docUrl" className="text-white">Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
+                          <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-slate-950/50 border-white/10 text-white" />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                          {submitMilestone.isPending ? "Submitting..." : "Submit Trade Documents"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
 
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="payments" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <Card className="border-border/50">
-            <CardHeader className="bg-primary/5 border-b border-primary/10 pb-6">
-              <CardTitle className="flex items-center gap-2 text-primary text-xl">
-                Escrow Account Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-
-              {/* Summary Metrics */}
-              {escrow ? (
-                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x border-b">
-                  <div className="p-5 md:p-8">
-                    <p className="text-muted-foreground mb-2 font-medium text-sm">Total Escrow Vaulted</p>
-                    <p className="text-3xl md:text-4xl font-display font-bold text-foreground">
-                      {escrow.funded ? formatMoney(escrow.totalAmount) : "$0.00"}
-                    </p>
-                    {escrow.funded ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-100 px-2 py-1 rounded mt-3">
-                        <CheckCircle2 className="w-3 h-3" /> SECURED
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-1 rounded mt-3">
-                        <AlertCircle className="w-3 h-3" /> PENDING DEPOSIT
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-5 md:p-8">
-                    <p className="text-muted-foreground mb-2 font-medium text-sm">Released to Talent</p>
-                    <p className="text-3xl md:text-4xl font-display font-bold text-emerald-600">{formatMoney(escrow.releasedAmount)}</p>
-                  </div>
-                  <div className="p-5 md:p-8">
-                    <p className="text-muted-foreground mb-2 font-medium text-sm">Remaining Locked</p>
-                    <p className="text-3xl md:text-4xl font-display font-bold text-amber-500">{formatMoney(escrow.remainingAmount)}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">Escrow not initialized</div>
-              )}
-
-              {/* Transactions Table */}
-              <div className="p-4 md:p-8">
-                <h4 className="font-semibold text-lg mb-6">Payment Transaction History</h4>
-                {escrow && escrow.funded ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                      <thead className="text-xs text-muted-foreground uppercase bg-muted/50 rounded-lg">
-                        <tr>
-                          <th className="px-4 py-3 font-semibold rounded-l-lg">Description</th>
-                          <th className="px-4 py-3 font-semibold">Amount</th>
-                          <th className="px-4 py-3 font-semibold">Status</th>
-                          <th className="px-4 py-3 font-semibold rounded-r-lg text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/50">
-                        {/* Initial Funding Row */}
-                        <tr className="hover:bg-muted/10 transition-colors">
-                          <td className="px-4 py-4 font-medium">Initial Escrow Security Deposit</td>
-                          <td className="px-4 py-4 font-bold">{formatMoney(escrow.totalAmount)}</td>
-                          <td className="px-4 py-4"><span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">Completed</span></td>
-                          <td className="px-4 py-4 text-right">
-                            <Button variant="link" className="text-primary h-auto p-0" onClick={() => setReceipt({ type: 'escrow', amount: escrow.totalAmount, date: escrow.fundedAt ? new Date(escrow.fundedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) })}>
-                              View Receipt
-                            </Button>
-                          </td>
-                        </tr>
-                        {/* Milestone rows */}
-                        {milestones.map((m: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-muted/10 transition-colors opacity-80">
-                            <td className="px-4 py-4">{m.title} Release</td>
-                            <td className="px-4 py-4 font-medium">{formatMoney(m.amount)}</td>
-                            <td className="px-4 py-4">
-                              {m.status === 'RELEASED' ? (
-                                <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">Released</span>
-                              ) : m.status === 'SUBMITTED' ? (
-                                <span className="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded font-semibold">Pending Verification</span>
-                              ) : (
-                                <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded font-semibold">Locked</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-4 text-right">
-                              {m.status === 'RELEASED' ? (
-                                <Button variant="link" className="text-primary h-auto p-0" onClick={() => setReceipt({ type: 'milestone', amount: m.amount, milestoneTitle: m.title, date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) })}>
-                                  View Receipt
-                                </Button>
-                              ) : <span className="text-muted-foreground text-xs">Waiting</span>}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 bg-muted/30 rounded-xl border border-dashed mb-4">
-                    <p className="text-muted-foreground flex items-center justify-center gap-2"><Lock className="w-4 h-4" /> No payment history yet.</p>
+                {/* 3. Importer Verifies Shipping Documents & Releases Escrow */}
+                {isClient && currentStep === 2 && (
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg font-semibold gap-2 w-full sm:w-auto" onClick={() => handleApproveWork(m.id)}>
+                      <Check className="w-4 h-4" /> Verify & Release Payout
+                    </Button>
+                    <Button variant="outline" className="border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-semibold w-full sm:w-auto" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
+                      File Quality Dispute
+                    </Button>
                   </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        {/* ── Receipt Modal ─────────────────────────────────── */}
-        {receipt && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setReceipt(null)}>
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e => e.stopPropagation()} id="receipt-print-area">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-8 py-6 text-white text-center">
-                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-3">
-                  <CreditCard className="w-6 h-6 text-white" />
-                </div>
-                <p className="text-white/80 text-sm tracking-widest font-medium"><PaxLogo white className="text-sm" /> Escrow</p>
-                <h2 className="text-2xl font-bold mt-1">Payment Receipt</h2>
-              </div>
-
-              {/* Body */}
-              <div className="px-8 py-6 space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Receipt No.</span>
-                  <span className="font-mono font-semibold text-gray-800">#{project.projectCode}-{receipt.type === 'escrow' ? '001' : receipt.milestoneTitle?.slice(0, 4).toUpperCase()}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Date</span>
-                  <span className="font-medium text-gray-800">{receipt.date || new Date().toLocaleDateString()}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Project</span>
-                  <span className="font-medium text-gray-800">{project.title}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Project ID</span>
-                  <span className="font-mono text-xs text-gray-600">{project.projectCode}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Client</span>
-                  <span className="font-medium text-gray-800">{clientName}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Talent</span>
-                  <span className="font-medium text-gray-800">{talentName}</span>
-                </div>
-                {receipt.milestoneTitle && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Milestone</span>
-                    <span className="font-medium text-gray-800">{receipt.milestoneTitle}</span>
-                  </div>
+                {/* Wait notification */}
+                {isTalent && currentStep === 0 && (
+                  <span className="text-xs text-white/40 bg-slate-900 border border-white/5 px-3 py-2 rounded-lg">Awaiting Importer Escrow Deposit</span>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Type</span>
-                  <span className="font-medium text-gray-800">{receipt.type === 'escrow' ? 'Initial Escrow Deposit' : 'Milestone Release'}</span>
-                </div>
-
-                <div className="border-t border-dashed border-gray-200 pt-4 mt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-gray-900 text-lg">Total Amount</span>
-                    <span className="font-bold text-2xl text-indigo-600">{formatMoney(receipt.amount)}</span>
-                  </div>
-                  <div className="mt-2 flex justify-between text-sm">
-                    <span className="text-gray-500">Status</span>
-                    <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">✓ Completed</span>
-                  </div>
-                </div>
-
-                <p className="text-center text-xs text-gray-400 pt-2">This is a system-generated receipt from <PaxLogo className="text-xs" /> Escrow Platform.</p>
-              </div>
-
-              {/* Footer Buttons */}
-              <div className="px-8 pb-6 flex gap-3">
-                <Button className="flex-1 gap-2" onClick={() => { const w = window.open('', '_blank'); if (w) { w.document.write('<html><head><title>Receipt</title><style>body{font-family:sans-serif;padding:32px;max-width:480px;margin:auto}</style></head><body>' + document.getElementById('receipt-print-area')!.innerHTML + '</body></html>'); w.document.close(); w.print(); } }}>
-                  🖨️ Print / Save PDF
-                </Button>
-                <Button variant="outline" className="flex-1" onClick={() => setReceipt(null)}>
-                  Close
-                </Button>
+                {isTalent && currentStep === 2 && (
+                  <span className="text-xs text-white/40 bg-slate-900 border border-white/5 px-3 py-2 rounded-lg">Awaiting Importer Clearance & Release</span>
+                )}
+                {currentStep === 3 && (
+                  <span className="text-xs text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 px-3 py-2 rounded-lg font-semibold flex items-center gap-1">✓ Escrow Released & Settled</span>
+                )}
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Contract terms & Specifications Details */}
+      <Card className="border-border/50 bg-[#0b1426]/30 border-white/5">
+        <CardHeader className="border-b border-white/5 bg-[#0b1426]/50">
+          <CardTitle className="text-lg text-white">Trade Terms & Contract Specifications</CardTitle>
+        </CardHeader>
+        <CardContent className="p-8 space-y-6">
+          <div>
+            <p className="whitespace-pre-wrap text-white/70 leading-relaxed bg-slate-950/30 p-6 rounded-xl border border-white/5">{project.description}</p>
           </div>
-        )}
 
-        {/* ── Chat Tab ──────────────────────────────────── */}
-        <TabsContent value="chat" className="mt-0">
-          <Card className="border-0 shadow-none">
-            <CardHeader className="px-4 md:px-8 py-4 md:py-6 border-b">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <MessageCircle className="w-5 h-5 text-primary" /> Project Chat
-                <span className="ml-auto text-xs font-normal text-muted-foreground">Messages refresh every 5 seconds</span>
-              </CardTitle>
+          {project.documentUrl && (
+            <div>
+              <h3 className="text-sm font-semibold mb-3 text-white">Master Purchase Contract File</h3>
+              <a href={project.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 p-4 border border-white/10 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 transition-colors w-full md:w-auto">
+                <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-medium text-white text-sm">Master_Contract.pdf</p>
+                  <p className="text-xs text-white/40 mt-0.5">Click to view or download master agreement</p>
+                </div>
+              </a>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Bottom Payment Escrow Account metrics & Chat Panel */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Escrow summary */}
+        {escrow && (
+          <Card className="border-border/50 bg-[#0b1426]/30 border-white/5">
+            <CardHeader className="bg-[#0b1426]/50 border-b border-white/5 pb-4">
+              <CardTitle className="text-white text-md">Escrow Summary</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              {/* Messages Area */}
-              <div className="h-[320px] md:h-[420px] overflow-y-auto px-4 md:px-8 py-4 md:py-6 space-y-4 bg-muted/10">
-                {chatMessages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center gap-3">
-                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="w-7 h-7 text-primary" />
-                    </div>
-                    <p className="text-muted-foreground font-medium">No messages yet</p>
-                    <p className="text-sm text-muted-foreground">Start the conversation with your project partner!</p>
-                  </div>
-                ) : (
-                  chatMessages.map((msg: any) => {
-                    const isMe = msg.senderId === user?.id;
-                    return (
-                      <div key={msg.id} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 ${msg.senderRole === 'BUYER' ? 'bg-violet-500' : 'bg-emerald-500'
-                          }`}>
-                          {msg.senderName?.charAt(0)?.toUpperCase() || '?'}
-                        </div>
-                        <div className={`max-w-[70%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                          <div className="flex items-center gap-2">
-                            {!isMe && <span className="text-xs font-semibold text-foreground">{msg.senderName}</span>}
-                            <span className="text-xs text-muted-foreground">
-                              {msg.senderRole === 'BUYER' ? '🏢 Client' : '💼 Talent'}
-                            </span>
-                          </div>
-                          <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMe
-                            ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                            : 'bg-background border border-border rounded-tl-sm'
-                            }`}>
-                            {msg.content}
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-                <div ref={chatBottomRef} />
-              </div>
-
-              {/* Input Area */}
-              <div className="px-4 md:px-8 py-4 md:py-5 border-t bg-background">
-                <div className="flex gap-2 md:gap-3 items-center">
-                  <Input
-                    value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                    placeholder="Type a message... (Enter to send)"
-                    className="flex-1 rounded-xl"
-                    disabled={isSendingMsg}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!chatInput.trim() || isSendingMsg}
-                    className="gap-2 rounded-xl px-5"
-                  >
-                    <Send className="w-4 h-4" /> Send
-                  </Button>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-white/50 text-sm">Total Vault Value:</span>
+                  <span className="text-white font-semibold font-mono">{formatMoney(escrow.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-white/50 text-sm">Released to Exporter:</span>
+                  <span className="text-emerald-400 font-semibold font-mono">{formatMoney(escrow.releasedAmount)}</span>
+                </div>
+                <div className="flex justify-between pb-2">
+                  <span className="text-white/50 text-sm">Remaining Locked:</span>
+                  <span className="text-amber-500 font-semibold font-mono">{formatMoney(escrow.remainingAmount)}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
-      </Tabs>
+        {/* Chat / Messages Panel */}
+        <Card className="border-border/50 bg-[#0b1426]/30 border-white/5 flex flex-col h-[280px] overflow-hidden">
+          <CardHeader className="bg-[#0b1426]/50 border-b border-white/5 py-3 px-6 flex flex-row items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-blue-400" />
+            <CardTitle className="text-white text-sm">Project Communication Chat</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
+            {/* Message lists */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+              {chatMessages.length === 0 ? (
+                <div className="text-center text-white/30 text-xs py-8">Send a secure message to start the negotiation</div>
+              ) : (
+                chatMessages.map((msg, i) => {
+                  const isCurrentUser = msg.senderId === user?.id;
+                  return (
+                    <div key={i} className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
+                      <div className={`p-2.5 rounded-xl max-w-[85%] text-xs ${isCurrentUser ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-900 border border-white/10 text-white/90 rounded-bl-none'}`}>
+                        {msg.content}
+                      </div>
+                      <span className="text-[10px] text-white/30 mt-1 px-1">
+                        {isCurrentUser ? 'You' : msg.senderName || 'Partner'}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatBottomRef} />
+            </div>
 
-      {/* ── Share Dialog ─────────────────────────────────── */}
-      <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Share2 className="w-5 h-5 text-primary" /> Share Project
-            </DialogTitle>
-            <DialogDescription>
-              Share this project link with your collaborator so they can join.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Link preview box */}
-          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-xl border border-border/50 text-sm font-mono break-all text-muted-foreground">
-            <span className="flex-1 truncate">{typeof window !== 'undefined' ? window.location.href : ''}</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="shrink-0 gap-1.5"
-              onClick={handleCopyLink}
-            >
-              {shareLinkCopied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-              {shareLinkCopied ? 'Copied!' : 'Copy'}
-            </Button>
-          </div>
-
-          {/* Share options */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            {/* WhatsApp */}
-            <button
-              onClick={() => { handleWhatsAppShare(); setIsShareOpen(false); }}
-              className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-[#25D366]/5 hover:bg-[#25D366]/10 transition-colors text-left"
-            >
-              <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center shrink-0">
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-sm">WhatsApp</p>
-                <p className="text-xs text-muted-foreground">Send via chat</p>
-              </div>
-            </button>
-
-            {/* Email */}
-            <button
-              onClick={() => { handleEmailShare(); setIsShareOpen(false); }}
-              className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-blue-500/5 hover:bg-blue-500/10 transition-colors text-left"
-            >
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
-                <Mail className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm">Email</p>
-                <p className="text-xs text-muted-foreground">Send via email</p>
-              </div>
-            </button>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" className="w-full" onClick={() => setIsShareOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            {/* Input message */}
+            <div className="p-3 border-t border-white/5 bg-slate-950/20 flex gap-2">
+              <Input
+                className="bg-slate-950/50 border-white/10 text-white text-xs h-9"
+                placeholder="Type a message..."
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+              />
+              <Button size="sm" onClick={handleSendMessage} className="h-9 px-3 bg-blue-600 hover:bg-blue-700 text-white" disabled={!chatInput.trim() || isSendingMsg}>
+                <Send className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
     </div>
   );
