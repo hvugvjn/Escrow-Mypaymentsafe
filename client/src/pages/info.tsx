@@ -1,9 +1,44 @@
+import { useState } from "react";
 import { useRoute } from "wouter";
 import { Link } from "wouter";
-import { ArrowRight, ShieldCheck, Zap, Users, Shield, Briefcase, FileText, CheckCircle2, Building2 } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Users, Shield, Briefcase, FileText, CheckCircle2, Building2, ChevronDown, ChevronUp, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaxLogo } from "@/components/pax-logo";
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const NAV_ITEMS = [
+    {
+        label: "How It Protects",
+        key: "protects",
+        links: [
+            { label: "Buyer Security", sub: "Verify cargo or digital work before funds release", href: "/info/managed-escrow" },
+            { label: "Seller Guarantees", sub: "Fulfill contracts with verified upfront funding", href: "/info/guaranteed-payments" },
+            { label: "Neutral Arbitration", sub: "Legal & technical resolution when disputes arise", href: "/info/dispute-resolution" },
+            { label: "RBI Compliance", sub: "Safe transactional infrastructure & nodal vaults", href: "/info/trust-and-safety" },
+        ],
+    },
+    {
+        label: "Trade Solutions",
+        key: "solutions",
+        links: [
+            { label: "Import & Export", sub: "Secure cross-border logistics & supplier advances", href: "/info/escrow-for-import-export" },
+            { label: "B2B Goods & Trade", sub: "Domestic wholesale, manufacturing & inventory", href: "/info/escrow-for-wholesale-trade" },
+            { label: "Service Contracts", sub: "Safeguard agency & high-value contractor milestones", href: "/info/escrow-for-service-contracts" },
+            { label: "Enterprise Escrow", sub: "Tailored structures for high-volume transactions", href: "/info/vip-pay-on-delivery" },
+        ],
+    },
+    {
+        label: "Resources",
+        key: "resources",
+        links: [
+            { label: "How Escrow Works", sub: "4-step secure transaction workflow", href: "/info/how-to-hire" },
+            { label: "Success Stories", sub: "Traders who eliminated credit risk with PAX", href: "/info/success-stories" },
+            { label: "PAX Blog", sub: "Latest insights on trade risk management", href: "/info/blog" },
+            { label: "Press Center", sub: "Latest announcements and media assets", href: "/info/press-and-media" },
+        ],
+    },
+];
 
 // --- CONTENT MAP ---
 // This holds the enterprise-grade copy for each footer page.
@@ -155,16 +190,7 @@ const INFO_CONTENT: Record<string, { tag: string, title: string, subtitle: strin
     bodyText: "From data encryption to strict KYC/AML compliance, the PAX infrastructure is designed to protect your identity, your intellectual property, and your money.",
     bullets: ["End-to-end data encryption.", "Strict identity verification processes.", "PCI-DSS compliant payment processing."],
   },
-  "pax-for-enterprise": {
-    tag: "Enterprise",
-    title: "PAX for Enterprise",
-    subtitle: "Scale your external workforce with absolute compliance.",
-    icon: Building2,
-    imageColor: "from-blue-800 to-indigo-950",
-    bodyHeading: "A single unified platform for enterprise agility.",
-    bodyText: "Manage hundreds of freelancers, agencies, and external contractors with a unified dashboard. Enforce compliance, track spend, and utilize API integrations.",
-    bullets: ["Custom contract support and compliance.", "Multi-team access and permission roles.", "Dedicated account management."],
-  },
+
   "dispute-resolution": {
     tag: "Resources",
     title: "Dispute Resolution",
@@ -209,6 +235,12 @@ const INFO_CONTENT: Record<string, { tag: string, title: string, subtitle: strin
 
 export default function InfoPage() {
   const [match, params] = useRoute("/info/:slug");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null);
+  const [openNav, setOpenNav] = useState<string | null>(null);
+
+  const toggleAccordion = (name: string) =>
+    setExpandedAccordion(expandedAccordion === name ? null : name);
   
   // Scroll to top on mount
   useEffect(() => {
@@ -234,21 +266,121 @@ export default function InfoPage() {
     return (
       <div className="min-h-screen bg-white font-sans">
         {/* Navbar */}
-        <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-3 md:py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-          <div className="flex items-center gap-8">
+        <nav className={`fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-16 py-4 border-b border-white/5 bg-[#030816] text-[#f5f7fa] font-sans`}>
+          <div className="flex items-center gap-10">
             <Link href="/">
-              <a className="hover:opacity-80 transition-opacity"><PaxLogo className="text-3xl" /></a>
+              <a className="hover:opacity-80 transition-opacity"><PaxLogo className="text-2xl" white /></a>
             </Link>
+
+            {/* Desktop Nav */}
+            <div className="hidden lg:flex items-center gap-2 text-sm font-medium text-white/70">
+              {NAV_ITEMS.map((item) => (
+                <div
+                  key={item.key}
+                  className="relative group py-2"
+                  onMouseEnter={() => setOpenNav(item.key)}
+                  onMouseLeave={() => setOpenNav(null)}
+                >
+                  <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+                    {item.label}
+                    <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${openNav === item.key ? "rotate-180" : ""}`} />
+                  </button>
+
+                  <div className={`absolute top-full left-0 mt-1 w-80 bg-[#0b1426] border border-white/10 rounded-2xl shadow-2xl transition-all duration-200 p-3 z-[1000] ${openNav === item.key ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
+                    {item.links.map((link) => (
+                      <Link key={link.href} href={link.href}>
+                        <a className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group/link">
+                          <span className="font-semibold text-white text-sm group-hover/link:text-blue-400 transition-colors">{link.label}</span>
+                          <span className="text-xs text-white/40">{link.sub}</span>
+                        </a>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+
+          <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost" className="font-semibold hidden sm:flex text-gray-600 hover:text-gray-900 hover:bg-gray-50">Log In</Button>
+              <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/5 text-sm">
+                Log In
+              </Button>
             </Link>
             <Link href="/login">
-              <Button className="rounded-full px-6 font-semibold shadow-sm">Sign Up</Button>
+              <Button className="bg-[#122b5e] hover:bg-[#1a3d80] text-white font-semibold rounded-lg px-5 py-2 text-sm border border-white/15 shadow-lg shadow-blue-900/25 transition-all">
+                Get Started
+              </Button>
             </Link>
+            <button
+              onClick={() => { setMobileMenuOpen(!mobileMenuOpen); if (mobileMenuOpen) setExpandedAccordion(null); }}
+              className="lg:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Toggle navigation"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </nav>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[90] bg-[#030816] pt-20 pb-8 px-6 overflow-y-auto flex flex-col lg:hidden font-sans text-white"
+            >
+              <div className="flex-1 space-y-2 mt-4">
+                {NAV_ITEMS.map((item) => (
+                  <div key={item.key} className={`border-b border-white/5 pb-3 transition-all duration-200 ${expandedAccordion === item.key ? "bg-white/[0.03] border border-white/10 rounded-2xl p-4 my-2" : "py-1"}`}>
+                    <button
+                      onClick={() => toggleAccordion(item.key)}
+                      className="w-full flex items-center justify-between py-2 text-base font-bold text-white/90 hover:text-white"
+                    >
+                      <span>{item.label}</span>
+                      {expandedAccordion === item.key
+                        ? <ChevronUp className="w-5 h-5 text-blue-400" />
+                        : <ChevronDown className="w-5 h-5 text-white/40" />
+                      }
+                    </button>
+                    <AnimatePresence>
+                      {expandedAccordion === item.key && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden pl-2 py-2 space-y-3"
+                        >
+                          {item.links.map((link) => (
+                            <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)}>
+                              <a className="flex flex-col gap-0.5">
+                                <span className="text-sm font-semibold text-white">{link.label}</span>
+                                <span className="text-xs text-white/40">{link.sub}</span>
+                              </a>
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8 pt-6 border-t border-white/5 flex flex-col gap-3">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full border-white/10 text-white hover:bg-white/10 py-5 rounded-full font-bold text-sm">Log In</Button>
+                </Link>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full bg-[#122b5e] hover:bg-[#1a3d80] text-white py-5 rounded-full font-bold text-sm shadow-xl">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Hero Section */}
         <div className="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto">
@@ -275,7 +407,7 @@ export default function InfoPage() {
                   {isHire ? "Browse Talent" : "Sign Up to Apply"}
                 </Button>
               </Link>
-              <Link href="/info/pax-for-enterprise">
+              <Link href="/support">
                 <Button variant="outline" size="lg" className="rounded-full px-8 h-14 text-base font-semibold border-gray-200">
                   Contact Sales
                 </Button>
@@ -316,229 +448,122 @@ export default function InfoPage() {
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      {/* Navbar — Clean White Style like Upwork with Mega Menu */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-3 md:py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="flex items-center gap-8">
+      {/* Navbar */}
+      <nav className={`fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-16 py-4 border-b border-white/5 bg-[#030816] text-[#f5f7fa] font-sans`}>
+        <div className="flex items-center gap-10">
           <Link href="/">
-            <a className="hover:opacity-80 transition-opacity"><PaxLogo className="text-3xl" /></a>
+            <a className="hover:opacity-80 transition-opacity"><PaxLogo className="text-2xl" white /></a>
           </Link>
-          
-          <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-700">
-            {/* Hire Freelancers */}
-            <div className="group relative py-4">
-                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
-                    Hire freelancers <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-2 text-sm font-medium text-white/70">
+            {NAV_ITEMS.map((item) => (
+              <div
+                key={item.key}
+                className="relative group py-2"
+                onMouseEnter={() => setOpenNav(item.key)}
+                onMouseLeave={() => setOpenNav(null)}
+              >
+                <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+                  {item.label}
+                  <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${openNav === item.key ? "rotate-180" : ""}`} />
                 </button>
-                <div className="absolute top-full -left-4 w-[1100px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-4 gap-y-12 gap-x-8">
-                    {/* ROW 1 */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Admin & support</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/hire-cold-callers"><a className="hover:text-primary transition-colors cursor-pointer block">Cold callers</a></Link></li>
-                            <li><Link href="/info/hire-content-moderators"><a className="hover:text-primary transition-colors cursor-pointer block">Content moderators</a></Link></li>
-                            <li><Link href="/info/hire-lead-generation-specialists"><a className="hover:text-primary transition-colors cursor-pointer block">Lead generation specialists</a></Link></li>
-                            <li><Link href="/info/hire-personal-assistants"><a className="hover:text-primary transition-colors cursor-pointer block">Personal assistants</a></Link></li>
-                            <li><Link href="/info/hire-virtual-assistants"><a className="hover:text-primary transition-colors cursor-pointer block">Virtual assistants</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Design & creative</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/hire-graphic-designers"><a className="hover:text-primary transition-colors cursor-pointer block">Graphic designers</a></Link></li>
-                            <li><Link href="/info/hire-illustrators"><a className="hover:text-primary transition-colors cursor-pointer block">Illustrators</a></Link></li>
-                            <li><Link href="/info/hire-logo-designers"><a className="hover:text-primary transition-colors cursor-pointer block">Logo designers</a></Link></li>
-                            <li><Link href="/info/hire-ux-designers"><a className="hover:text-primary transition-colors cursor-pointer block">UX designers</a></Link></li>
-                            <li><Link href="/info/hire-web-designers"><a className="hover:text-primary transition-colors cursor-pointer block">Web designers</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Marketing</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/hire-digital-marketers"><a className="hover:text-primary transition-colors cursor-pointer block">Digital marketers</a></Link></li>
-                            <li><Link href="/info/hire-email-marketers"><a className="hover:text-primary transition-colors cursor-pointer block">Email marketers</a></Link></li>
-                            <li><Link href="/info/hire-google-ads-experts"><a className="hover:text-primary transition-colors cursor-pointer block">Google Ads experts</a></Link></li>
-                            <li><Link href="/info/hire-seo-experts"><a className="hover:text-primary transition-colors cursor-pointer block">SEO experts</a></Link></li>
-                            <li><Link href="/info/hire-social-media-managers"><a className="hover:text-primary transition-colors cursor-pointer block">Social media managers</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Writing & content</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/hire-book-editors"><a className="hover:text-primary transition-colors cursor-pointer block">Book editors</a></Link></li>
-                            <li><Link href="/info/hire-content-writers"><a className="hover:text-primary transition-colors cursor-pointer block">Content writers</a></Link></li>
-                            <li><Link href="/info/hire-copywriters"><a className="hover:text-primary transition-colors cursor-pointer block">Copywriters</a></Link></li>
-                            <li><Link href="/info/hire-email-copywriters"><a className="hover:text-primary transition-colors cursor-pointer block">Email copywriters</a></Link></li>
-                            <li><Link href="/info/hire-ghostwriters"><a className="hover:text-primary transition-colors cursor-pointer block">Ghostwriters</a></Link></li>
-                        </ul>
-                    </div>
 
-                    {/* ROW 2 */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">AI & emerging tech</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/hire-automation-engineers"><a className="hover:text-primary transition-colors cursor-pointer block">Automation engineers</a></Link></li>
-                            <li><Link href="/info/hire-chatbot-developers"><a className="hover:text-primary transition-colors cursor-pointer block">Chatbot developers</a></Link></li>
-                            <li><Link href="/info/hire-computer-vision-engineers"><a className="hover:text-primary transition-colors cursor-pointer block">Computer vision engineers</a></Link></li>
-                            <li><Link href="/info/hire-ethical-hackers"><a className="hover:text-primary transition-colors cursor-pointer block">Ethical hackers</a></Link></li>
-                            <li><Link href="/info/hire-machine-learning-engineers"><a className="hover:text-primary transition-colors cursor-pointer block">Machine learning engineers</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Development & tech</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/hire-mobile-app-developers"><a className="hover:text-primary transition-colors cursor-pointer block">Mobile app developers</a></Link></li>
-                            <li><Link href="/info/hire-python-developers"><a className="hover:text-primary transition-colors cursor-pointer block">Python developers</a></Link></li>
-                            <li><Link href="/info/hire-software-developers"><a className="hover:text-primary transition-colors cursor-pointer block">Software developers</a></Link></li>
-                            <li><Link href="/info/hire-web-developers"><a className="hover:text-primary transition-colors cursor-pointer block">Web developers</a></Link></li>
-                            <li><Link href="/info/hire-wordpress-developers"><a className="hover:text-primary transition-colors cursor-pointer block">WordPress developers</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Video, audio & animation</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/hire-animators"><a className="hover:text-primary transition-colors cursor-pointer block">Animators</a></Link></li>
-                            <li><Link href="/info/hire-audio-editors"><a className="hover:text-primary transition-colors cursor-pointer block">Audio editors</a></Link></li>
-                            <li><Link href="/info/hire-music-producers"><a className="hover:text-primary transition-colors cursor-pointer block">Music producers</a></Link></li>
-                            <li><Link href="/info/hire-video-editors"><a className="hover:text-primary transition-colors cursor-pointer block">Video editors</a></Link></li>
-                            <li><Link href="/info/hire-voice-actors"><a className="hover:text-primary transition-colors cursor-pointer block">Voice actors</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-6 flex flex-col justify-end">
-                        <Link href="/info/how-to-hire"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Explore more <ArrowRight className="w-4 h-4"/></a></Link>
-                        <Link href="/support"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Book consultation <ArrowRight className="w-4 h-4"/></a></Link>
-                        <Link href="/info/pax-for-enterprise"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Join Business Plus <ArrowRight className="w-4 h-4"/></a></Link>
-                    </div>
+                <div className={`absolute top-full left-0 mt-1 w-80 bg-[#0b1426] border border-white/10 rounded-2xl shadow-2xl transition-all duration-200 p-3 z-[1000] ${openNav === item.key ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
+                  {item.links.map((link) => (
+                    <Link key={link.href} href={link.href}>
+                      <a className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group/link">
+                        <span className="font-semibold text-white text-sm group-hover/link:text-blue-400 transition-colors">{link.label}</span>
+                        <span className="text-xs text-white/40">{link.sub}</span>
+                      </a>
+                    </Link>
+                  ))}
                 </div>
-            </div>
-
-            {/* Find Work */}
-            <div className="group relative py-4">
-                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
-                    Find work <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <div className="absolute top-full -left-4 w-[1100px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 grid grid-cols-4 gap-y-12 gap-x-8">
-                    {/* ROW 1 */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Admin & support jobs</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/chat-support-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Chat support jobs</a></Link></li>
-                            <li><Link href="/info/cold-calling-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Cold calling jobs</a></Link></li>
-                            <li><Link href="/info/content-moderation-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Content moderation jobs</a></Link></li>
-                            <li><Link href="/info/lead-generation-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Lead generation jobs</a></Link></li>
-                            <li><Link href="/info/virtual-assistant-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Virtual assistant jobs</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Design & creative jobs</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/canva-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Canva jobs</a></Link></li>
-                            <li><Link href="/info/graphic-design-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Graphic design jobs</a></Link></li>
-                            <li><Link href="/info/illustration-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Illustration jobs</a></Link></li>
-                            <li><Link href="/info/logo-design-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Logo design jobs</a></Link></li>
-                            <li><Link href="/info/web-design-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Web design jobs</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Marketing jobs</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/digital-marketing-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Digital marketing jobs</a></Link></li>
-                            <li><Link href="/info/email-marketing-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Email marketing jobs</a></Link></li>
-                            <li><Link href="/info/google-ads-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Google Ads jobs</a></Link></li>
-                            <li><Link href="/info/seo-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">SEO jobs</a></Link></li>
-                            <li><Link href="/info/social-media-management-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Social media management jobs</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Writing & content jobs</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/book-editing-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Book editing jobs</a></Link></li>
-                            <li><Link href="/info/content-writing-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Content writing jobs</a></Link></li>
-                            <li><Link href="/info/copywriting-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Copywriting jobs</a></Link></li>
-                            <li><Link href="/info/email-copywriting-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Email copywriting jobs</a></Link></li>
-                            <li><Link href="/info/ghostwriting-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Ghostwriting jobs</a></Link></li>
-                        </ul>
-                    </div>
-
-                    {/* ROW 2 */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">AI & emerging tech jobs</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/ai-app-development-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">AI app development jobs</a></Link></li>
-                            <li><Link href="/info/chatbot-development-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Chatbot development jobs</a></Link></li>
-                            <li><Link href="/info/ethical-hacking-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Ethical hacking jobs</a></Link></li>
-                            <li><Link href="/info/machine-learning-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Machine learning jobs</a></Link></li>
-                            <li><Link href="/info/openai-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">OpenAI jobs</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Development & tech jobs</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/mobile-app-development-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Mobile app development jobs</a></Link></li>
-                            <li><Link href="/info/python-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Python jobs</a></Link></li>
-                            <li><Link href="/info/software-development-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Software development jobs</a></Link></li>
-                            <li><Link href="/info/web-development-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Web development jobs</a></Link></li>
-                            <li><Link href="/info/wordpress-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">WordPress jobs</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-gray-900 mb-2">Video, audio & animation jobs</h4>
-                        <ul className="space-y-3 text-gray-600">
-                            <li><Link href="/info/animation-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Animation jobs</a></Link></li>
-                            <li><Link href="/info/audio-editing-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Audio editing jobs</a></Link></li>
-                            <li><Link href="/info/music-production-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Music production jobs</a></Link></li>
-                            <li><Link href="/info/video-editing-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Video editing jobs</a></Link></li>
-                            <li><Link href="/info/voice-over-jobs"><a className="hover:text-primary transition-colors cursor-pointer block">Voice over jobs</a></Link></li>
-                        </ul>
-                    </div>
-                    <div className="space-y-6 flex flex-col justify-end">
-                        <Link href="/info/how-it-works-talent"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Explore more <ArrowRight className="w-4 h-4"/></a></Link>
-                        <Link href="/info/direct-contracts"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Ways to earn <ArrowRight className="w-4 h-4"/></a></Link>
-                        <Link href="/info/success-stories"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Win work with ads <ArrowRight className="w-4 h-4"/></a></Link>
-                        <Link href="/info/guaranteed-payments"><a className="text-primary font-semibold hover:underline flex items-center gap-2 cursor-pointer">Join Freelancer Plus <ArrowRight className="w-4 h-4"/></a></Link>
-                    </div>
-                </div>
-            </div>
-
-            {/* Why PAX */}
-            <div className="group relative py-4">
-                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
-                    Why PAX <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <div className="absolute top-full -left-4 w-[250px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-6">
-                    <ul className="space-y-4 text-gray-600">
-                        <li><Link href="/info/trust-and-safety"><a className="hover:text-gray-900 flex flex-col gap-1 cursor-pointer"><span className="font-semibold text-gray-900">Trust & Safety</span><span className="text-xs">Bank-grade security</span></a></Link></li>
-                        <li><Link href="/info/managed-escrow"><a className="hover:text-gray-900 flex flex-col gap-1 cursor-pointer"><span className="font-semibold text-gray-900">Managed Escrow</span><span className="text-xs">Absolute financial safety</span></a></Link></li>
-                        <li><Link href="/info/project-oversight"><a className="hover:text-gray-900 flex flex-col gap-1 cursor-pointer"><span className="font-semibold text-gray-900">Project Oversight</span><span className="text-xs">Zero micromanagement</span></a></Link></li>
-                    </ul>
-                </div>
-            </div>
-
-            {/* What's New */}
-            <div className="group relative py-4">
-                <button className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
-                    What's new <svg className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <div className="absolute top-full -left-4 w-[250px] bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-4">
-                    <ul className="space-y-1 text-gray-600">
-                        <li><Link href="/info/blog"><a className="block hover:bg-gray-50 rounded-lg p-3 transition-colors cursor-pointer"><span className="block font-semibold text-gray-900 mb-1">Blog</span><span className="block text-xs text-gray-500">Trends & strategies</span></a></Link></li>
-                        <li><Link href="/info/press-and-media"><a className="block hover:bg-gray-50 rounded-lg p-3 transition-colors cursor-pointer"><span className="block font-semibold text-gray-900 mb-1">Press Releases</span><span className="block text-xs text-gray-500">Our latest announcements</span></a></Link></li>
-                    </ul>
-                </div>
-            </div>
+              </div>
+            ))}
           </div>
         </div>
-        
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-3">
           <Link href="/login">
-            <Button variant="ghost" className="font-semibold hidden sm:flex text-gray-600 hover:text-gray-900 hover:bg-gray-50">Log In</Button>
-          </Link>
-          <Link href="/login">
-            <Button className="rounded-full px-6 font-semibold shadow-sm">
-              Sign Up
+            <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/5 text-sm">
+              Log In
             </Button>
           </Link>
+          <Link href="/login">
+            <Button className="bg-[#122b5e] hover:bg-[#1a3d80] text-white font-semibold rounded-lg px-5 py-2 text-sm border border-white/15 shadow-lg shadow-blue-900/25 transition-all">
+              Get Started
+            </Button>
+          </Link>
+          <button
+            onClick={() => { setMobileMenuOpen(!mobileMenuOpen); if (mobileMenuOpen) setExpandedAccordion(null); }}
+            className="lg:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label="Toggle navigation"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[90] bg-[#030816] pt-20 pb-8 px-6 overflow-y-auto flex flex-col lg:hidden font-sans text-white"
+          >
+            <div className="flex-1 space-y-2 mt-4">
+              {NAV_ITEMS.map((item) => (
+                <div key={item.key} className={`border-b border-white/5 pb-3 transition-all duration-200 ${expandedAccordion === item.key ? "bg-white/[0.03] border border-white/10 rounded-2xl p-4 my-2" : "py-1"}`}>
+                  <button
+                    onClick={() => toggleAccordion(item.key)}
+                    className="w-full flex items-center justify-between py-2 text-base font-bold text-white/90 hover:text-white"
+                  >
+                    <span>{item.label}</span>
+                    {expandedAccordion === item.key
+                      ? <ChevronUp className="w-5 h-5 text-blue-400" />
+                      : <ChevronDown className="w-5 h-5 text-white/40" />
+                    }
+                  </button>
+                  <AnimatePresence>
+                    {expandedAccordion === item.key && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden pl-2 py-2 space-y-3"
+                      >
+                        {item.links.map((link) => (
+                          <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)}>
+                            <a className="flex flex-col gap-0.5">
+                              <span className="text-sm font-semibold text-white">{link.label}</span>
+                              <span className="text-xs text-white/40">{link.sub}</span>
+                            </a>
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 pt-6 border-t border-white/5 flex flex-col gap-3">
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full border-white/10 text-white hover:bg-white/10 py-5 rounded-full font-bold text-sm">Log In</Button>
+              </Link>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full bg-[#122b5e] hover:bg-[#1a3d80] text-white py-5 rounded-full font-bold text-sm shadow-xl">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Section — Matching Upwork's Rounded Card Style */}
       <div className="pt-24 px-4 md:px-8 max-w-7xl mx-auto">

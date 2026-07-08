@@ -15,9 +15,6 @@ export function injectMetaTags(url: string, html: string): string {
   } else if (path === "/info/escrow-for-service-contracts") {
     title = "Milestone Escrow for High-Value Service Contracts - PAX";
     description = "Safeguard software development milestones, digital agency deliverables, and high-value consultancy agreements. Payouts release strictly upon milestone code reviews and UAT approvals.";
-  } else if (path === "/info/pax-for-enterprise") {
-    title = "PAX for Enterprise - Secure High-Volume B2B Trade";
-    description = "Enterprise-grade milestone escrow and transaction protection for import/export firms, manufacturing hubs, and corporate trade networks.";
   } else if (path === "/info/dispute-resolution") {
     title = "Neutral Arbitration & Dispute Resolution - PAX";
     description = "When trade disputes arise, PAX freezes payouts and brings in trade-specific inspectors or technical auditors to resolve issues neutrally.";

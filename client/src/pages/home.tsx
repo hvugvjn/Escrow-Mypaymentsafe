@@ -35,9 +35,9 @@ const NAV_ITEMS = [
         label: "Trade Solutions",
         key: "solutions",
         links: [
-            { label: "Import & Export", sub: "Secure cross-border logistics & supplier advances", href: "/info/pax-for-enterprise" },
-            { label: "B2B Goods & Trade", sub: "Domestic wholesale, manufacturing & inventory", href: "/info/managed-escrow" },
-            { label: "Service Contracts", sub: "Safeguard agency & high-value contractor milestones", href: "/info/project-oversight" },
+            { label: "Import & Export", sub: "Secure cross-border logistics & supplier advances", href: "/info/escrow-for-import-export" },
+            { label: "B2B Goods & Trade", sub: "Domestic wholesale, manufacturing & inventory", href: "/info/escrow-for-wholesale-trade" },
+            { label: "Service Contracts", sub: "Safeguard agency & high-value contractor milestones", href: "/info/escrow-for-service-contracts" },
             { label: "Enterprise Escrow", sub: "Tailored structures for high-volume transactions", href: "/info/vip-pay-on-delivery" },
         ],
     },
@@ -485,7 +485,7 @@ export default function Home() {
                                 ))}
                             </ul>
                         </div>
-                        <Link href="/info/pax-for-enterprise">
+                        <Link href="/support">
                             <Button className="w-full bg-[#122b5e] hover:bg-[#1a3d80] text-white border border-white/5 rounded-lg py-4 font-semibold text-xs">
                                 Talk to Trade Specialist <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
@@ -512,7 +512,7 @@ export default function Home() {
                                 Open Secure Account <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
                         </Link>
-                        <Link href="/info/pax-for-enterprise">
+                        <Link href="/support">
                             <Button size="lg" variant="outline" className="border-white/15 text-white hover:bg-white/5 rounded-xl px-7 py-5 text-sm">
                                 Contact Sales Team
                             </Button>
@@ -551,9 +551,9 @@ export default function Home() {
                         <div className="space-y-4">
                             <h4 className="text-white font-semibold text-xs tracking-wider uppercase">Use Cases</h4>
                             <ul className="space-y-3 text-xs text-white/35">
-                                <li><Link href="/info/pax-for-enterprise"><a className="hover:text-white transition-colors">Import & Export</a></Link></li>
-                                <li><Link href="/info/managed-escrow"><a className="hover:text-white transition-colors">B2B Goods & Inventory</a></Link></li>
-                                <li><Link href="/info/project-oversight"><a className="hover:text-white transition-colors">Digital & Tech Contracts</a></Link></li>
+                                <li><Link href="/info/escrow-for-import-export"><a className="hover:text-white transition-colors">Import & Export</a></Link></li>
+                                <li><Link href="/info/escrow-for-wholesale-trade"><a className="hover:text-white transition-colors">B2B Goods & Inventory</a></Link></li>
+                                <li><Link href="/info/escrow-for-service-contracts"><a className="hover:text-white transition-colors">Digital & Tech Contracts</a></Link></li>
                                 <li><Link href="/info/vip-pay-on-delivery"><a className="hover:text-white transition-colors">Enterprise High-Value</a></Link></li>
                             </ul>
                         </div>
