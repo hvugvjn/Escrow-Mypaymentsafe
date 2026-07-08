@@ -1,63 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Core Pages -->
   <url>
-    <loc>https://paxdot.com/</loc>
+    <loc>https://www.paxdot.com/</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://paxdot.com/login</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.paxdot.com/login</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- High-Level Marketing & Info Sitelinks -->
   <url>
-    <loc>https://paxdot.com/info/hire-freelancers</loc>
+    <loc>https://www.paxdot.com/info/escrow-for-import-export</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://paxdot.com/info/find-work</loc>
+    <loc>https://www.paxdot.com/info/escrow-for-wholesale-trade</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://paxdot.com/info/how-to-hire</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.paxdot.com/info/escrow-for-service-contracts</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://paxdot.com/info/how-it-works-talent</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://paxdot.com/info/pax-for-enterprise</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.paxdot.com/info/pax-for-enterprise</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://paxdot.com/info/direct-contracts</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.paxdot.com/info/managed-escrow</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://paxdot.com/info/about-pax</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.paxdot.com/info/guaranteed-payments</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
-  <!-- Legal Indexing for Domain Trust -->
   <url>
-    <loc>https://paxdot.com/terms</loc>
-    <changefreq>yearly</changefreq>
+    <loc>https://www.paxdot.com/info/dispute-resolution</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.paxdot.com/info/trust-and-safety</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.paxdot.com/info/about-pax</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://paxdot.com/privacy</loc>
-    <changefreq>yearly</changefreq>
+    <loc>https://www.paxdot.com/privacy</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.paxdot.com/terms</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.paxdot.com/support</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 </urlset>

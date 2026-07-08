@@ -101,6 +101,48 @@ const INFO_CONTENT: Record<string, { tag: string, title: string, subtitle: strin
     bodyText: "Join a global community of top-tier freelancers and agencies who have completely eliminated payment risk from their operation.",
     bullets: ["Zero disputes on over 95% of projects.", "Average payout speed under 2 hours.", "Consistent growth in high-value escrow deals."],
   },
+  "escrow-for-import-export": {
+    tag: "Trade Escrow",
+    title: "Secure Import & Export Escrow Solutions",
+    subtitle: "Eliminate cross-border default risk, secure supplier advance deposits, and gate payouts against Bill of Lading, weight slips, and custom clearance papers.",
+    icon: ShieldCheck,
+    imageColor: "from-blue-700 to-slate-900",
+    bodyHeading: "Regulated Milestone Protection for International Cargo Trade",
+    bodyText: "For B2B importers and exporters, transacting with new international suppliers presents critical delivery risks. PAX neutralizes this credit gap by locking the transaction value in an RBI-compliant nodal vault. The seller loads cargo knowing the payout is secured; the buyer releases funds only after verified customs entry, weight-slip validation, or quality audit reports are uploaded and verified.",
+    bullets: [
+      "Secures advance deposits: No money leaves the vault until cargo is logged at the origin port.",
+      "Customs and BoL gates: Payout milestones are tied directly to shipping cargo documentation.",
+      "Third-party inspections: Support for independent cargo and raw material quality audits before disbursement."
+    ]
+  },
+  "escrow-for-wholesale-trade": {
+    tag: "Trade Escrow",
+    title: "B2B Escrow for Bulk Wholesale & Manufacturing",
+    subtitle: "Protect domestic supply lines, secure raw materials, and prevent buyer default. Gate payouts against freight loading, weight clearance, and inspection approvals.",
+    icon: Building2,
+    imageColor: "from-teal-700 to-zinc-900",
+    bodyHeading: "Eliminate Trade Credit Risk & Cash Flow Strains",
+    bodyText: "Domestic B2B trade, bulk manufacturing, and merchant distribution require substantial upfront capital. Exposing your business to unpaid invoices or substandard supply defaults can paralyze operations. PAX provides a secure trade escrow where buyers deposit payment upfront into a licensed banking vault. Sellers manufacture and dispatch inventory with absolute payment certainty, and funds disburse automatically upon receipt verification.",
+    bullets: [
+      "100% Payment Guarantee: Sellers start manufacturing with verified, locked escrow backing.",
+      "Receipt & Weight Gated: Payouts are bound to domestic logistics receipts and weight slips.",
+      "Customizable Milestones: Set partial advance releases for raw material sourcing or shipping phases."
+    ]
+  },
+  "escrow-for-service-contracts": {
+    tag: "Contract Escrow",
+    title: "Milestone Escrow for High-Value Service Contracts",
+    subtitle: "Safeguard software development milestones, digital agency deliverables, and high-value consultancy agreements. Payouts release strictly upon milestone code reviews and UAT approvals.",
+    icon: FileText,
+    imageColor: "from-indigo-700 to-gray-900",
+    bodyHeading: "Binding Milestones & Code Review Gates",
+    bodyText: "Whether you are a corporate client hiring a custom software agency or a high-value contractor delivering specialized systems, scope creep and invoice defaults are major hazards. PAX provides structured milestone contracts. Client deposits funding into escrow. The developer submits deliverables to our staging environment. Payouts release when the User Acceptance Testing (UAT) parameters pass, backed by independent expert arbitration if scope conflicts arise.",
+    bullets: [
+      "Milestone-Gated Payouts: Fund and release in stages (e.g. Wireframes, Beta, Final Deploy).",
+      "Staging Code Checks: Deliverables are held in secure repositories until milestones pass.",
+      "Built-in Dispute Mediation: Impartial tech arbitrators review codebases and specifications to resolve conflicts."
+    ]
+  },
   
   // Resources & Company
   "trust-and-safety": {
