@@ -42,6 +42,7 @@ export default function ProjectDetails() {
   const [chatInput, setChatInput] = useState("");
   const [isSendingMsg, setIsSendingMsg] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const prevMsgCount = useRef(0);
   const [receipt, setReceipt] = useState<{ type: string; amount: number; date?: string; milestoneTitle?: string } | null>(null);
   const [isCreatingPaymentLink, setIsCreatingPaymentLink] = useState<string | null>(null);
   const { toast } = useToast();
@@ -88,7 +89,10 @@ export default function ProjectDetails() {
   }, [id]);
 
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatMessages.length > prevMsgCount.current) {
+      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    prevMsgCount.current = chatMessages.length;
   }, [chatMessages]);
 
   const handleSendMessage = async () => {
