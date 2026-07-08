@@ -45,14 +45,19 @@ const NAV_ITEMS = [
 const INFO_CONTENT: Record<string, { tag: string, title: string, subtitle: string, icon: any, imageColor: string, bodyHeading: string, bodyText: string, bullets: string[] }> = {
   // For Clients
   "how-to-hire": {
-    tag: "For Clients",
-    title: "How to hire on PAX",
-    subtitle: "Grow your business confidently, supported by experienced freelancers every step of the way.",
-    icon: Users,
+    tag: "Resources",
+    title: "How Escrow Works for B2B Trade",
+    subtitle: "Step-by-step transaction flow from initial contract agreement to secure payment settlement.",
+    icon: FileText,
     imageColor: "from-blue-600 to-blue-900",
-    bodyHeading: "A better way to build your team",
-    bodyText: "Forget the risks of traditional hiring. With PAX, you post your project, review curated talent, and fund escrow only when you are purely satisfied with the scope.",
-    bullets: ["Post a job and receive targeted proposals.", "Review portfolios and past verified escrow successes.", "Fund the first milestone specifically to begin work securely."],
+    bodyHeading: "Settle Trades Confidently in Four Steps",
+    bodyText: "PAX eliminates counterparty payment and delivery risk by serving as a neutral, regulated custodian. The transaction process is streamlined, transparent, and operates under double-consent releasing rules.",
+    bullets: [
+      "1. Define Scope & Milestones: Buyer and seller agree on shipping terms, documents (BoL), or project parameters.",
+      "2. Lock Funds in Escrow: The buyer deposits funding into an RBI-compliant nodal banking vault.",
+      "3. Dispatch Cargo or Deliverables: The seller fulfills their obligations with absolute payment certainty.",
+      "4. Verify & Release Payout: Once delivery or paperwork is approved, funds disburse instantly to the seller."
+    ],
   },
   "managed-escrow": {
     tag: "For Clients",
@@ -85,14 +90,18 @@ const INFO_CONTENT: Record<string, { tag: string, title: string, subtitle: strin
     bullets: ["Access our exclusive talent pool.", "Filter by verified skills and past escrow success rate.", "Direct contract negotiations."],
   },
   "vip-pay-on-delivery": {
-    tag: "For Clients",
-    title: "VIP Pay-on-Delivery",
-    subtitle: "The ultimate risk-free experience for enterprise clients.",
+    tag: "Enterprise",
+    title: "Enterprise High-Value Trade Custody",
+    subtitle: "Custom escrow contracts, tailored logistics integrations, and bank-grade nodal security for high-volume transactions.",
     icon: Building2,
     imageColor: "from-zinc-700 to-zinc-950",
-    bodyHeading: "Premium security logic.",
-    bodyText: "For select, highly-vetted clients, PAX allows structured project beginnings with deferred escrow funding, utilizing legal enforcement to secure talent payment while minimizing upfront client working capital constraints.",
-    bullets: ["Optimized working capital flow.", "Strict legal safeguards.", "Available by application only."],
+    bodyHeading: "Bespoke Custody Operations for Corporate Partners",
+    bodyText: "For high-value commercial trade, custom agreements, and corporate operations, standard templates are not enough. PAX Enterprise Escrow allows partners to configure custom multi-signature release schedules, integrate automated API gates, and link releases to third-party shipping databases. Backed by bank-grade compliance and dedicated transaction managers.",
+    bullets: [
+      "Tailored Multi-Sig Release: Require signatures from importers, exporters, insurers, and custom brokers.",
+      "Automated API Disbursements: Programmatic milestone payouts triggered by your internal ERP or cargo tracking tools.",
+      "Volume Discounts: Reduced escrow fee schedules for high-volume traders and corporate accounts."
+    ],
   },
 
   // For Talents

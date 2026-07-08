@@ -33,6 +33,12 @@ export function injectMetaTags(url: string, html: string): string {
   } else if (path === "/terms") {
     title = "Terms of Service - PAX B2B Escrow";
     description = "Review the terms and legal parameters governing trade escrow on PAX.";
+  } else if (path === "/info/how-to-hire") {
+    title = "How Escrow Works for B2B Trade & Transactions - PAX";
+    description = "A step-by-step guide to secure corporate escrow. Agree on milestone terms, lock funds in nodal vaults, and release payouts upon delivery approval.";
+  } else if (path === "/info/vip-pay-on-delivery") {
+    title = "Enterprise High-Value Trade Escrow & Custody - PAX";
+    description = "Custom escrow contracts, tailored logistics API integrations, multi-signature releases, and volume fee discounts for enterprise partners.";
   } else if (path === "/support") {
     title = "Contact Trade Specialist & Support - PAX";
     description = "Get in touch with our operations desk for customs clearance, contract adjustments, or dispute inquiries.";
