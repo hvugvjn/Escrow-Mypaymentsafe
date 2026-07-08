@@ -10,13 +10,10 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
-import { PaxLogo } from "@/components/pax-logo";
-import { Anchor, Truck } from "lucide-react";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -34,16 +31,12 @@ export default function ProjectDetails() {
   const [submitUrl, setSubmitUrl] = useState("");
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isSendingMsg, setIsSendingMsg] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const prevMsgCount = useRef(0);
-  const [receipt, setReceipt] = useState<{ type: string; amount: number; date?: string; milestoneTitle?: string } | null>(null);
   const [isCreatingPaymentLink, setIsCreatingPaymentLink] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -51,28 +44,13 @@ export default function ProjectDetails() {
     setIsShareOpen(true);
   };
 
-  const handleCopyLink = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      setShareLinkCopied(true);
-      setTimeout(() => setShareLinkCopied(false), 2000);
-    }).catch(() => {
-      toast({ title: "Link:", description: url });
-    });
-  };
-
-  const handleWhatsAppShare = () => {
-    const url = window.location.href;
-    const text = `Join my project on PAX Escrow: ${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
-
-  const handleEmailShare = () => {
-    const url = window.location.href;
-    const subject = encodeURIComponent('Join my project on PAX');
-    const body = encodeURIComponent(`Hi,\n\nI'd like to invite you to view my project on PAX Escrow platform.\n\nClick this link to join:\n${url}\n\nRegards`);
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
-  };
+  // Pre-load selected milestone ID for uploads at top level
+  useEffect(() => {
+    const firstM = data?.milestones?.[0];
+    if (firstM?.id && !selectedMilestoneId) {
+      setSelectedMilestoneId(firstM.id);
+    }
+  }, [data?.milestones]);
 
   // Fetch chat messages and poll every 5s
   useEffect(() => {
@@ -114,98 +92,21 @@ export default function ProjectDetails() {
     setIsSendingMsg(false);
   };
 
-  // Pre-load selected milestone ID for uploads at top level
-  useEffect(() => {
-    const firstM = data?.milestones?.[0];
-    if (firstM?.id && !selectedMilestoneId) {
-      setSelectedMilestoneId(firstM.id);
-    }
-  }, [data?.milestones]);
-
   if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading project details...</div>;
   if (!data || !data.project) return <div className="p-8 text-center text-destructive">Project not found.</div>;
 
   const { project, milestones, escrow, clientName, talentName } = data;
-  const isClient = user?.role === 'BUYER';
-  const isTalent = user?.role === 'FREELANCER';
+  
+  // Participant Checks based strictly on project record (not generic roles)
+  const isClient = user?.id === project.buyerId;
+  const isTalent = user?.id === project.freelancerId;
+  const isParticipant = project.createdBy === user?.id || isClient || isTalent;
 
-  const isParticipant = project.createdBy === user?.id || project.buyerId === user?.id || project.freelancerId === user?.id;
-
-  const handleJoinInvited = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!joinCode.trim()) return;
-    try {
-      await joinProject.mutateAsync(joinCode.trim().toUpperCase());
-      toast({ title: "Joined!", description: "You have successfully joined the trade contract." });
-      queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
-    } catch (err) { }
-  };
-
-  if (!isParticipant && project.status === 'WAITING_FOR_ACCEPTANCE') {
-    return (
-      <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in duration-300">
-        <Card className="border-blue-500/20 bg-[#0b1426]/40 border-white/10 shadow-2xl">
-          <CardHeader className="text-center pb-2">
-            <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/25 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Anchor className="w-6 h-6" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-white">Join Trade Contract</CardTitle>
-            <p className="text-xs text-white/50 mt-1">You have been invited to join this trade escrow workspace.</p>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="p-4 rounded-xl bg-slate-950/40 border border-white/5 space-y-2">
-              <p className="text-xs text-white/40 uppercase font-semibold">Contract Title</p>
-              <h3 className="text-sm font-bold text-white">{project.title}</h3>
-              <p className="text-xs text-white/60 leading-relaxed mt-1">{project.description}</p>
-              <p className="text-xs text-white/40 mt-2">
-                Created by: <span className="font-semibold text-white/80">{clientName || 'Trade Partner'}</span>
-              </p>
-            </div>
-
-            <form onSubmit={handleJoinInvited} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="joinCode" className="text-white text-xs uppercase font-semibold">Enter Join Code</Label>
-                <Input
-                  id="joinCode"
-                  placeholder="6-CHARACTER CODE"
-                  className="h-12 text-center text-lg tracking-widest font-mono bg-slate-950/50 border-white/10 text-white font-bold"
-                  value={joinCode}
-                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                  maxLength={6}
-                />
-              </div>
-              <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold" disabled={joinProject.isPending || joinCode.length < 6}>
-                {joinProject.isPending ? "Joining Workspace..." : "Accept & Join Contract"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Clean, custom B2B display names
+  const displayClientName = clientName === 'Awaiting Buyer' ? 'Awaiting Importer' : clientName;
+  const displayTalentName = talentName === 'Awaiting Freelancer' ? 'Awaiting Exporter' : talentName;
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
-
-  const handleActivateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessingPayment(true);
-    try {
-      const res = await fetch(`/api/projects/${project.id}/activate`, {
-        method: 'POST',
-      });
-      if (res.ok) {
-        setIsPaymentOpen(false);
-        toast({ title: 'Success', description: 'Project activated successfully.' });
-        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
-      } else {
-        const data = await res.json();
-        toast({ title: 'Error', description: data.message || 'Failed to activate project', variant: 'destructive' });
-      }
-    } catch (err) {
-      toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
-    }
-    setIsProcessingPayment(false);
-  };
 
   const handleApproveWork = async (milestoneId: string) => {
     try {
@@ -286,13 +187,63 @@ export default function ProjectDetails() {
     currentStep = 1;
   }
 
+  // Invitation Workspace view for unjoined users
+  if (!isParticipant && project.status === 'WAITING_FOR_ACCEPTANCE') {
+    return (
+      <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in duration-300">
+        <Card className="border border-blue-500/25 bg-[#03091e]/85 shadow-[0_12px_40px_rgba(0,0,0,0.3)] backdrop-blur-md rounded-2xl">
+          <CardHeader className="text-center pb-2">
+            <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/25 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="w-6 h-6 animate-pulse" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-white">Join Trade Contract</CardTitle>
+            <p className="text-xs text-white/50 mt-1">You have been invited to join this trade escrow workspace.</p>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="p-4 rounded-xl bg-slate-950/40 border border-white/5 space-y-2">
+              <p className="text-xs text-white/40 uppercase font-semibold">Contract Title</p>
+              <h3 className="text-sm font-bold text-white">{project.title}</h3>
+              <p className="text-xs text-white/60 leading-relaxed mt-1">{project.description}</p>
+              <p className="text-xs text-white/40 mt-2">
+                Created by: <span className="font-semibold text-white/80">{displayClientName || 'Trade Partner'}</span>
+              </p>
+            </div>
 
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!joinCode.trim()) return;
+              try {
+                await joinProject.mutateAsync(joinCode.trim().toUpperCase());
+                toast({ title: "Joined!", description: "You have successfully joined the trade contract." });
+                queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
+              } catch (err) { }
+            }} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="joinCode" className="text-white text-xs uppercase font-semibold">Enter Join Code</Label>
+                <Input
+                  id="joinCode"
+                  placeholder="6-CHARACTER CODE"
+                  className="h-12 text-center text-lg tracking-widest font-mono bg-slate-950/50 border-white/10 text-white font-bold"
+                  value={joinCode}
+                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                />
+              </div>
+              <Button type="submit" className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all" disabled={joinProject.isPending || joinCode.length < 6}>
+                {joinProject.isPending ? "Joining Workspace..." : "Accept & Join Contract"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500 overflow-x-hidden">
 
       {/* Top Header Section */}
-      <Card className="border border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden bg-gradient-to-r from-blue-950/20 via-[#03091e]/85 to-slate-950/20 backdrop-blur-md">
+      <Card className="border border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden bg-gradient-to-r from-blue-950/20 via-[#03091e]/85 to-slate-950/20 backdrop-blur-md rounded-2xl">
         <div className="p-5 md:p-8 flex flex-col gap-4 bg-[#0b1426]/30 border-b border-white/[0.04]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -330,13 +281,13 @@ export default function ProjectDetails() {
           <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
             <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Importer (Buyer)</p>
             <div className="flex items-center gap-2 font-bold text-white text-sm">
-              <Users className="w-4 h-4 text-blue-400" /> {clientName}
+              <Users className="w-4 h-4 text-blue-400" /> {displayClientName}
             </div>
           </div>
           <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
             <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Exporter (Seller)</p>
             <div className="flex items-center gap-2 font-bold text-white text-sm">
-              <User className="w-4 h-4 text-emerald-400" /> {talentName}
+              <User className="w-4 h-4 text-emerald-400" /> {displayTalentName}
             </div>
           </div>
           <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
@@ -356,7 +307,7 @@ export default function ProjectDetails() {
       </Card>
 
       {/* Visual Cargo Tracker */}
-      <Card className="border border-blue-500/10 shadow-[0_8px_30px_rgba(30,58,138,0.06)] p-5 md:p-8 bg-gradient-to-b from-[#0a1128]/70 to-[#04091a]/90 backdrop-blur-md">
+      <Card className="border border-blue-500/10 shadow-[0_8px_30px_rgba(30,58,138,0.06)] p-5 md:p-8 bg-gradient-to-b from-[#0a1128]/70 to-[#04091a]/90 backdrop-blur-md rounded-2xl">
         <h3 className="font-display font-semibold text-base md:text-lg mb-6 text-white flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> Cargo Logistics & Escrow Tracking
         </h3>
@@ -396,28 +347,111 @@ export default function ProjectDetails() {
         </div>
       </Card>
 
+      {/* Action Center CTA Alert (Prominently placed at the top) */}
+      {m && (
+        <div className="p-5 md:p-6 rounded-2xl border bg-gradient-to-r from-blue-950/40 via-[#03091e]/90 to-indigo-950/20 border-blue-500/25 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-inner">
+              <AlertCircle className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Escrow Required Action</p>
+              <h4 className="text-md font-bold text-white mt-0.5">
+                {currentStep === 0 ? "Fund Securitization Deposit" : 
+                 currentStep === 1 ? (isTalent ? "Provide Logistics Documentation" : "Awaiting Exporter Dispatch Uploads") : 
+                 currentStep === 2 ? (isClient ? "Audit Documentation & Settle Payout" : "Awaiting Importer Review") : 
+                 "Escrow Completed & Settled"}
+              </h4>
+            </div>
+          </div>
+          <div className="w-full md:w-auto flex justify-end">
+            {/* 1. Importer Locks Escrow Funds */}
+            {isClient && currentStep === 0 && (
+              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-blue-500/25 transition-all w-full md:w-auto text-sm tracking-wide" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
+                <Lock className="w-4 h-4 mr-2" /> {isCreatingPaymentLink === m.id ? 'Securing...' : `Lock Trade Funds (${formatMoney(m.amount)})`}
+              </Button>
+            )}
+
+            {/* 2. Exporter Uploads Cargo Documentation */}
+            {isTalent && currentStep === 1 && (
+              <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all w-full md:w-auto text-sm tracking-wide">
+                    <Send className="w-4 h-4 mr-2" /> Upload Cargo Documents
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-[#0b1426] border-white/10 text-white rounded-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Upload Cargo Shipping Documents</DialogTitle>
+                    <DialogDescription className="text-white/60">
+                      Provide the access link to your Commercial Invoice, packing specifications, and carrier Bill of Lading.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="docUrl" className="text-white">Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
+                      <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-slate-950/50 border-white/10 text-white" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                      {submitMilestone.isPending ? "Submitting..." : "Submit Documents"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+
+            {/* 3. Importer Verifies Shipping Documents & Releases Escrow */}
+            {isClient && currentStep === 2 && (
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-emerald-500/25 transition-all w-full md:w-auto text-sm tracking-wide" onClick={() => handleApproveWork(m.id)}>
+                  <Check className="w-4 h-4 mr-2" /> Approve & Release Payout
+                </Button>
+                <Button variant="outline" className="border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-semibold px-8 py-3 rounded-xl w-full md:w-auto text-sm" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
+                  File Quality Dispute
+                </Button>
+              </div>
+            )}
+
+            {/* Status indicators */}
+            {isTalent && currentStep === 0 && (
+              <span className="text-xs text-white/40 bg-slate-950/60 border border-white/5 px-4 py-2.5 rounded-xl font-medium">Awaiting Importer Escrow Deposit</span>
+            )}
+            {isTalent && currentStep === 2 && (
+              <span className="text-xs text-white/40 bg-slate-950/60 border border-white/5 px-4 py-2.5 rounded-xl font-medium">Awaiting Importer Release Clearance</span>
+            )}
+            {currentStep === 3 && (
+              <span className="text-xs text-emerald-400 bg-emerald-950/20 border border-emerald-500/25 px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 shadow-sm">
+                ✓ Escrow Released & Settled
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Unified Document Checklist & Vault */}
       {m && (
-        <Card className="border border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden bg-[#03091e]/85 backdrop-blur-md">
-          <CardHeader className="border-b border-white/[0.05] bg-[#0b1426]/50 py-4 px-6">
-            <CardTitle className="text-lg text-white flex items-center gap-2">
+        <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl">
+          <CardHeader className="border-b border-white/[0.04] bg-[#0b1426]/30 py-4 px-6">
+            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
               <FileCheck className="w-5 h-5 text-blue-400" /> Required Cargo Documentation Checklist
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-white/80">
-                <thead className="text-xs text-white/40 uppercase bg-slate-950/60">
+                <thead className="text-[10px] text-white/30 uppercase tracking-widest bg-black/20 border-b border-white/[0.03]">
                   <tr>
-                    <th className="px-5 py-4 font-bold tracking-wider">Document Type</th>
-                    <th className="px-5 py-4 font-bold tracking-wider">Required By</th>
-                    <th className="px-5 py-4 font-bold tracking-wider">Status</th>
-                    <th className="px-5 py-4 font-bold tracking-wider text-right">Actions</th>
+                    <th className="px-6 py-4 font-bold">Document Type</th>
+                    <th className="px-6 py-4 font-bold">Required By</th>
+                    <th className="px-6 py-4 font-bold">Status</th>
+                    <th className="px-6 py-4 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
-                  <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-5 py-5 font-semibold text-white/95">
+                <tbody className="divide-y divide-white/[0.03]">
+                  <tr className="hover:bg-white/[0.01] transition-colors">
+                    <td className="px-6 py-5 font-semibold text-white/95">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">
                           CI
@@ -425,8 +459,8 @@ export default function ProjectDetails() {
                         <span>Commercial Invoice & Packing List</span>
                       </div>
                     </td>
-                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Exporter ({talentName})</td>
-                    <td className="px-5 py-5">
+                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                    <td className="px-6 py-5">
                       {m.submissionUrl ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -439,7 +473,7 @@ export default function ProjectDetails() {
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-5 text-right">
+                    <td className="px-6 py-5 text-right">
                       {m.submissionUrl ? (
                         <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
                           View File <ExternalLink className="w-3.5 h-3.5" />
@@ -450,8 +484,8 @@ export default function ProjectDetails() {
                     </td>
                   </tr>
 
-                  <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-5 py-5 font-semibold text-white/95">
+                  <tr className="hover:bg-white/[0.01] transition-colors">
+                    <td className="px-6 py-5 font-semibold text-white/95">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">
                           BL
@@ -459,8 +493,8 @@ export default function ProjectDetails() {
                         <span>Bill of Lading (BoL) / Shipping Receipt</span>
                       </div>
                     </td>
-                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Exporter ({talentName})</td>
-                    <td className="px-5 py-5">
+                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                    <td className="px-6 py-5">
                       {m.submissionUrl ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -473,7 +507,7 @@ export default function ProjectDetails() {
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-5 text-right">
+                    <td className="px-6 py-5 text-right">
                       {m.submissionUrl ? (
                         <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
                           View File <ExternalLink className="w-3.5 h-3.5" />
@@ -484,8 +518,8 @@ export default function ProjectDetails() {
                     </td>
                   </tr>
 
-                  <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-5 py-5 font-semibold text-white/95">
+                  <tr className="hover:bg-white/[0.01] transition-colors">
+                    <td className="px-6 py-5 font-semibold text-white/95">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xs">
                           QC
@@ -493,8 +527,8 @@ export default function ProjectDetails() {
                         <span>Quality Certificate (SGS Inspection)</span>
                       </div>
                     </td>
-                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Exporter ({talentName})</td>
-                    <td className="px-5 py-5">
+                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                    <td className="px-6 py-5">
                       {m.submissionUrl ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -507,7 +541,7 @@ export default function ProjectDetails() {
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-5 text-right">
+                    <td className="px-6 py-5 text-right">
                       {m.submissionUrl ? (
                         <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
                           View File <ExternalLink className="w-3.5 h-3.5" />
@@ -518,8 +552,8 @@ export default function ProjectDetails() {
                     </td>
                   </tr>
 
-                  <tr className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-5 py-5 font-semibold text-white/95">
+                  <tr className="hover:bg-white/[0.01] transition-colors">
+                    <td className="px-6 py-5 font-semibold text-white/95">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
                           BE
@@ -527,8 +561,8 @@ export default function ProjectDetails() {
                         <span>Import customs declaration (Bill of Entry)</span>
                       </div>
                     </td>
-                    <td className="px-5 py-5 text-white/50 text-xs font-semibold">Importer ({clientName})</td>
-                    <td className="px-5 py-5">
+                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Importer ({displayClientName})</td>
+                    <td className="px-6 py-5">
                       {currentStep === 3 ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           ✓ Cleared
@@ -540,7 +574,7 @@ export default function ProjectDetails() {
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-5 text-right font-medium">
+                    <td className="px-6 py-5 text-right font-medium">
                       {currentStep === 3 ? (
                         <span className="text-emerald-400 text-xs font-bold bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/15">Customs Cleared</span>
                       ) : (
@@ -554,7 +588,7 @@ export default function ProjectDetails() {
 
             {/* Document Warning or Overdue Info */}
             {m.status === 'PENDING' && isPast(new Date(m.deadline)) && (
-              <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-start gap-3">
+              <div className="m-5 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-sm">Late Cargo Documentation Alert</p>
@@ -562,104 +596,26 @@ export default function ProjectDetails() {
                 </div>
               </div>
             )}
-
-            {/* Unified Bottom Action Panel */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#030816]/40 p-5 rounded-xl border border-white/5 mt-4">
-              <div className="text-left w-full sm:w-auto">
-                <p className="text-xs text-white/40 font-medium uppercase tracking-wider">Escrow Status</p>
-                <h4 className="text-lg font-bold text-white mt-0.5">
-                  {currentStep === 0 ? "Awaiting Deposit" : 
-                   currentStep === 1 ? "Escrow Locked & Manufacturing" : 
-                   currentStep === 2 ? "Cargo Dispatched (Under Verification)" : 
-                   "Trade Settled & Released"}
-                </h4>
-                <p className="text-xs text-white/50 mt-1">
-                  Value locked: <span className="font-semibold text-white">{formatMoney(m.amount)}</span>
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                {/* 1. Importer Locks Escrow Funds */}
-                {isClient && currentStep === 0 && (
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg gap-2 w-full sm:w-auto" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
-                    <Lock className="w-4 h-4" /> {isCreatingPaymentLink === m.id ? 'Loading...' : `Lock Trade Funds (${formatMoney(m.amount)})`}
-                  </Button>
-                )}
-
-                {/* 2. Exporter Uploads Cargo Documentation */}
-                {isTalent && currentStep === 1 && (
-                  <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg gap-2 w-full sm:w-auto">
-                        <Send className="w-4 h-4" /> Upload Cargo Documents
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-[#0b1426] border-white/10 text-white">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Upload Cargo Shipping Documents</DialogTitle>
-                        <DialogDescription className="text-white/60">
-                          Provide the access link to your Commercial Invoice, packing specifications, and carrier Bill of Lading.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="docUrl" className="text-white">Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
-                          <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-slate-950/50 border-white/10 text-white" />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
-                          {submitMilestone.isPending ? "Submitting..." : "Submit Trade Documents"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
-
-                {/* 3. Importer Verifies Shipping Documents & Releases Escrow */}
-                {isClient && currentStep === 2 && (
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg font-semibold gap-2 w-full sm:w-auto" onClick={() => handleApproveWork(m.id)}>
-                      <Check className="w-4 h-4" /> Verify & Release Payout
-                    </Button>
-                    <Button variant="outline" className="border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-semibold w-full sm:w-auto" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
-                      File Quality Dispute
-                    </Button>
-                  </div>
-                )}
-
-                {/* Wait notification */}
-                {isTalent && currentStep === 0 && (
-                  <span className="text-xs text-white/40 bg-slate-900 border border-white/5 px-3 py-2 rounded-lg">Awaiting Importer Escrow Deposit</span>
-                )}
-                {isTalent && currentStep === 2 && (
-                  <span className="text-xs text-white/40 bg-slate-900 border border-white/5 px-3 py-2 rounded-lg">Awaiting Importer Clearance & Release</span>
-                )}
-                {currentStep === 3 && (
-                  <span className="text-xs text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 px-3 py-2 rounded-lg font-semibold flex items-center gap-1">✓ Escrow Released & Settled</span>
-                )}
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}
 
       {/* Contract terms & Specifications Details */}
-      <Card className="border-border/50 bg-[#0b1426]/30 border-white/5">
-        <CardHeader className="border-b border-white/5 bg-[#0b1426]/50">
-          <CardTitle className="text-lg text-white">Trade Terms & Contract Specifications</CardTitle>
+      <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl">
+        <CardHeader className="border-b border-white/[0.04] bg-[#0b1426]/30 py-4 px-6">
+          <CardTitle className="text-base font-semibold text-white">Trade Terms & Contract Specifications</CardTitle>
         </CardHeader>
-        <CardContent className="p-8 space-y-6">
+        <CardContent className="p-6 md:p-8 space-y-6">
           <div>
-            <p className="whitespace-pre-wrap text-white/70 leading-relaxed bg-slate-950/30 p-6 rounded-xl border border-white/5">{project.description}</p>
+            <p className="whitespace-pre-wrap text-white/70 leading-relaxed bg-slate-950/30 p-6 rounded-xl border border-white/5 text-sm">{project.description}</p>
           </div>
 
           {project.documentUrl && (
             <div>
-              <h3 className="text-sm font-semibold mb-3 text-white">Master Purchase Contract File</h3>
+              <h3 className="text-xs font-bold mb-3 text-white/50 uppercase tracking-wider">Master Purchase Contract File</h3>
               <a href={project.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 p-4 border border-white/10 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 transition-colors w-full md:w-auto">
                 <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5" />
+                  <FileText className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
                   <p className="font-medium text-white text-sm">Master_Contract.pdf</p>
@@ -675,23 +631,23 @@ export default function ProjectDetails() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Escrow summary */}
         {escrow && (
-          <Card className="border-border/50 bg-[#0b1426]/30 border-white/5">
-            <CardHeader className="bg-[#0b1426]/50 border-b border-white/5 pb-4">
-              <CardTitle className="text-white text-md">Escrow Summary</CardTitle>
+          <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl">
+            <CardHeader className="bg-[#0b1426]/30 border-b border-white/[0.04] py-4 px-6">
+              <CardTitle className="text-white text-sm font-semibold">Escrow Settlement Balance</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div className="flex justify-between border-b border-white/5 pb-2">
+                <div className="flex justify-between border-b border-white/[0.03] pb-2.5">
                   <span className="text-white/50 text-sm">Total Vault Value:</span>
-                  <span className="text-white font-semibold font-mono">{formatMoney(escrow.totalAmount)}</span>
+                  <span className="text-white font-bold font-mono text-sm">{formatMoney(escrow.totalAmount)}</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-2">
+                <div className="flex justify-between border-b border-white/[0.03] pb-2.5">
                   <span className="text-white/50 text-sm">Released to Exporter:</span>
-                  <span className="text-emerald-400 font-semibold font-mono">{formatMoney(escrow.releasedAmount)}</span>
+                  <span className="text-emerald-400 font-bold font-mono text-sm">{formatMoney(escrow.releasedAmount)}</span>
                 </div>
-                <div className="flex justify-between pb-2">
+                <div className="flex justify-between pb-2.5">
                   <span className="text-white/50 text-sm">Remaining Locked:</span>
-                  <span className="text-amber-500 font-semibold font-mono">{formatMoney(escrow.remainingAmount)}</span>
+                  <span className="text-amber-500 font-bold font-mono text-sm">{formatMoney(escrow.remainingAmount)}</span>
                 </div>
               </div>
             </CardContent>
@@ -699,10 +655,10 @@ export default function ProjectDetails() {
         )}
 
         {/* Chat / Messages Panel */}
-        <Card className="border-border/50 bg-[#0b1426]/30 border-white/5 flex flex-col h-[280px] overflow-hidden">
-          <CardHeader className="bg-[#0b1426]/50 border-b border-white/5 py-3 px-6 flex flex-row items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-blue-400" />
-            <CardTitle className="text-white text-sm">Project Communication Chat</CardTitle>
+        <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl flex flex-col h-[280px]">
+          <CardHeader className="bg-[#0b1426]/30 border-b border-white/[0.04] py-3.5 px-6 flex flex-row items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-blue-400 animate-pulse" />
+            <CardTitle className="text-white text-sm font-semibold">Project Communication Chat</CardTitle>
           </CardHeader>
           <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
             {/* Message lists */}
@@ -714,10 +670,10 @@ export default function ProjectDetails() {
                   const isCurrentUser = msg.senderId === user?.id;
                   return (
                     <div key={i} className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                      <div className={`p-2.5 rounded-xl max-w-[85%] text-xs ${isCurrentUser ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-900 border border-white/10 text-white/90 rounded-bl-none'}`}>
+                      <div className={`p-2.5 rounded-xl max-w-[85%] text-xs leading-relaxed ${isCurrentUser ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-900 border border-white/10 text-white/90 rounded-bl-none'}`}>
                         {msg.content}
                       </div>
-                      <span className="text-[10px] text-white/30 mt-1 px-1">
+                      <span className="text-[10px] text-white/30 mt-1 px-1 font-semibold">
                         {isCurrentUser ? 'You' : msg.senderName || 'Partner'}
                       </span>
                     </div>
@@ -728,7 +684,7 @@ export default function ProjectDetails() {
             </div>
 
             {/* Input message */}
-            <div className="p-3 border-t border-white/5 bg-slate-950/20 flex gap-2">
+            <div className="p-3 border-t border-white/[0.04] bg-slate-950/20 flex gap-2">
               <Input
                 className="bg-slate-950/50 border-white/10 text-white text-xs h-9"
                 placeholder="Type a message..."
