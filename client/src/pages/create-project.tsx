@@ -142,6 +142,20 @@ export default function CreateProject() {
             onClick={() => {
               setTradeType("import");
               setTitle("Import Contract");
+              setMilestones([
+                {
+                  title: "Advance Sourcing Deposit",
+                  description: "Pre-production deposit to secure raw materials and trigger manufacturing (30% of contract value recommended).",
+                  amountInput: "",
+                  deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                },
+                {
+                  title: "Cargo Port Dispatch Release",
+                  description: "Disburses upon loading at port. Exporter must upload Bill of Lading (BoL) and pre-shipment Quality inspection (70% value recommended).",
+                  amountInput: "",
+                  deadline: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000)
+                }
+              ]);
             }}
             className="group relative flex flex-col p-8 rounded-2xl border border-white/10 bg-[#050c1b]/60 hover:bg-[#071128] hover:border-blue-500/40 cursor-pointer transition-all duration-200 shadow-xl"
           >
@@ -162,6 +176,20 @@ export default function CreateProject() {
             onClick={() => {
               setTradeType("export");
               setTitle("Export Contract");
+              setMilestones([
+                {
+                  title: "Escrow Payment Security Lock",
+                  description: "Confirms Importer has deposited 100% of transaction value in secure escrow vault before Exporter ships cargo.",
+                  amountInput: "",
+                  deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                },
+                {
+                  title: "Customs Entry & Delivery Release",
+                  description: "Final release upon arrival. Buyer/Seller verifies customs Bill of Entry and warehouse arrival report.",
+                  amountInput: "",
+                  deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                }
+              ]);
             }}
             className="group relative flex flex-col p-8 rounded-2xl border border-white/10 bg-[#050c1b]/60 hover:bg-[#071128] hover:border-emerald-500/40 cursor-pointer transition-all duration-200 shadow-xl"
           >
@@ -189,7 +217,7 @@ export default function CreateProject() {
           <h1 className="text-2xl md:text-3xl font-display font-bold text-white">
             Create {tradeType === "import" ? "Import" : "Export"} Escrow
           </h1>
-          <p className="text-muted-foreground text-sm">Fill in contract details and set milestone release gates.</p>
+          <p className="text-muted-foreground text-sm">Fill in contract details and configure verification stages.</p>
         </div>
         <Button variant="outline" onClick={() => setTradeType(null)} className="text-xs">
           Change Trade Direction
@@ -289,9 +317,9 @@ export default function CreateProject() {
         {/* Milestone Selection block */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-display font-bold text-white">Escrow Payout Milestones</h2>
+            <h2 className="text-2xl font-display font-bold text-white">Trade Verification Stages</h2>
             <Button type="button" variant="outline" onClick={handleAddMilestone} className="hover-elevate">
-              <Plus className="w-4 h-4 mr-2" /> Add Milestone
+              <Plus className="w-4 h-4 mr-2" /> Add Stage
             </Button>
           </div>
 
@@ -305,7 +333,7 @@ export default function CreateProject() {
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Milestone Gate Title</Label>
+                    <Label>Trade Stage Title</Label>
                     <Input 
                       required 
                       value={milestone.title} 
@@ -351,7 +379,7 @@ export default function CreateProject() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Milestone Amount ({currency})</Label>
+                    <Label>Stage Release Amount ({currency})</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">{getCurrencySymbol(currency)}</span>
                       <Input type="number" step="0.01" min="0.01" required className="pl-8" value={milestone.amountInput} onChange={e => {

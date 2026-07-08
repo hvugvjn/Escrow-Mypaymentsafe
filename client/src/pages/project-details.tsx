@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProject, useFundProject } from "@/hooks/use-projects";
 import { useSubmitMilestone, useApproveMilestone, useRequestRevision } from "@/hooks/use-milestones";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, Mail } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, Mail, Anchor, Truck } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
@@ -20,6 +21,7 @@ import { PaxLogo } from "@/components/pax-logo";
 export default function ProjectDetails() {
   const { id } = useParams();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data, isLoading } = useProject(id!);
 
   const fundProject = useFundProject();
@@ -142,7 +144,7 @@ export default function ProjectDetails() {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Failed to approve work');
-      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
       toast({ title: 'Success', description: 'Work approved. Funds are being released to the talent!' });
     } catch (err) {
       toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
@@ -365,7 +367,7 @@ export default function ProjectDetails() {
         <div className="overflow-x-auto -mx-3 sm:mx-0">
           <TabsList className="w-max min-w-full justify-start h-auto p-0 bg-transparent border-b rounded-none gap-2 sm:gap-4 mb-6 md:mb-8 px-3 sm:px-0">
             <TabsTrigger value="details" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Details</TabsTrigger>
-            <TabsTrigger value="milestones" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Milestones & Tracking</TabsTrigger>
+            <TabsTrigger value="milestones" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Verification Stages & Checklists</TabsTrigger>
             <TabsTrigger value="activity" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Activity</TabsTrigger>
             <TabsTrigger value="payments" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap">Payments</TabsTrigger>
             <TabsTrigger value="chat" className="text-sm sm:text-base rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-2.5 sm:py-3 px-1 whitespace-nowrap flex items-center gap-1.5">
@@ -401,7 +403,7 @@ export default function ProjectDetails() {
         </TabsContent>
 
         <TabsContent value="milestones" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-4">
-          {milestones.length === 0 && <p className="text-center text-muted-foreground py-8">No milestones defined.</p>}
+          {milestones.length === 0 && <p className="text-center text-muted-foreground py-8">No trade stages defined.</p>}
 
           {milestones.map((m, idx) => {
             const isOverdue = m.status === 'PENDING' && isPast(new Date(m.deadline));
@@ -425,10 +427,10 @@ export default function ProjectDetails() {
                       </div>
                       <div>
                         <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-                          Step {idx + 1}: {m.title}
+                          Stage {idx + 1}: {m.title}
                           {m.status === 'APPROVED' || m.status === 'RELEASED' ? <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Completed</span> : null}
                           {m.status === 'FUNDED' && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Funded & Secured</span>}
-                          {m.status === 'SUBMITTED' && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Under UAT Review</span>}
+                          {m.status === 'SUBMITTED' && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Documents Under Verification</span>}
                           {m.status === 'PAYMENT_PENDING' && <span className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded font-semibold ml-2">Payment Pending</span>}
                         </h3>
                         <p className="text-muted-foreground mb-4">{m.description}</p>
@@ -444,13 +446,82 @@ export default function ProjectDetails() {
                           </div>
                         </div>
 
+                        {/* B2B Partner Document Checkboard */}
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border/50 pt-4 w-full">
+                          {/* Exporter Checklist (Seller) */}
+                          <div className="space-y-2 bg-[#050c1b]/30 p-4 rounded-xl border border-white/5">
+                            <h4 className="font-semibold text-xs text-[#f5f7fa] flex items-center gap-1.5 uppercase tracking-wider">
+                              <Anchor className="w-3.5 h-3.5 text-blue-400" /> Exporter Checklist ({talentName})
+                            </h4>
+                            <ul className="space-y-1.5 text-xs text-muted-foreground">
+                              <li className="flex items-center justify-between">
+                                <span>Commercial Invoice & Packing List</span>
+                                {m.submissionUrl ? (
+                                  <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Provided</span>
+                                ) : (
+                                  <span className="text-amber-400/80">⏳ Pending Upload</span>
+                                )}
+                              </li>
+                              <li className="flex items-center justify-between">
+                                <span>Bill of Lading (BoL) / Shipping Receipt</span>
+                                {m.submissionUrl ? (
+                                  <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Provided</span>
+                                ) : (
+                                  <span className="text-amber-400/80">⏳ Pending Upload</span>
+                                )}
+                              </li>
+                              <li className="flex items-center justify-between">
+                                <span>Pre-Shipment Quality inspection (SGS)</span>
+                                {m.submissionUrl ? (
+                                  <span className="text-emerald-400 font-semibold flex items-center gap-1">✓ Certified</span>
+                                ) : (
+                                  <span className="text-amber-400/80">⏳ Pending Upload</span>
+                                )}
+                              </li>
+                            </ul>
+                          </div>
+
+                          {/* Importer Checklist (Buyer) */}
+                          <div className="space-y-2 bg-[#050c1b]/30 p-4 rounded-xl border border-white/5">
+                            <h4 className="font-semibold text-xs text-[#f5f7fa] flex items-center gap-1.5 uppercase tracking-wider">
+                              <Truck className="w-3.5 h-3.5 text-emerald-400" /> Importer Checklist ({clientName})
+                            </h4>
+                            <ul className="space-y-1.5 text-xs text-muted-foreground">
+                              <li className="flex items-center justify-between">
+                                <span>Escrow Funding Secured</span>
+                                {m.status !== 'PENDING' && m.status !== 'PAYMENT_PENDING' ? (
+                                  <span className="text-emerald-400 font-semibold">✓ Deposited</span>
+                                ) : (
+                                  <span className="text-amber-400/80">⏳ Awaiting Payment</span>
+                                )}
+                              </li>
+                              <li className="flex items-center justify-between">
+                                <span>Customs Declaration (Bill of Entry)</span>
+                                {m.status === 'APPROVED' || m.status === 'RELEASED' ? (
+                                  <span className="text-emerald-400 font-semibold">✓ Cleared</span>
+                                ) : (
+                                  <span className="text-amber-400/80">⏳ Awaiting Release</span>
+                                )}
+                              </li>
+                              <li className="flex items-center justify-between">
+                                <span>Cargo Inspection & Release Approval</span>
+                                {m.status === 'APPROVED' || m.status === 'RELEASED' ? (
+                                  <span className="text-emerald-400 font-semibold">✓ Approved</span>
+                                ) : (
+                                  <span className="text-amber-400/80">⏳ Pending Verification</span>
+                                )}
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+
                         {/* Penalty Warning for Overdue */}
                         {isOverdue && (
                           <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg flex items-start gap-3">
                             <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-semibold text-sm">Penalty Warning: Late UAT Submission</p>
-                              <p className="text-xs mt-0.5 opacity-90">This milestone has missed its deadline. Further delays may trigger platform dispute penalties.</p>
+                              <p className="font-semibold text-sm">Late Cargo Documentation Upload</p>
+                              <p className="text-xs mt-0.5 opacity-90">This trade stage has missed its deadline. Further delays may trigger platform dispute penalties.</p>
                             </div>
                           </div>
                         )}
@@ -458,9 +529,9 @@ export default function ProjectDetails() {
                         {/* Delivery Link Display */}
                         {m.submissionUrl && (
                           <div className="mt-4 p-4 border border-border/50 rounded-xl bg-muted/10">
-                            <p className="text-sm font-medium mb-2 opacity-80">Submitted Work:</p>
+                            <p className="text-sm font-medium mb-2 opacity-80">Verified Stage Documents / Delivery Papers:</p>
                             <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary bg-primary/5 hover:bg-primary/10 transition-colors px-3 py-1.5 rounded-lg border border-primary/20 text-sm font-medium">
-                              <FileCheck className="w-4 h-4" /> Open Delivery Link
+                              <FileCheck className="w-4 h-4" /> Open Verified Document Link
                             </a>
                           </div>
                         )}
@@ -488,22 +559,22 @@ export default function ProjectDetails() {
                           if (open) setSelectedMilestoneId(m.id);
                         }}>
                           <DialogTrigger asChild>
-                            <Button className="w-full shad-btn-primary shadow-lg shadow-primary/20">Submit UAT</Button>
+                            <Button className="w-full shad-btn-primary shadow-lg shadow-primary/20">Upload Documents</Button>
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Submit UAT (User Acceptance Testing) Delivery</DialogTitle>
-                              <DialogDescription>Provide a link to your completed work for this milestone.</DialogDescription>
+                              <DialogTitle>Upload Trade Verification Documents</DialogTitle>
+                              <DialogDescription>Provide a link to your shipping documents (e.g. Bill of Lading, Packing List, Quality Certificates held on Drive, Dropbox, or custom host) for Importer verification.</DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
                               <div className="space-y-2">
-                                <Label>Delivery URL (Drive, Figma, GitHub, TestFlight, etc)</Label>
+                                <Label>Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
                                 <Input value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" />
                               </div>
                             </div>
                             <DialogFooter>
                               <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-primary">
-                                {submitMilestone.isPending ? "Submitting..." : "Submit for Approval"}
+                                {submitMilestone.isPending ? "Submitting..." : "Submit Trade Documents"}
                               </Button>
                             </DialogFooter>
                           </DialogContent>
@@ -514,10 +585,10 @@ export default function ProjectDetails() {
                       {isClient && m.status === 'SUBMITTED' && (
                         <div className="space-y-2 w-full">
                           <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg gap-2" onClick={() => handleApproveWork(m.id)}>
-                            <CheckCircle2 className="w-4 h-4" /> Approve & Release Payout
+                            <CheckCircle2 className="w-4 h-4" /> Verify Documents & Release Escrow
                           </Button>
                           <Button variant="outline" className="w-full border-amber-500/50 text-amber-600 hover:bg-amber-50" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
-                            Request Revision
+                            File Document/Quality Dispute
                           </Button>
                         </div>
                       )}
@@ -548,7 +619,7 @@ export default function ProjectDetails() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground">{clientName}</span>
-                        <span className="text-muted-foreground text-sm">approved UAT & released funds</span>
+                        <span className="text-muted-foreground text-sm">verified trade documents & released escrow funds</span>
                       </div>
                       <div className="mt-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg font-medium inline-block">
                         ✓ Payment of {formatMoney(m.amount)} released to {talentName}
@@ -565,9 +636,9 @@ export default function ProjectDetails() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground">{talentName}</span>
-                        <span className="text-muted-foreground text-sm">submitted UAT for {m.title}</span>
+                        <span className="text-muted-foreground text-sm">uploaded trade documents for {m.title}</span>
                       </div>
-                      <p className="mt-1 text-muted-foreground bg-muted/30 p-3 rounded-lg border inline-block mt-2">All deliverables completed and ready for review.</p>
+                      <p className="mt-1 text-muted-foreground bg-muted/30 p-3 rounded-lg border inline-block mt-2">Verification documents have been uploaded and are ready for verification.</p>
                     </div>
                   </div>
                 ))}
@@ -691,7 +762,7 @@ export default function ProjectDetails() {
                               {m.status === 'RELEASED' ? (
                                 <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded font-semibold">Released</span>
                               ) : m.status === 'SUBMITTED' ? (
-                                <span className="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded font-semibold">Pending UAT Approve</span>
+                                <span className="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded font-semibold">Pending Verification</span>
                               ) : (
                                 <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded font-semibold">Locked</span>
                               )}
