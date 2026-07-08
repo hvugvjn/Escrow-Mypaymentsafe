@@ -86,9 +86,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async joinProject(id: string, userId: string, role: string): Promise<Project> {
+    const [existingProject] = await db.select().from(projects).where(eq(projects.id, id));
     const updates: any = { status: 'WAITING_FOR_FUNDING' };
-    if (role === 'BUYER') updates.buyerId = userId;
-    else if (role === 'FREELANCER') updates.freelancerId = userId;
+
+    if (existingProject) {
+      if (existingProject.buyerId && !existingProject.freelancerId) {
+        updates.freelancerId = userId;
+      } else if (existingProject.freelancerId && !existingProject.buyerId) {
+        updates.buyerId = userId;
+      } else {
+        if (role === 'BUYER') updates.buyerId = userId;
+        else if (role === 'FREELANCER') updates.freelancerId = userId;
+      }
+    } else {
+      if (role === 'BUYER') updates.buyerId = userId;
+      else if (role === 'FREELANCER') updates.freelancerId = userId;
+    }
 
     const [project] = await db.update(projects).set(updates).where(eq(projects.id, id)).returning();
     return project;

@@ -19,8 +19,8 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role"), // 'BUYER' | 'FREELANCER' | 'ADMIN'
-  profileCompleted: boolean("profile_completed").default(false),
+  role: varchar("role").default("BUYER"), // 'BUYER' | 'FREELANCER' | 'ADMIN'
+  profileCompleted: boolean("profile_completed").default(true),
   companyName: varchar("company_name"),
   phone: varchar("phone"),
   country: varchar("country"),

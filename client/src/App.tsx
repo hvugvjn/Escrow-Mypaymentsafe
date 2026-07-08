@@ -7,7 +7,6 @@ import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
-import ProfileComplete from "@/pages/profile-complete";
 import Dashboard from "@/pages/dashboard";
 import CreateProject from "@/pages/create-project";
 import ProjectDetails from "@/pages/project-details";
@@ -37,9 +36,7 @@ function ProtectedRoute({ component: Component, hideLayout = false }: { componen
       setLocation("/login");
     } else if (isAuthenticated && user?.email === ADMIN_EMAIL && location !== "/admin") {
       setLocation("/admin");
-    } else if (isAuthenticated && !user?.role && location !== "/profile/complete" && user?.email !== ADMIN_EMAIL) {
-      setLocation("/profile/complete");
-    } else if (isAuthenticated && user?.role && location === "/" && user?.email !== ADMIN_EMAIL) {
+    } else if (isAuthenticated && (location === "/" || location === "/login") && user?.email !== ADMIN_EMAIL) {
       // Check if there's a saved returnTo URL from before login
       const returnTo = sessionStorage.getItem("returnTo");
       if (returnTo) {
@@ -48,18 +45,10 @@ function ProtectedRoute({ component: Component, hideLayout = false }: { componen
       } else {
         setLocation("/dashboard");
       }
-    } else if (isAuthenticated && user?.role) {
-      // Also check returnTo after profile completion
-      const returnTo = sessionStorage.getItem("returnTo");
-      if (returnTo && location === "/dashboard") {
-        sessionStorage.removeItem("returnTo");
-        setLocation(returnTo);
-      }
     }
   }, [isAuthenticated, user, location, setLocation]);
 
   if (!isAuthenticated) return null;
-  if (!user?.role && location !== "/profile/complete" && user?.email !== ADMIN_EMAIL) return null;
 
   return hideLayout ? <Component /> : <AppLayout><Component /></AppLayout>;
 }
@@ -91,7 +80,6 @@ function Router() {
       <Route path="/" component={() => isAuthenticated ? <ProtectedRoute component={Dashboard} /> : <Home />} />
       {/* Auth page */}
       <Route path="/login" component={() => isAuthenticated ? <ProtectedRoute component={Dashboard} /> : <Landing />} />
-      <Route path="/profile/complete" component={() => <ProtectedRoute component={ProfileComplete} hideLayout />} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/projects/new" component={() => <ProtectedRoute component={CreateProject} />} />
       <Route path="/projects/:id" component={() => <ProtectedRoute component={ProjectDetails} />} />

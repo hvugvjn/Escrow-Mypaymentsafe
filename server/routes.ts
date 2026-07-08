@@ -140,6 +140,7 @@ export async function registerRoutes(
       const projectCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
+      const isExport = req.body.tradeType === 'export';
       const project = await storage.createProject({
         ...input,
         projectCode,
@@ -147,8 +148,8 @@ export async function registerRoutes(
         status: 'WAITING_FOR_ACCEPTANCE',
         expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
         currency: input.currency || 'USD',
-        buyerId: user?.role === 'BUYER' ? userId : (input as any).buyerId || null,
-        freelancerId: user?.role === 'FREELANCER' ? userId : (input as any).freelancerId || null,
+        buyerId: isExport ? null : userId,
+        freelancerId: isExport ? userId : ((input as any).freelancerId || null),
       } as any);
 
       if (user?.email) {

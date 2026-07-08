@@ -111,12 +111,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Messages", url: "/inbox", icon: Inbox },
-    ...(user?.role === "BUYER"
-      ? [
-          { title: "Find Talent", url: "/talent", icon: Search },
-          { title: "New Project", url: "/projects/new", icon: PlusCircle }
-        ]
-      : []),
+    { title: "New", url: "/projects/new", icon: PlusCircle },
     { title: "Profile", url: "/profile", icon: User },
   ];
 
@@ -207,9 +202,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <AvatarFallback>{user?.firstName?.[0] || "U"}</AvatarFallback>
             </Avatar>
             <div className="hidden lg:flex flex-col min-w-0">
-              <span className="text-sm font-semibold truncate">{user?.firstName} {user?.lastName}</span>
+              <span className="text-sm font-semibold truncate">{user?.firstName || user?.email?.split('@')[0]} {user?.lastName || ""}</span>
               <span className="text-xs text-muted-foreground truncate">
-                {user?.role === "BUYER" ? "Client" : user?.role === "FREELANCER" ? "Talent" : user?.role || "Guest"}
+                Trade Partner
               </span>
             </div>
           </div>

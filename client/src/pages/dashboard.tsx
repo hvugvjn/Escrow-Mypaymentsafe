@@ -39,37 +39,33 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {user?.role === 'BUYER' && (
-          <Button asChild size="lg" className="hover-elevate bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-            <Link href="/projects/new">
-              <PlusCircle className="w-5 h-5 mr-2" />
-              New Project
-            </Link>
-          </Button>
-        )}
+        <Button asChild size="lg" className="hover-elevate bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+          <Link href="/projects/new">
+            <PlusCircle className="w-5 h-5 mr-2" />
+            New
+          </Link>
+        </Button>
       </div>
 
-      {user?.role === 'FREELANCER' && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-6">
-            <form onSubmit={handleJoin} className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <Input
-                  placeholder="Enter 6-character Project Code..."
-                  className="pl-10 h-12 text-lg bg-background"
-                  value={joinCode}
-                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                  maxLength={6}
-                />
-              </div>
-              <Button type="submit" size="lg" className="h-12 sm:w-auto w-full" disabled={joinProject.isPending || joinCode.length < 6}>
-                Join Project
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-6">
+          <form onSubmit={handleJoin} className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="Have a Project Code? Enter 6-character Code to Join..."
+                className="pl-10 h-12 text-lg bg-background"
+                value={joinCode}
+                onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                maxLength={6}
+              />
+            </div>
+            <Button type="submit" size="lg" className="h-12 sm:w-auto w-full" disabled={joinProject.isPending || joinCode.length < 6}>
+              Join Project
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="glass-panel hover-elevate">
@@ -92,31 +88,28 @@ export default function Dashboard() {
         {projects.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed border-border rounded-2xl bg-muted/20">
             <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
-            <p className="text-muted-foreground mb-6">Get started by creating or joining a project.</p>
-            {user?.role === 'BUYER' ? (
-              <Button asChild size="lg" className="bg-primary hover-elevate">
+            <p className="text-muted-foreground mb-6">Get started by creating a new contract or joining with a code.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto px-4">
+              <Button asChild size="lg" className="bg-primary hover-elevate w-full sm:w-auto">
                 <Link href="/projects/new">
                   <PlusCircle className="w-5 h-5 mr-2" />
-                  Create Your First Project
+                  New
                 </Link>
               </Button>
-            ) : (
-              <div className="max-w-sm mx-auto p-4 bg-background rounded-xl border border-border shadow-sm">
-                <div className="text-sm font-medium mb-3 text-left">Got a project code from your client?</div>
-                <form onSubmit={handleJoin} className="flex gap-2">
-                  <Input
-                    placeholder="Enter 6-char Code"
-                    className="h-10 text-base"
-                    value={joinCode}
-                    onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                    maxLength={6}
-                  />
-                  <Button type="submit" className="h-10" disabled={joinProject.isPending || joinCode.length < 6}>
-                    Join
-                  </Button>
-                </form>
-              </div>
-            )}
+              <div className="text-sm font-semibold text-muted-foreground">OR</div>
+              <form onSubmit={handleJoin} className="flex gap-2 w-full max-w-xs">
+                <Input
+                  placeholder="Enter 6-char Code"
+                  className="h-11 text-base bg-background"
+                  value={joinCode}
+                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                />
+                <Button type="submit" className="h-11" disabled={joinProject.isPending || joinCode.length < 6}>
+                  Join
+                </Button>
+              </form>
+            </div>
           </div>
         ) : (
           <div className="grid gap-4">

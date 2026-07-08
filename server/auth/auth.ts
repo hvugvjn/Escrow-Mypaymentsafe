@@ -77,8 +77,8 @@ export async function setupAuth(app: Express) {
               .returning();
           } else {
             [user] = await db.insert(users)
-              .values({ email, firstName, lastName, profileImageUrl })
-              .returning();
+            .values({ email, firstName, lastName, profileImageUrl, role: "BUYER", profileCompleted: true })
+            .returning();
           }
 
           return done(null, user);
@@ -146,7 +146,7 @@ export async function setupAuth(app: Express) {
       // User exists without password (old OTP-only user) — update them
       await db.update(users).set({ passwordHash, currentOtp: otp, otpExpiresAt: expiresAt }).where(eq(users.id, existing.id));
     } else {
-      await db.insert(users).values({ email: email.toLowerCase(), passwordHash, currentOtp: otp, otpExpiresAt: expiresAt });
+      await db.insert(users).values({ email: email.toLowerCase(), passwordHash, currentOtp: otp, otpExpiresAt: expiresAt, role: "BUYER", profileCompleted: true });
     }
 
     await sendOtpEmail(email, otp);
