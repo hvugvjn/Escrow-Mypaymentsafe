@@ -280,12 +280,18 @@ export default function ProjectDetails() {
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Importer (Buyer)</p>
             <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
               <Users className="w-4 h-4 text-slate-400" /> {displayClientName}
+              {isClient && (
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 ml-1">You</span>
+              )}
             </div>
           </div>
           <div className="space-y-1">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Exporter (Seller)</p>
             <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
               <User className="w-4 h-4 text-slate-400" /> {displayTalentName}
+              {isTalent && (
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 ml-1">You</span>
+              )}
             </div>
           </div>
           <div className="space-y-1">
@@ -377,11 +383,29 @@ export default function ProjectDetails() {
             <div>
               <p className="text-[10px] text-blue-500 uppercase tracking-widest font-bold">Action Required</p>
               <h4 className="text-sm font-bold text-blue-900 mt-0.5">
-                {currentStep === 0 ? "Deposit Escrow Vault Value" : 
+                {currentStep === 0 ? (isClient ? "Secure Trade Deposit" : "Awaiting Importer Escrow Deposit") : 
                  currentStep === 1 ? (isTalent ? "Provide Cargo Shipping Documentation" : "Awaiting Seller Document Uploads") : 
                  currentStep === 2 ? (isClient ? "Audit Documentation Checklist & Release Escrow" : "Awaiting Importer Payout Verification") : 
                  "Trade Settled Successfully"}
               </h4>
+              <p className="text-xs text-slate-500 mt-1">
+                {currentStep === 0 && (
+                  isClient ? "You are the Importer. Please click 'Lock Trade Funds' to secure the deposit in escrow." :
+                  isTalent ? "You are the Exporter. Waiting for the Importer to secure the deposit in escrow before you load cargo." :
+                  "Awaiting Importer (Buyer) deposit of escrow funds."
+                )}
+                {currentStep === 1 && (
+                  isClient ? "Waiting for the Exporter (Seller) to upload the required cargo documents." :
+                  isTalent ? "You are the Exporter. Please upload your shipping documents to request release." :
+                  "Waiting for the Exporter (Seller) to upload cargo documents."
+                )}
+                {currentStep === 2 && (
+                  isClient ? "You are the Importer. Please verify the uploaded documents and release the payment." :
+                  isTalent ? "You are the Exporter. Waiting for the Importer to verify the documents and release the payout." :
+                  "Awaiting Importer (Buyer) verification of documents."
+                )}
+                {currentStep === 3 && "This contract has been fully funded, verified, and settled."}
+              </p>
             </div>
           </div>
           <div className="w-full md:w-auto flex justify-end">
