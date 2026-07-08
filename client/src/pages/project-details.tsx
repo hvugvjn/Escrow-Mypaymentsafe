@@ -92,7 +92,7 @@ export default function ProjectDetails() {
     setIsSendingMsg(false);
   };
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading project details...</div>;
+  if (isLoading) return <div className="p-8 text-center text-slate-500 animate-pulse">Loading project details...</div>;
   if (!data || !data.project) return <div className="p-8 text-center text-destructive">Project not found.</div>;
 
   const { project, milestones, escrow, clientName, talentName } = data;
@@ -187,25 +187,25 @@ export default function ProjectDetails() {
     currentStep = 1;
   }
 
-  // Invitation Workspace view for unjoined users
+  // Invitation Workspace view for unjoined users (Figma Wireframe Inspired)
   if (!isParticipant && project.status === 'WAITING_FOR_ACCEPTANCE') {
     return (
       <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in duration-300">
-        <Card className="border border-blue-500/25 bg-[#03091e]/85 shadow-[0_12px_40px_rgba(0,0,0,0.3)] backdrop-blur-md rounded-2xl">
+        <Card className="border border-slate-200 bg-white shadow-sm rounded-xl">
           <CardHeader className="text-center pb-2">
-            <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/25 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-6 h-6 animate-pulse" />
+            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
+              <ShieldCheck className="w-6 h-6" />
             </div>
-            <CardTitle className="text-2xl font-bold text-white">Join Trade Contract</CardTitle>
-            <p className="text-xs text-white/50 mt-1">You have been invited to join this trade escrow workspace.</p>
+            <CardTitle className="text-xl font-bold text-slate-900">Join Trade Contract</CardTitle>
+            <p className="text-xs text-slate-500 mt-1">You have been invited to join this trade escrow workspace.</p>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="p-4 rounded-xl bg-slate-950/40 border border-white/5 space-y-2">
-              <p className="text-xs text-white/40 uppercase font-semibold">Contract Title</p>
-              <h3 className="text-sm font-bold text-white">{project.title}</h3>
-              <p className="text-xs text-white/60 leading-relaxed mt-1">{project.description}</p>
-              <p className="text-xs text-white/40 mt-2">
-                Created by: <span className="font-semibold text-white/80">{displayClientName || 'Trade Partner'}</span>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Contract Title</p>
+              <h3 className="text-sm font-bold text-slate-900">{project.title}</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mt-1">{project.description}</p>
+              <p className="text-xs text-slate-500 mt-2">
+                Created by: <span className="font-semibold text-slate-800">{displayClientName || 'Trade Partner'}</span>
               </p>
             </div>
 
@@ -219,17 +219,17 @@ export default function ProjectDetails() {
               } catch (err) { }
             }} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="joinCode" className="text-white text-xs uppercase font-semibold">Enter Join Code</Label>
+                <Label htmlFor="joinCode" className="text-slate-700 text-xs uppercase font-bold tracking-wider">Enter Join Code</Label>
                 <Input
                   id="joinCode"
                   placeholder="6-CHARACTER CODE"
-                  className="h-12 text-center text-lg tracking-widest font-mono bg-slate-950/50 border-white/10 text-white font-bold"
+                  className="h-12 text-center text-lg tracking-widest font-mono bg-slate-50 border-slate-200 text-slate-900 font-bold focus:border-blue-500"
                   value={joinCode}
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
                   maxLength={6}
                 />
               </div>
-              <Button type="submit" className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all" disabled={joinProject.isPending || joinCode.length < 6}>
+              <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all" disabled={joinProject.isPending || joinCode.length < 6}>
                 {joinProject.isPending ? "Joining Workspace..." : "Accept & Join Contract"}
               </Button>
             </form>
@@ -240,105 +240,125 @@ export default function ProjectDetails() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500 overflow-x-hidden">
+    <div className="space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500">
 
-      {/* Top Header Section */}
-      <Card className="border border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden bg-gradient-to-r from-blue-950/20 via-[#03091e]/85 to-slate-950/20 backdrop-blur-md rounded-2xl">
-        <div className="p-5 md:p-8 flex flex-col gap-4 bg-[#0b1426]/30 border-b border-white/[0.04]">
+      {/* Top Header Section (Figma Inspired Clean White Header) */}
+      <Card className="border border-slate-100 shadow-sm overflow-hidden bg-white rounded-xl">
+        <div className="p-6 md:p-8 flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-white">{project.title}</h1>
+              <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Project: {project.title}</h1>
                 <StatusBadge status={project.status} />
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-white/40 font-medium text-xs uppercase tracking-wider">Trade Code:</p>
-                <div className="flex items-center bg-black/60 border border-white/10 rounded-lg overflow-hidden shadow-inner">
-                  <span className="font-mono px-3 py-1 font-bold text-blue-400 tracking-widest text-xs">{project.projectCode}</span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(project.projectCode);
-                      toast({ title: "Copied!", description: "Trade code copied to clipboard." });
-                    }}
-                    className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1 transition-all border-l border-white/10 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider"
-                    title="Copy Code"
-                  >
-                    <Copy className="w-3.5 h-3.5" /> Copy
-                  </button>
-                </div>
+              <div className="flex items-center gap-1">
+                <span className="text-slate-400 font-medium text-xs">Project ID:</span>
+                <span className="font-mono text-slate-600 font-semibold text-xs tracking-wider uppercase">{project.projectCode}</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(project.projectCode);
+                    toast({ title: "Copied!", description: "Trade code copied to clipboard." });
+                  }}
+                  className="text-blue-600 hover:text-blue-700 ml-1.5 hover:underline flex items-center gap-0.5 text-xs font-bold"
+                  title="Copy Code"
+                >
+                  <Copy className="w-3 h-3" /> Copy Link
+                </button>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" onClick={handleShare} className="gap-2 border-white/10 text-white bg-slate-950/40 hover:bg-slate-950/60 hover:border-white/20 transition-all font-semibold rounded-lg text-xs">
-                <Share2 className="w-4 h-4 text-blue-400" /> Share Contract
+              <Button variant="outline" onClick={handleShare} className="gap-2 border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-all font-semibold rounded-lg text-xs shadow-sm h-9">
+                <Share2 className="w-4 h-4 text-slate-500" /> Share
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Metadata Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 md:p-8 bg-black/40 border-t border-white/[0.04]">
-          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Importer (Buyer)</p>
-            <div className="flex items-center gap-2 font-bold text-white text-sm">
-              <Users className="w-4 h-4 text-blue-400" /> {displayClientName}
+        {/* Metadata Row (Clean spacious columns separated by slate border) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 md:p-8 bg-slate-50/50 border-t border-slate-100">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Company</p>
+            <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
+              <Users className="w-4 h-4 text-slate-400" /> {displayClientName}
             </div>
           </div>
-          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Exporter (Seller)</p>
-            <div className="flex items-center gap-2 font-bold text-white text-sm">
-              <User className="w-4 h-4 text-emerald-400" /> {displayTalentName}
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Freelancer</p>
+            <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
+              <User className="w-4 h-4 text-slate-400" /> {displayTalentName}
             </div>
           </div>
-          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Delivery Target</p>
-            <div className="flex items-center gap-2 font-bold text-white text-sm">
-              <Calendar className="w-4 h-4 text-indigo-400" />
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due Date</p>
+            <div className="flex items-center gap-2 font-semibold text-slate-800 text-sm">
+              <Calendar className="w-4 h-4 text-slate-400" />
               {project.expiresAt ? format(new Date(project.expiresAt), 'MMM d, yyyy') : 'TBD'}
             </div>
           </div>
-          <div className="space-y-1.5 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] shadow-inner">
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Trade Priority</p>
-            <div className="flex items-center gap-2 font-bold text-amber-500 text-sm">
-              <Clock className="w-4 h-4 text-amber-500 animate-pulse" /> High Priority
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Priority</p>
+            <div className="flex items-center gap-2 font-bold text-amber-600 text-sm">
+              <Clock className="w-4 h-4 text-amber-500" /> High
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Visual Cargo Tracker */}
-      <Card className="border border-blue-500/10 shadow-[0_8px_30px_rgba(30,58,138,0.06)] p-5 md:p-8 bg-gradient-to-b from-[#0a1128]/70 to-[#04091a]/90 backdrop-blur-md rounded-2xl">
-        <h3 className="font-display font-semibold text-base md:text-lg mb-6 text-white flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> Cargo Logistics & Escrow Tracking
-        </h3>
+      {/* Visual Cargo Tracker (Figma Inspired Workflow Stages Card) */}
+      <Card className="border border-slate-100 shadow-sm p-6 md:p-8 bg-white rounded-xl">
+        <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-400 mb-6">Workflow Stages</h3>
         <div className="overflow-x-auto -mx-1 px-1 pb-2">
           <div className="flex items-center justify-between relative min-w-[500px] max-w-4xl mx-auto pt-2 pb-4">
             {/* Connector Line */}
-            <div className="absolute top-1/2 left-0 right-0 h-[3px] bg-white/5 -translate-y-[28px] z-0 rounded-full"></div>
-            <div className="absolute top-1/2 left-0 h-[3px] bg-blue-500 -translate-y-[28px] z-0 rounded-full transition-all duration-1000" style={{ width: `${(currentStep / 3) * 100}%` }}></div>
+            <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-slate-100 -translate-y-[28px] z-0"></div>
+            <div className="absolute top-1/2 left-0 h-[2px] bg-emerald-500 -translate-y-[28px] z-0 transition-all duration-1000" style={{ width: `${(currentStep / 3) * 100}%` }}></div>
 
             {[
-              { label: "Contract Created", icon: FileText, num: 1 },
-              { label: "Deposit Secured", icon: ShieldCheck, num: 2 },
-              { label: "Cargo Dispatched", icon: Truck, num: 3 },
-              { label: "Trade Settled", icon: CheckCircle2, num: 4 },
+              { label: "Access", icon: FileText, num: 1 },
+              { label: "Interface", icon: ShieldCheck, num: 2 },
+              { label: "Contract", icon: Truck, num: 3 },
+              { label: "Payment Init", icon: CreditCard, num: 4 },
+              { label: "Escrow", icon: Lock, num: 5 },
+              { label: "Confirmation", icon: CheckCircle2, num: 6 },
             ].map((step, idx) => {
-              const isCompleted = idx < currentStep;
-              const isCurrent = idx === currentStep;
+              // Map our 4 backend steps to the 6 Figma timeline phases
+              let isCompleted = false;
+              let isCurrent = false;
+
+              if (idx < 2) {
+                isCompleted = true; // access and interface are complete by default
+              } else if (idx === 2) {
+                // Contract status
+                isCompleted = currentStep >= 1;
+                isCurrent = currentStep === 0;
+              } else if (idx === 3) {
+                // Payment Init status
+                isCompleted = currentStep >= 2;
+                isCurrent = currentStep === 1;
+              } else if (idx === 4) {
+                // Escrow status
+                isCompleted = currentStep >= 3;
+                isCurrent = currentStep === 2;
+              } else if (idx === 5) {
+                // Confirmation status
+                isCompleted = currentStep === 3;
+                isCurrent = currentStep === 3;
+              }
+
               const StepIcon = step.icon;
               return (
-                <div key={idx} className="relative z-10 flex flex-col items-center gap-3">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold shadow-lg transition-all duration-300 ${
-                    isCompleted ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-emerald-500/20 scale-105" :
-                    isCurrent ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-blue-600/35 ring-4 ring-blue-500/15 scale-110" :
-                    "bg-[#04091a] text-white/30 border border-white/10"
+                <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
+                    isCompleted ? "bg-emerald-500 text-white shadow-sm" :
+                    isCurrent ? "bg-blue-600 text-white shadow-md ring-4 ring-blue-100" :
+                    "bg-slate-100 text-slate-400 border border-slate-200"
                   }`}>
-                    {isCompleted ? <Check className="w-5 h-5 text-white" /> : <StepIcon className="w-5 h-5" />}
+                    {isCompleted ? <Check className="w-4 h-4 text-white" /> : <span className="text-xs">{step.num}</span>}
                   </div>
-                  <span className={`text-xs md:text-sm font-semibold whitespace-nowrap tracking-wide transition-all ${
-                    isCurrent ? "text-blue-400 font-bold" : 
-                    isCompleted ? "text-emerald-400/80" : 
-                    "text-white/40"
+                  <span className={`text-[11px] font-semibold tracking-wide transition-all ${
+                    isCurrent ? "text-blue-600 font-bold" : 
+                    isCompleted ? "text-emerald-600" : 
+                    "text-slate-400"
                   }`}>{step.label}</span>
                 </div>
               );
@@ -347,28 +367,28 @@ export default function ProjectDetails() {
         </div>
       </Card>
 
-      {/* Action Center CTA Alert (Prominently placed at the top) */}
+      {/* Action Center CTA Banner (Clean Sapphire Blue Alert at the top of the workflow page) */}
       {m && (
-        <div className="p-5 md:p-6 rounded-2xl border bg-gradient-to-r from-blue-950/40 via-[#03091e]/90 to-indigo-950/20 border-blue-500/25 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-inner">
-              <AlertCircle className="w-6 h-6 animate-pulse" />
+        <div className="p-6 rounded-xl border border-blue-100 bg-blue-50/60 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600">
+              <AlertCircle className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Escrow Required Action</p>
-              <h4 className="text-md font-bold text-white mt-0.5">
-                {currentStep === 0 ? "Fund Securitization Deposit" : 
-                 currentStep === 1 ? (isTalent ? "Provide Logistics Documentation" : "Awaiting Exporter Dispatch Uploads") : 
-                 currentStep === 2 ? (isClient ? "Audit Documentation & Settle Payout" : "Awaiting Importer Review") : 
-                 "Escrow Completed & Settled"}
+              <p className="text-[10px] text-blue-500 uppercase tracking-widest font-bold">Action Required</p>
+              <h4 className="text-sm font-bold text-blue-900 mt-0.5">
+                {currentStep === 0 ? "Deposit Escrow Vault Value" : 
+                 currentStep === 1 ? (isTalent ? "Provide Cargo Shipping Documentation" : "Awaiting Seller Document Uploads") : 
+                 currentStep === 2 ? (isClient ? "Audit Documentation Checklist & Release Escrow" : "Awaiting Importer Payout Verification") : 
+                 "Trade Settled Successfully"}
               </h4>
             </div>
           </div>
           <div className="w-full md:w-auto flex justify-end">
             {/* 1. Importer Locks Escrow Funds */}
             {isClient && currentStep === 0 && (
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-blue-500/25 transition-all w-full md:w-auto text-sm tracking-wide" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
-                <Lock className="w-4 h-4 mr-2" /> {isCreatingPaymentLink === m.id ? 'Securing...' : `Lock Trade Funds (${formatMoney(m.amount)})`}
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
+                <Lock className="w-3.5 h-3.5 mr-1.5" /> {isCreatingPaymentLink === m.id ? 'Securing...' : `Lock Trade Funds (${formatMoney(m.amount)})`}
               </Button>
             )}
 
@@ -376,25 +396,25 @@ export default function ProjectDetails() {
             {isTalent && currentStep === 1 && (
               <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all w-full md:w-auto text-sm tracking-wide">
-                    <Send className="w-4 h-4 mr-2" /> Upload Cargo Documents
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide">
+                    <Send className="w-3.5 h-3.5 mr-1.5" /> Upload Cargo Documents
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-[#0b1426] border-white/10 text-white rounded-2xl">
+                <DialogContent className="bg-white border-slate-200 text-slate-950 rounded-xl">
                   <DialogHeader>
-                    <DialogTitle className="text-white">Upload Cargo Shipping Documents</DialogTitle>
-                    <DialogDescription className="text-white/60">
+                    <DialogTitle className="text-slate-900 font-bold">Upload Cargo Shipping Documents</DialogTitle>
+                    <DialogDescription className="text-slate-500">
                       Provide the access link to your Commercial Invoice, packing specifications, and carrier Bill of Lading.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label htmlFor="docUrl" className="text-white">Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
-                      <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-slate-950/50 border-white/10 text-white" />
+                      <Label htmlFor="docUrl" className="text-slate-700">Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
+                      <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                    <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
                       {submitMilestone.isPending ? "Submitting..." : "Submit Documents"}
                     </Button>
                   </DialogFooter>
@@ -404,25 +424,25 @@ export default function ProjectDetails() {
 
             {/* 3. Importer Verifies Shipping Documents & Releases Escrow */}
             {isClient && currentStep === 2 && (
-              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-emerald-500/25 transition-all w-full md:w-auto text-sm tracking-wide" onClick={() => handleApproveWork(m.id)}>
-                  <Check className="w-4 h-4 mr-2" /> Approve & Release Payout
+              <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={() => handleApproveWork(m.id)}>
+                  <Check className="w-3.5 h-3.5 mr-1.5" /> Verify & Release Payout
                 </Button>
-                <Button variant="outline" className="border-amber-500/30 text-amber-500 hover:bg-amber-500/10 font-semibold px-8 py-3 rounded-xl w-full md:w-auto text-sm" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
-                  File Quality Dispute
+                <Button variant="outline" className="border-slate-200 text-amber-600 hover:bg-amber-50 font-bold px-6 py-2.5 rounded-lg w-full md:w-auto text-xs" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
+                  File Dispute
                 </Button>
               </div>
             )}
 
             {/* Status indicators */}
             {isTalent && currentStep === 0 && (
-              <span className="text-xs text-white/40 bg-slate-950/60 border border-white/5 px-4 py-2.5 rounded-xl font-medium">Awaiting Importer Escrow Deposit</span>
+              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Importer Escrow Deposit</span>
             )}
             {isTalent && currentStep === 2 && (
-              <span className="text-xs text-white/40 bg-slate-950/60 border border-white/5 px-4 py-2.5 rounded-xl font-medium">Awaiting Importer Release Clearance</span>
+              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Importer Release Clearance</span>
             )}
             {currentStep === 3 && (
-              <span className="text-xs text-emerald-400 bg-emerald-950/20 border border-emerald-500/25 px-5 py-3 rounded-xl font-bold flex items-center gap-1.5 shadow-sm">
+              <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-lg font-bold flex items-center gap-1 shadow-sm">
                 ✓ Escrow Released & Settled
               </span>
             )}
@@ -430,155 +450,155 @@ export default function ProjectDetails() {
         </div>
       )}
 
-      {/* Unified Document Checklist & Vault */}
+      {/* Unified Document Checklist & Vault (Clean light bordered design) */}
       {m && (
-        <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl">
-          <CardHeader className="border-b border-white/[0.04] bg-[#0b1426]/30 py-4 px-6">
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <FileCheck className="w-5 h-5 text-blue-400" /> Required Cargo Documentation Checklist
+        <Card className="border border-slate-100 shadow-sm overflow-hidden bg-white rounded-xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
+            <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-blue-600" /> Required Cargo Documentation Checklist
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-white/80">
-                <thead className="text-[10px] text-white/30 uppercase tracking-widest bg-black/20 border-b border-white/[0.03]">
+              <table className="w-full text-sm text-left">
+                <thead className="text-[10px] text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100 font-bold">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Document Type</th>
-                    <th className="px-6 py-4 font-bold">Required By</th>
-                    <th className="px-6 py-4 font-bold">Status</th>
-                    <th className="px-6 py-4 font-bold text-right">Actions</th>
+                    <th className="px-6 py-3">Document Type</th>
+                    <th className="px-6 py-3">Required By</th>
+                    <th className="px-6 py-3">Status</th>
+                    <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.03]">
-                  <tr className="hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-5 font-semibold text-white/95">
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="hover:bg-slate-50/40 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
                           CI
                         </div>
                         <span>Commercial Invoice & Packing List</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Exporter ({displayTalentName})</td>
-                    <td className="px-6 py-5">
+                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                    <td className="px-6 py-4">
                       {m.submissionUrl ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                           ✓ Uploaded
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                          ⏳ Awaiting Dispatch
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                          ⏳ Pending Upload
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-5 text-right">
+                    <td className="px-6 py-4 text-right">
                       {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
-                          View File <ExternalLink className="w-3.5 h-3.5" />
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                          View File <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <span className="text-white/20">—</span>
+                        <span className="text-slate-300">—</span>
                       )}
                     </td>
                   </tr>
 
-                  <tr className="hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-5 font-semibold text-white/95">
+                  <tr className="hover:bg-slate-50/40 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
                           BL
                         </div>
                         <span>Bill of Lading (BoL) / Shipping Receipt</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Exporter ({displayTalentName})</td>
-                    <td className="px-6 py-5">
+                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                    <td className="px-6 py-4">
                       {m.submissionUrl ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                           ✓ Uploaded
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                          ⏳ Awaiting Dispatch
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                          ⏳ Pending Upload
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-5 text-right">
+                    <td className="px-6 py-4 text-right">
                       {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
-                          View File <ExternalLink className="w-3.5 h-3.5" />
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                          View File <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <span className="text-white/20">—</span>
+                        <span className="text-slate-300">—</span>
                       )}
                     </td>
                   </tr>
 
-                  <tr className="hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-5 font-semibold text-white/95">
+                  <tr className="hover:bg-slate-50/40 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
                           QC
                         </div>
                         <span>Quality Certificate (SGS Inspection)</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Exporter ({displayTalentName})</td>
-                    <td className="px-6 py-5">
+                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                    <td className="px-6 py-4">
                       {m.submissionUrl ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                           ✓ Certified
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                          ⏳ Awaiting Dispatch
+                          ⏳ Pending Upload
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-5 text-right">
+                    <td className="px-6 py-4 text-right">
                       {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 hover:underline font-bold bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/15">
-                          View File <ExternalLink className="w-3.5 h-3.5" />
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                          View File <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <span className="text-white/20">—</span>
+                        <span className="text-slate-300">—</span>
                       )}
                     </td>
                   </tr>
 
-                  <tr className="hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-5 font-semibold text-white/95">
+                  <tr className="hover:bg-slate-50/40 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs">
                           BE
                         </div>
                         <span>Import customs declaration (Bill of Entry)</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-white/50 text-xs font-semibold">Importer ({displayClientName})</td>
-                    <td className="px-6 py-5">
+                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Importer ({displayClientName})</td>
+                    <td className="px-6 py-4">
                       {currentStep === 3 ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
                           ✓ Cleared
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                          ⏳ Awaiting Arrival
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-550/10 text-amber-600 border border-amber-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                          ⏳ Awaiting Port Arrival
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-5 text-right font-medium">
+                    <td className="px-6 py-4 text-right font-medium">
                       {currentStep === 3 ? (
-                        <span className="text-emerald-400 text-xs font-bold bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/15">Customs Cleared</span>
+                        <span className="text-emerald-600 text-xs font-bold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">Customs Cleared</span>
                       ) : (
-                        <span className="text-white/20">—</span>
+                        <span className="text-slate-300">—</span>
                       )}
                     </td>
                   </tr>
@@ -588,10 +608,10 @@ export default function ProjectDetails() {
 
             {/* Document Warning or Overdue Info */}
             {m.status === 'PENDING' && isPast(new Date(m.deadline)) && (
-              <div className="m-5 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+              <div className="m-5 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-red-500" />
                 <div>
-                  <p className="font-semibold text-sm">Late Cargo Documentation Alert</p>
+                  <p className="font-bold text-sm">Late Cargo Documentation Alert</p>
                   <p className="text-xs mt-0.5 opacity-90">This trade contract has exceeded its delivery deadline. Please communicate with your partner via chat.</p>
                 </div>
               </div>
@@ -601,25 +621,25 @@ export default function ProjectDetails() {
       )}
 
       {/* Contract terms & Specifications Details */}
-      <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl">
-        <CardHeader className="border-b border-white/[0.04] bg-[#0b1426]/30 py-4 px-6">
-          <CardTitle className="text-base font-semibold text-white">Trade Terms & Contract Specifications</CardTitle>
+      <Card className="border border-slate-100 shadow-sm overflow-hidden bg-white rounded-xl">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
+          <CardTitle className="text-sm font-semibold text-slate-800">Trade Terms & Contract Specifications</CardTitle>
         </CardHeader>
         <CardContent className="p-6 md:p-8 space-y-6">
           <div>
-            <p className="whitespace-pre-wrap text-white/70 leading-relaxed bg-slate-950/30 p-6 rounded-xl border border-white/5 text-sm">{project.description}</p>
+            <p className="whitespace-pre-wrap text-slate-700 leading-relaxed bg-slate-50 p-6 rounded-xl border border-slate-100 text-sm">{project.description}</p>
           </div>
 
           {project.documentUrl && (
             <div>
-              <h3 className="text-xs font-bold mb-3 text-white/50 uppercase tracking-wider">Master Purchase Contract File</h3>
-              <a href={project.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 p-4 border border-white/10 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 transition-colors w-full md:w-auto">
-                <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-blue-400" />
+              <h3 className="text-[10px] font-bold mb-3 text-slate-400 uppercase tracking-widest">Master Purchase Contract File</h3>
+              <a href={project.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 p-4 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors w-full md:w-auto shadow-sm">
+                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center border border-blue-100">
+                  <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-white text-sm">Master_Contract.pdf</p>
-                  <p className="text-xs text-white/40 mt-0.5">Click to view or download master agreement</p>
+                  <p className="font-semibold text-slate-800 text-sm">Master_Contract.pdf</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Click to view or download master agreement</p>
                 </div>
               </a>
             </div>
@@ -631,23 +651,23 @@ export default function ProjectDetails() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Escrow summary */}
         {escrow && (
-          <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl">
-            <CardHeader className="bg-[#0b1426]/30 border-b border-white/[0.04] py-4 px-6">
-              <CardTitle className="text-white text-sm font-semibold">Escrow Settlement Balance</CardTitle>
+          <Card className="border border-slate-100 shadow-sm overflow-hidden bg-white rounded-xl">
+            <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-6">
+              <CardTitle className="text-slate-850 text-sm font-semibold">Escrow Settlement Balance</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div className="flex justify-between border-b border-white/[0.03] pb-2.5">
-                  <span className="text-white/50 text-sm">Total Vault Value:</span>
-                  <span className="text-white font-bold font-mono text-sm">{formatMoney(escrow.totalAmount)}</span>
+                <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                  <span className="text-slate-500 text-sm">Total Vault Value:</span>
+                  <span className="text-slate-900 font-bold font-mono text-sm">{formatMoney(escrow.totalAmount)}</span>
                 </div>
-                <div className="flex justify-between border-b border-white/[0.03] pb-2.5">
-                  <span className="text-white/50 text-sm">Released to Exporter:</span>
-                  <span className="text-emerald-400 font-bold font-mono text-sm">{formatMoney(escrow.releasedAmount)}</span>
+                <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                  <span className="text-slate-500 text-sm">Released to Exporter:</span>
+                  <span className="text-emerald-600 font-bold font-mono text-sm">{formatMoney(escrow.releasedAmount)}</span>
                 </div>
                 <div className="flex justify-between pb-2.5">
-                  <span className="text-white/50 text-sm">Remaining Locked:</span>
-                  <span className="text-amber-500 font-bold font-mono text-sm">{formatMoney(escrow.remainingAmount)}</span>
+                  <span className="text-slate-500 text-sm">Remaining Locked:</span>
+                  <span className="text-amber-600 font-bold font-mono text-sm">{formatMoney(escrow.remainingAmount)}</span>
                 </div>
               </div>
             </CardContent>
@@ -655,25 +675,25 @@ export default function ProjectDetails() {
         )}
 
         {/* Chat / Messages Panel */}
-        <Card className="border border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden bg-[#03091e]/60 backdrop-blur-md rounded-2xl flex flex-col h-[280px]">
-          <CardHeader className="bg-[#0b1426]/30 border-b border-white/[0.04] py-3.5 px-6 flex flex-row items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-blue-400 animate-pulse" />
-            <CardTitle className="text-white text-sm font-semibold">Project Communication Chat</CardTitle>
+        <Card className="border border-slate-100 shadow-sm overflow-hidden bg-white rounded-xl flex flex-col h-[280px]">
+          <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-3.5 px-6 flex flex-row items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-blue-600" />
+            <CardTitle className="text-slate-850 text-sm font-semibold">Project Communication Chat</CardTitle>
           </CardHeader>
           <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
             {/* Message lists */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+            <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/30">
               {chatMessages.length === 0 ? (
-                <div className="text-center text-white/30 text-xs py-8">Send a secure message to start the negotiation</div>
+                <div className="text-center text-slate-400 text-xs py-8">Send a secure message to start the negotiation</div>
               ) : (
                 chatMessages.map((msg, i) => {
                   const isCurrentUser = msg.senderId === user?.id;
                   return (
                     <div key={i} className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                      <div className={`p-2.5 rounded-xl max-w-[85%] text-xs leading-relaxed ${isCurrentUser ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-900 border border-white/10 text-white/90 rounded-bl-none'}`}>
+                      <div className={`p-2.5 rounded-xl max-w-[85%] text-xs leading-relaxed shadow-sm border ${isCurrentUser ? 'bg-blue-600 text-white border-blue-600 rounded-br-none' : 'bg-white border-slate-200 text-slate-800 rounded-bl-none'}`}>
                         {msg.content}
                       </div>
-                      <span className="text-[10px] text-white/30 mt-1 px-1 font-semibold">
+                      <span className="text-[10px] text-slate-400 mt-1 px-1 font-semibold">
                         {isCurrentUser ? 'You' : msg.senderName || 'Partner'}
                       </span>
                     </div>
@@ -684,9 +704,9 @@ export default function ProjectDetails() {
             </div>
 
             {/* Input message */}
-            <div className="p-3 border-t border-white/[0.04] bg-slate-950/20 flex gap-2">
+            <div className="p-3 border-t border-slate-100 bg-white flex gap-2">
               <Input
-                className="bg-slate-950/50 border-white/10 text-white text-xs h-9"
+                className="bg-slate-50 border-slate-200 text-slate-900 text-xs h-9 focus:border-blue-500"
                 placeholder="Type a message..."
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
