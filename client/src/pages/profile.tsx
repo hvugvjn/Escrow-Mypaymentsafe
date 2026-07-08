@@ -204,9 +204,9 @@ export default function Profile() {
               {user.firstName} {user.lastName}
             </CardTitle>
             <div className="flex flex-wrap gap-2 mt-2">
-              <Badge variant="secondary" className="font-semibold px-3 py-1">
-                {isBuyer ? <Briefcase className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
-                {isBuyer ? "Client" : "Talent"}
+              <Badge variant="secondary" className="font-semibold px-3 py-1 bg-[#122b5e]/20 text-blue-400 border border-blue-500/10">
+                <User className="w-3 h-3 mr-1" />
+                Trade Partner
               </Badge>
               {user.country && !isEditing && (
                 <Badge variant="outline" className="font-medium text-muted-foreground border-border/60">
@@ -502,76 +502,6 @@ export default function Profile() {
 
         </CardContent>
       </Card>
-
-      {/* ─── Switch Role Card ─────────────────────────────── */}
-      <Card className="border-destructive/20 bg-destructive/5">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0 mt-0.5">
-                <RefreshCw className="w-5 h-5 text-destructive" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base">Switch Account Role</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  You are currently a <strong>{isBuyer ? 'Client' : 'Talent'}</strong>.
-                  Switch to <strong>{isBuyer ? 'Talent' : 'Client'}</strong> to{' '}
-                  {isBuyer ? 'find work and get paid' : 'hire talent and create projects'}.
-                </p>
-                <p className="text-xs text-destructive/80 mt-1 font-medium">
-                  ⚠ Your existing projects will not be affected, but your dashboard view will change.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="border-destructive/40 text-destructive hover:bg-destructive/10 shrink-0 gap-2"
-              onClick={() => setIsSwitchRoleOpen(true)}
-            >
-              <RefreshCw className="w-4 h-4" />
-              Switch to {isBuyer ? 'Talent' : 'Client'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ─── Switch Role Confirmation Dialog ─── */}
-      <Dialog open={isSwitchRoleOpen} onOpenChange={setIsSwitchRoleOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
-              Switch Role to {isBuyer ? 'Talent' : 'Client'}?
-            </DialogTitle>
-            <DialogDescription className="pt-2 space-y-2">
-              <p>
-                You are switching from <strong>{isBuyer ? 'Client' : 'Talent'}</strong> to{' '}
-                <strong>{isBuyer ? 'Talent' : 'Client'}</strong>.
-              </p>
-              <p className="text-sm">
-                {isBuyer
-                  ? 'As Talent, you will be able to join projects using a project code and receive payments.'
-                  : 'As Client, you will be able to create projects, hire talent, and fund escrow.'}
-              </p>
-              <p className="text-sm font-medium text-destructive">
-                Your existing projects and chat history will remain intact.
-              </p>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setIsSwitchRoleOpen(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSwitchRole}
-              disabled={isSwitchingRole}
-              className="flex-1 bg-destructive hover:bg-destructive/90 text-white"
-            >
-              {isSwitchingRole ? 'Switching...' : `Yes, Switch to ${isBuyer ? 'Talent' : 'Client'}`}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
