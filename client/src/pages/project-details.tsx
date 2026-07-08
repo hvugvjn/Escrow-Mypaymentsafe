@@ -110,6 +110,14 @@ export default function ProjectDetails() {
     setIsSendingMsg(false);
   };
 
+  // Pre-load selected milestone ID for uploads at top level
+  useEffect(() => {
+    const firstM = data?.milestones?.[0];
+    if (firstM?.id && !selectedMilestoneId) {
+      setSelectedMilestoneId(firstM.id);
+    }
+  }, [data?.milestones]);
+
   if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading project details...</div>;
   if (!data || !data.project) return <div className="p-8 text-center text-destructive">Project not found.</div>;
 
@@ -274,12 +282,7 @@ export default function ProjectDetails() {
     currentStep = 1;
   }
 
-  // Pre-load selected milestone ID for uploads
-  useEffect(() => {
-    if (m?.id && !selectedMilestoneId) {
-      setSelectedMilestoneId(m.id);
-    }
-  }, [m]);
+
 
   return (
     <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto pb-12 w-full animate-in fade-in duration-500 overflow-x-hidden">

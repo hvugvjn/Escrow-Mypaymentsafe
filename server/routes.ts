@@ -196,8 +196,9 @@ export async function registerRoutes(
       const milestones = await storage.getMilestones(project.id);
       const totalAmount = milestones.reduce((sum, m) => sum + m.amount, 0);
 
-      // Create escrow
-      if (totalAmount > 0) {
+      // Create escrow if not already present
+      const existingEscrow = await storage.getEscrow(project.id);
+      if (!existingEscrow && totalAmount > 0) {
         await storage.createEscrow({
           projectId: project.id,
           totalAmount,
