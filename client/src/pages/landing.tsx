@@ -225,15 +225,15 @@ export default function Landing() {
           </h1>
           
           <p className="text-lg md:text-xl text-white/60 mb-12 leading-relaxed font-normal max-w-lg">
-            <PaxLogo white className="text-2xl" /> leverages intelligent escrow milestones to guarantee that clients receive exactly what they pay for, and talents get rewarded for excellence.
+            <PaxLogo white className="text-2xl" /> secures B2B trade, import/export shipments, and commercial contracts with milestone-gated escrow, protecting both unknown buyers and sellers from financial risk.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
             {[
-              "Triple-Layer Fund Security",
-              "Automated Milestone Payouts",
-              "Expert Dispute Resolution",
-              "Active Project Oversight"
+              "RBI-Compliant Escrow Vaults",
+              "Logistics & Cargo Verification",
+              "Technical & Custom Arbitration",
+              "Full Transaction Audit Logs"
             ].map((f, i) => (
               <motion.div 
                 key={i} 
