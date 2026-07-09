@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
@@ -39,6 +39,89 @@ export default function ProjectDetails() {
   const prevMsgCount = useRef(0);
   const [isCreatingPaymentLink, setIsCreatingPaymentLink] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [importerFile, setImporterFile] = useState<File | null>(null);
+  const [isUploadingImporter, setIsUploadingImporter] = useState(false);
+  const [importerSubmitUrl, setImporterSubmitUrl] = useState("");
+  const [isImporterSubmitOpen, setIsImporterSubmitOpen] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setUploadFile(file);
+      setIsUploadingFile(true);
+      try {
+        const formData = new FormData();
+        formData.append("document", file);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSubmitUrl(data.url);
+          toast({ title: "Success", description: "File uploaded successfully. Click Submit to save." });
+        } else {
+          toast({ title: "Upload Failed", description: "Failed to upload file", variant: "destructive" });
+        }
+      } catch (err) {
+        toast({ title: "Error", description: "Network error during upload", variant: "destructive" });
+      } finally {
+        setIsUploadingFile(false);
+      }
+    }
+  };
+
+  const handleImporterFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImporterFile(file);
+      setIsUploadingImporter(true);
+      try {
+        const formData = new FormData();
+        formData.append("document", file);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setImporterSubmitUrl(data.url);
+          toast({ title: "Success", description: "Bill of Entry uploaded successfully. Click Submit to save." });
+        } else {
+          toast({ title: "Upload Failed", description: "Failed to upload file", variant: "destructive" });
+        }
+      } catch (err) {
+        toast({ title: "Error", description: "Network error during upload", variant: "destructive" });
+      } finally {
+        setIsUploadingImporter(false);
+      }
+    }
+  };
+
+  const handleImporterSubmit = async () => {
+    if (!selectedMilestoneId || !importerSubmitUrl) return;
+    try {
+      const res = await fetch(`/api/milestones/${selectedMilestoneId}/submit-importer-doc`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionUrl: importerSubmitUrl }),
+      });
+      if (res.ok) {
+        setIsImporterSubmitOpen(false);
+        setImporterSubmitUrl("");
+        setImporterFile(null);
+        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
+        toast({ title: "Success", description: "Bill of Entry document submitted successfully!" });
+      } else {
+        toast({ title: "Error", description: "Failed to submit document", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Network error", variant: "destructive" });
+    }
+  };
 
   const handleShare = () => {
     setIsShareOpen(true);
@@ -178,12 +261,13 @@ export default function ProjectDetails() {
 
   // Determine active logistics step (0 to 3)
   const m = milestones?.[0];
+  const hasBothParticipants = !!project.buyerId && !!project.freelancerId;
   let currentStep = 0;
   if (project.status === 'COMPLETED' || m?.status === 'RELEASED' || m?.status === 'APPROVED') {
     currentStep = 3;
   } else if (m?.submissionUrl) {
     currentStep = 2;
-  } else if (project.status !== 'WAITING_FOR_FUNDING' && project.status !== 'PAYMENT_PENDING') {
+  } else if (hasBothParticipants) {
     currentStep = 1;
   }
 
@@ -385,7 +469,7 @@ export default function ProjectDetails() {
               <h4 className="text-sm font-bold text-blue-900 mt-0.5">
                 {currentStep === 0 ? "Awaiting Partner to Join Contract" : 
                  currentStep === 1 ? (isTalent ? "Provide Cargo Shipping Documentation" : "Awaiting Seller Document Uploads") : 
-                 currentStep === 2 ? (isClient ? "Audit Documentation Checklist & Verify" : "Awaiting Importer Document Verification") : 
+                 currentStep === 2 ? (isClient ? (!m.importerSubmissionUrl ? "Upload Bill of Entry Document" : "Audit Documentation Checklist & Verify") : "Awaiting Importer Document Verification") : 
                  "Trade Documents Approved & Completed"}
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -398,7 +482,11 @@ export default function ProjectDetails() {
                   "Waiting for the Exporter (Seller) to upload cargo documents."
                 )}
                 {currentStep === 2 && (
-                  isClient ? "You are the Importer. Please verify the uploaded documents and approve the shipment." :
+                  isClient ? (
+                    !m.importerSubmissionUrl
+                      ? "You are the Importer. Please upload your Bill of Entry (customs declaration) document to proceed."
+                      : "You are the Importer. Please verify the uploaded documents and approve the shipment."
+                  ) :
                   isTalent ? "You are the Exporter. Waiting for the Importer to verify the documents and approve." :
                   "Awaiting Importer (Buyer) verification of documents."
                 )}
@@ -419,17 +507,38 @@ export default function ProjectDetails() {
                   <DialogHeader>
                     <DialogTitle className="text-slate-900 font-bold">Upload Cargo Shipping Documents</DialogTitle>
                     <DialogDescription className="text-slate-500">
-                      Provide the access link to your Commercial Invoice, packing specifications, and carrier Bill of Lading.
+                      Upload your shipping document files or provide a link to them.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label htmlFor="docUrl" className="text-slate-700">Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
-                      <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" />
+                      <Label className="text-slate-700">Choose Cargo Document File (PDF, Image, Doc)</Label>
+                      <div className="flex items-center gap-3">
+                        <label
+                          htmlFor="docFile"
+                          className="cursor-pointer flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg border border-dashed border-border/70 bg-muted/30 hover:bg-muted/60 transition-colors text-muted-foreground w-full h-16"
+                        >
+                          <Upload className="w-5 h-5" />
+                          {uploadFile ? uploadFile.name : "Select file from device"}
+                        </label>
+                        <input
+                          id="docFile"
+                          type="file"
+                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                          className="hidden"
+                          onChange={handleFileChange}
+                          disabled={isUploadingFile}
+                        />
+                      </div>
+                      {isUploadingFile && <p className="text-xs text-blue-600 animate-pulse mt-1">Uploading file to platform...</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="docUrl" className="text-slate-700">Or enter Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
+                      <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingFile} />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+                    <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending || isUploadingFile} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
                       {submitMilestone.isPending ? "Submitting..." : "Submit Documents"}
                     </Button>
                   </DialogFooter>
@@ -440,12 +549,64 @@ export default function ProjectDetails() {
             {/* Importer Verifies Shipping Documents */}
             {isClient && currentStep === 2 && (
               <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={() => handleApproveWork(m.id)}>
-                  <Check className="w-3.5 h-3.5 mr-1.5" /> Verify & Approve documents
-                </Button>
-                <Button variant="outline" className="border-slate-200 text-amber-600 hover:bg-amber-50 font-bold px-6 py-2.5 rounded-lg w-full md:w-auto text-xs" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
-                  Request Revision
-                </Button>
+                {!m.importerSubmissionUrl ? (
+                  <Dialog open={isImporterSubmitOpen} onOpenChange={setIsImporterSubmitOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide">
+                        <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Bill of Entry
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-white border-slate-200 text-slate-950 rounded-xl">
+                      <DialogHeader>
+                        <DialogTitle className="text-slate-900 font-bold">Upload Import customs declaration (Bill of Entry)</DialogTitle>
+                        <DialogDescription className="text-slate-500">
+                          Choose a file from your device or enter the document URL.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Choose Bill of Entry File</Label>
+                          <div className="flex items-center gap-3">
+                            <label
+                              htmlFor="importerDocFile"
+                              className="cursor-pointer flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg border border-dashed border-border/70 bg-muted/30 hover:bg-muted/60 transition-colors text-muted-foreground w-full h-16"
+                            >
+                              <Upload className="w-5 h-5" />
+                              {importerFile ? importerFile.name : "Select file from device"}
+                            </label>
+                            <input
+                              id="importerDocFile"
+                              type="file"
+                              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                              className="hidden"
+                              onChange={handleImporterFileChange}
+                              disabled={isUploadingImporter}
+                            />
+                          </div>
+                          {isUploadingImporter && <p className="text-xs text-blue-600 animate-pulse mt-1">Uploading file to platform...</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="importerDocUrl" className="text-slate-700">Or enter Document URL</Label>
+                          <Input id="importerDocUrl" value={importerSubmitUrl} onChange={e => setImporterSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingImporter} />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button onClick={handleImporterSubmit} disabled={!importerSubmitUrl || isUploadingImporter} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+                          Submit Document
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <>
+                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={() => handleApproveWork(m.id)}>
+                      <Check className="w-3.5 h-3.5 mr-1.5" /> Verify & Approve documents
+                    </Button>
+                    <Button variant="outline" className="border-slate-200 text-amber-600 hover:bg-amber-50 font-bold px-6 py-2.5 rounded-lg w-full md:w-auto text-xs" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
+                      Request Revision
+                    </Button>
+                  </>
+                )}
               </div>
             )}
 
@@ -454,7 +615,9 @@ export default function ProjectDetails() {
               <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Partner to Join</span>
             )}
             {isTalent && currentStep === 2 && (
-              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Importer Verification</span>
+              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">
+                {!m.importerSubmissionUrl ? "Awaiting Importer Bill of Entry" : "Awaiting Importer Verification"}
+              </span>
             )}
             {currentStep === 3 && (
               <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-lg font-bold flex items-center gap-1 shadow-sm">
@@ -491,16 +654,24 @@ export default function ProjectDetails() {
                         <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
                           CI
                         </div>
-                        <span>Commercial Invoice & Packing List</span>
+                        {m.submissionUrl ? (
+                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                            Commercial Invoice & Packing List
+                          </a>
+                        ) : (
+                          <span>Commercial Invoice & Packing List</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
                     <td className="px-6 py-4">
                       {m.submissionUrl ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          ✓ Uploaded
-                        </span>
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            ✓ Uploaded
+                          </span>
+                        </a>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
@@ -525,16 +696,24 @@ export default function ProjectDetails() {
                         <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
                           BL
                         </div>
-                        <span>Bill of Lading (BoL) / Shipping Receipt</span>
+                        {m.submissionUrl ? (
+                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                            Bill of Lading (BoL) / Shipping Receipt
+                          </a>
+                        ) : (
+                          <span>Bill of Lading (BoL) / Shipping Receipt</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
                     <td className="px-6 py-4">
                       {m.submissionUrl ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          ✓ Uploaded
-                        </span>
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            ✓ Uploaded
+                          </span>
+                        </a>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
@@ -559,16 +738,24 @@ export default function ProjectDetails() {
                         <div className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
                           QC
                         </div>
-                        <span>Quality Certificate (SGS Inspection)</span>
+                        {m.submissionUrl ? (
+                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                            Quality Certificate (SGS Inspection)
+                          </a>
+                        ) : (
+                          <span>Quality Certificate (SGS Inspection)</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
                     <td className="px-6 py-4">
                       {m.submissionUrl ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          ✓ Certified
-                        </span>
+                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            ✓ Certified
+                          </span>
+                        </a>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -593,25 +780,45 @@ export default function ProjectDetails() {
                         <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs">
                           BE
                         </div>
-                        <span>Import customs declaration (Bill of Entry)</span>
+                        {m.importerSubmissionUrl ? (
+                          <a href={m.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                            Import customs declaration (Bill of Entry)
+                          </a>
+                        ) : (
+                          <span>Import customs declaration (Bill of Entry)</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Importer ({displayClientName})</td>
                     <td className="px-6 py-4">
-                      {currentStep === 3 ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                          ✓ Cleared
+                      {m.importerSubmissionUrl ? (
+                        <a href={m.importerSubmissionUrl} target="_blank" rel="noopener noreferrer">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            ✓ Uploaded
+                          </span>
+                        </a>
+                      ) : m.submissionUrl ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                          ⏳ Pending Upload
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-550/10 text-amber-600 border border-amber-100">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-550/10 text-amber-600 border border-amber-100 font-medium">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          ⏳ Awaiting Port Arrival
+                          ⏳ Awaiting Exporter Docs
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right font-medium">
-                      {currentStep === 3 ? (
-                        <span className="text-emerald-600 text-xs font-bold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">Customs Cleared</span>
+                      {m.importerSubmissionUrl ? (
+                        <a href={m.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                          View File <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : isClient && currentStep === 2 ? (
+                        <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => setIsImporterSubmitOpen(true)}>
+                          <Upload className="w-3 h-3 mr-1" /> Upload
+                        </Button>
                       ) : (
                         <span className="text-slate-300">—</span>
                       )}

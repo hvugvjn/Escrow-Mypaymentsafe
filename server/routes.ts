@@ -292,6 +292,23 @@ export async function registerRoutes(
     }
   });
 
+  // POST route for importer to submit Bill of Entry doc
+  app.post('/api/milestones/:id/submit-importer-doc', isAuthenticated, async (req: any, res) => {
+    try {
+      const { submissionUrl } = req.body;
+      if (!submissionUrl) {
+        return res.status(400).json({ message: "Document URL is required" });
+      }
+
+      const milestone = await storage.updateMilestone(req.params.id, {
+        importerSubmissionUrl: submissionUrl
+      });
+      res.json(milestone);
+    } catch (err) {
+      res.status(550).json({ message: "Internal error" });
+    }
+  });
+
   // ── CREATE CASHFREE PAYMENT LINK (replaces dummy Fund Escrow) ─────────────
   // Called when client clicks "Approve & Pay" on a submitted milestone
   app.post('/api/milestones/:id/payment-link', isAuthenticated, async (req: any, res) => {

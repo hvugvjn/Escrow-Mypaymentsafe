@@ -29,6 +29,7 @@ export const milestones = pgTable("milestones", {
   deadline: timestamp("deadline").notNull(),
   status: varchar("status").notNull().default('PENDING'),
   submissionUrl: text("submission_url"),
+  importerSubmissionUrl: text("importer_submission_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
