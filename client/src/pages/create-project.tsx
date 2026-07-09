@@ -49,7 +49,7 @@ export default function CreateProject() {
   const [totalValue, setTotalValue] = useState("");
   const [requiredDocs, setRequiredDocs] = useState({
     invoice: true,
-    packingList: true,
+    packingList: false,
     billOfLading: true,
     inspectionCertificate: true,
     billOfEntry: true,
@@ -328,64 +328,7 @@ export default function CreateProject() {
               </p>
             </div>
 
-            <div className="space-y-3 pt-2">
-              <Label className="text-slate-700 text-xs font-bold uppercase tracking-wider">Required Verification Documents</Label>
-              <p className="text-xs text-slate-400 mb-4">
-                Select the documentation the parties must upload to verify cargo status before funds release.
-              </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <label className="flex items-center gap-3 cursor-pointer group text-sm text-slate-700 hover:text-slate-950 font-medium">
-                  <input 
-                    type="checkbox" 
-                    checked={requiredDocs.invoice} 
-                    onChange={e => setRequiredDocs({...requiredDocs, invoice: e.target.checked})}
-                    className="w-4 h-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500" 
-                  />
-                  <span>Commercial Invoice & Packing List</span>
-                </label>
-
-                <label className="flex items-center gap-3 cursor-pointer group text-sm text-slate-700 hover:text-slate-950 font-medium">
-                  <input 
-                    type="checkbox" 
-                    checked={requiredDocs.packingList} 
-                    onChange={e => setRequiredDocs({...requiredDocs, packingList: e.target.checked})}
-                    className="w-4 h-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500" 
-                  />
-                  <span>Freight Cargo Packing Specification</span>
-                </label>
-
-                <label className="flex items-center gap-3 cursor-pointer group text-sm text-slate-700 hover:text-slate-950 font-medium">
-                  <input 
-                    type="checkbox" 
-                    checked={requiredDocs.billOfLading} 
-                    onChange={e => setRequiredDocs({...requiredDocs, billOfLading: e.target.checked})}
-                    className="w-4 h-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500" 
-                  />
-                  <span>Bill of Lading (BoL) / Transit Docket</span>
-                </label>
-
-                <label className="flex items-center gap-3 cursor-pointer group text-sm text-slate-700 hover:text-slate-950 font-medium">
-                  <input 
-                    type="checkbox" 
-                    checked={requiredDocs.inspectionCertificate} 
-                    onChange={e => setRequiredDocs({...requiredDocs, inspectionCertificate: e.target.checked})}
-                    className="w-4 h-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500" 
-                  />
-                  <span>Quality Certificate (SGS Inspection)</span>
-                </label>
-
-                <label className="flex items-center gap-3 cursor-pointer group text-sm text-slate-700 hover:text-slate-950 font-medium">
-                  <input 
-                    type="checkbox" 
-                    checked={requiredDocs.billOfEntry} 
-                    onChange={e => setRequiredDocs({...requiredDocs, billOfEntry: e.target.checked})}
-                    className="w-4 h-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500" 
-                  />
-                  <span>Import Bill of Entry (Customs Clearance)</span>
-                </label>
-              </div>
-            </div>
           </CardContent>
         </Card>
 

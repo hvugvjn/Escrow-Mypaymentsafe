@@ -545,10 +545,10 @@ export default function ProjectDetails() {
                   isClient ? (
                     !m.importerSubmissionUrl
                       ? "You are the Importer. Please upload your Bill of Entry (customs declaration) document to proceed."
-                      : "You are the Importer. Please verify the uploaded documents and approve the shipment."
+                      : "You are the Importer. All cargo and import documents have been successfully uploaded."
                   ) :
-                  isTalent ? "You are the Exporter. Waiting for the Importer to verify the documents and approve." :
-                  "Awaiting Importer (Buyer) verification of documents."
+                  isTalent ? "You are the Exporter. Waiting for the Importer to upload the Bill of Entry." :
+                  "Awaiting Importer (Buyer) customs declaration upload."
                 )}
                 {currentStep === 3 && "This contract has been fully verified and completed."}
               </p>
@@ -558,19 +558,10 @@ export default function ProjectDetails() {
             {/* Importer Verifies Shipping Documents */}
             {isClient && currentStep === 2 && (
               <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
-                {beMilestone && !beMilestone.importerSubmissionUrl ? (
+                {beMilestone && !beMilestone.importerSubmissionUrl && (
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide animate-pulse" onClick={() => openImporterDialog(beMilestone.id)}>
                     <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Bill of Entry
                   </Button>
-                ) : (
-                  <>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={handleApproveAll}>
-                      <Check className="w-3.5 h-3.5 mr-1.5" /> Verify & Approve documents
-                    </Button>
-                    <Button variant="outline" className="border-slate-200 text-amber-600 hover:bg-amber-50 font-bold px-6 py-2.5 rounded-lg w-full md:w-auto text-xs" onClick={handleRejectAll}>
-                      Request Revision
-                    </Button>
-                  </>
                 )}
               </div>
             )}
@@ -581,7 +572,7 @@ export default function ProjectDetails() {
             )}
             {isTalent && currentStep === 2 && (
               <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">
-                {!m.importerSubmissionUrl ? "Awaiting Importer Bill of Entry" : "Awaiting Importer Verification"}
+                {!m.importerSubmissionUrl ? "Awaiting Importer Bill of Entry" : "Documents Completed"}
               </span>
             )}
             {currentStep === 3 && (
