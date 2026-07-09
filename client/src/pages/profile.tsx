@@ -264,33 +264,12 @@ export default function Profile() {
                           </a>
                         </div>
                       )}
-                      {user.resumeUrl && (
-                        <div className="flex items-center gap-3 text-sm">
-                          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-                          <span className="font-medium">Resume:</span>
-                          <a href={user.resumeUrl} target="_blank" rel="noopener noreferrer"
-                            className="text-primary hover:underline bg-primary/5 px-2 py-1 rounded border border-primary/20 text-xs">
-                            Download
-                          </a>
-                        </div>
-                      )}
+                      {/* Resume section removed */}
                     </>
                   )}
                 </div>
 
-                {/* Freelancer Skills */}
-                {!isBuyer && user.skills && (
-                  <div className="space-y-4">
-                    <h3 className="text-base font-semibold border-b pb-2">Talent Expertise</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {user.skills.split(",").map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="px-3 py-1 bg-muted font-medium hover:bg-muted/80">
-                          {skill.trim()}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Freelancer Skills removed */}
               </section>
 
               {/* Edit prompt */}
@@ -371,69 +350,6 @@ export default function Profile() {
               {/* Freelancer-specific fields */}
               {!isBuyer && (
                 <>
-                  <div className="space-y-3">
-                    <Label htmlFor="skills">Skills</Label>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {formData.skills.split(",").filter(s => s.trim() !== "").map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="px-3 py-1 bg-primary text-primary-foreground gap-1">
-                          {skill.trim()}
-                          <button 
-                            type="button" 
-                            onClick={() => {
-                              const currentSkills = formData.skills.split(",").map(s => s.trim()).filter(s => s !== "" && s !== skill.trim());
-                              setFormData({ ...formData, skills: currentSkills.join(", ") });
-                            }}
-                            className="hover:text-red-200"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                    
-                    <div className="p-4 border rounded-xl bg-muted/20">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Common Skills</p>
-                      <div className="flex flex-wrap gap-2">
-                        {POPULAR_SKILLS.map(skill => {
-                          const isSelected = formData.skills.split(",").map(s => s.trim()).includes(skill);
-                          return (
-                            <button
-                              type="button"
-                              key={skill}
-                              onClick={() => {
-                                let currentSkills = formData.skills.split(",").map(s => s.trim()).filter(s => s !== "");
-                                if (isSelected) {
-                                  currentSkills = currentSkills.filter(s => s !== skill);
-                                } else {
-                                  currentSkills.push(skill);
-                                }
-                                setFormData({ ...formData, skills: currentSkills.join(", ") });
-                              }}
-                              className={cn(
-                                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                                isSelected 
-                                  ? "bg-primary border-primary text-primary-foreground" 
-                                  : "bg-background border-border text-foreground hover:border-primary/50"
-                              )}
-                            >
-                              {skill}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="mt-2">
-                      <Label htmlFor="custom-skill" className="text-xs">Add other skills (comma separated)</Label>
-                      <Input
-                        id="skills"
-                        placeholder="e.g. Docker, Kubernetes, etc."
-                        value={formData.skills}
-                        onChange={e => setFormData({ ...formData, skills: e.target.value })}
-                        className="bg-muted/40 mt-1"
-                      />
-                    </div>
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="portfolioLink">Portfolio URL (Optional)</Label>
                     <Input
@@ -444,40 +360,6 @@ export default function Profile() {
                       onChange={e => setFormData({ ...formData, portfolioLink: e.target.value })}
                       className="bg-muted/40"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="resume">
-                      Resume / CV{" "}
-                      {user.resumeUrl && (
-                        <a href={user.resumeUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-primary text-xs underline ml-2">
-                          (view current)
-                        </a>
-                      )}
-                    </Label>
-                    <div className="flex items-center gap-3">
-                      <label
-                        htmlFor="resume"
-                        className="cursor-pointer flex items-center gap-2 text-sm px-4 py-2 rounded-lg border border-dashed border-border/70 bg-muted/30 hover:bg-muted/60 transition-colors text-muted-foreground"
-                      >
-                        <Upload className="w-4 h-4" />
-                        {resumeFile ? resumeFile.name : "Upload new resume (.pdf, .doc, .docx)"}
-                      </label>
-                      <input
-                        id="resume"
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files?.[0]) setResumeFile(e.target.files[0]);
-                        }}
-                      />
-                      {resumeFile && (
-                        <button type="button" onClick={() => setResumeFile(null)} className="text-muted-foreground hover:text-destructive">
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </>
               )}

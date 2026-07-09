@@ -323,11 +323,11 @@ export default function ProjectDetails() {
               { label: "Access", icon: FileText, num: 1 },
               { label: "Interface", icon: ShieldCheck, num: 2 },
               { label: "Contract", icon: Truck, num: 3 },
-              { label: "Payment Init", icon: CreditCard, num: 4 },
-              { label: "Escrow", icon: Lock, num: 5 },
+              { label: "Upload Docs", icon: Send, num: 4 },
+              { label: "Verification", icon: FileCheck, num: 5 },
               { label: "Confirmation", icon: CheckCircle2, num: 6 },
             ].map((step, idx) => {
-              // Map our 4 backend steps to the 6 Figma timeline phases
+              // Map our 4 backend steps to the 6 timeline phases
               let isCompleted = false;
               let isCurrent = false;
 
@@ -338,11 +338,11 @@ export default function ProjectDetails() {
                 isCompleted = currentStep >= 1;
                 isCurrent = currentStep === 0;
               } else if (idx === 3) {
-                // Payment Init status
+                // Upload Docs status
                 isCompleted = currentStep >= 2;
                 isCurrent = currentStep === 1;
               } else if (idx === 4) {
-                // Escrow status
+                // Verification status
                 isCompleted = currentStep >= 3;
                 isCurrent = currentStep === 2;
               } else if (idx === 5) {
@@ -383,40 +383,31 @@ export default function ProjectDetails() {
             <div>
               <p className="text-[10px] text-blue-500 uppercase tracking-widest font-bold">Action Required</p>
               <h4 className="text-sm font-bold text-blue-900 mt-0.5">
-                {currentStep === 0 ? (isClient ? "Secure Trade Deposit" : "Awaiting Importer Escrow Deposit") : 
+                {currentStep === 0 ? "Awaiting Partner to Join Contract" : 
                  currentStep === 1 ? (isTalent ? "Provide Cargo Shipping Documentation" : "Awaiting Seller Document Uploads") : 
-                 currentStep === 2 ? (isClient ? "Audit Documentation Checklist & Release Escrow" : "Awaiting Importer Payout Verification") : 
-                 "Trade Settled Successfully"}
+                 currentStep === 2 ? (isClient ? "Audit Documentation Checklist & Verify" : "Awaiting Importer Document Verification") : 
+                 "Trade Documents Approved & Completed"}
               </h4>
               <p className="text-xs text-slate-500 mt-1">
                 {currentStep === 0 && (
-                  isClient ? "You are the Importer. Please click 'Lock Trade Funds' to secure the deposit in escrow." :
-                  isTalent ? "You are the Exporter. Waiting for the Importer to secure the deposit in escrow before you load cargo." :
-                  "Awaiting Importer (Buyer) deposit of escrow funds."
+                  "Please share the project code with your trade partner so they can join this contract workspace."
                 )}
                 {currentStep === 1 && (
                   isClient ? "Waiting for the Exporter (Seller) to upload the required cargo documents." :
-                  isTalent ? "You are the Exporter. Please upload your shipping documents to request release." :
+                  isTalent ? "You are the Exporter. Please upload your shipping documents to submit for verification." :
                   "Waiting for the Exporter (Seller) to upload cargo documents."
                 )}
                 {currentStep === 2 && (
-                  isClient ? "You are the Importer. Please verify the uploaded documents and release the payment." :
-                  isTalent ? "You are the Exporter. Waiting for the Importer to verify the documents and release the payout." :
+                  isClient ? "You are the Importer. Please verify the uploaded documents and approve the shipment." :
+                  isTalent ? "You are the Exporter. Waiting for the Importer to verify the documents and approve." :
                   "Awaiting Importer (Buyer) verification of documents."
                 )}
-                {currentStep === 3 && "This contract has been fully funded, verified, and settled."}
+                {currentStep === 3 && "This contract has been fully verified and completed."}
               </p>
             </div>
           </div>
           <div className="w-full md:w-auto flex justify-end">
-            {/* 1. Importer Locks Escrow Funds */}
-            {isClient && currentStep === 0 && (
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={() => handleSecureEscrow(m.id)} disabled={isCreatingPaymentLink === m.id}>
-                <Lock className="w-3.5 h-3.5 mr-1.5" /> {isCreatingPaymentLink === m.id ? 'Securing...' : `Lock Trade Funds (${formatMoney(m.amount)})`}
-              </Button>
-            )}
-
-            {/* 2. Exporter Uploads Cargo Documentation */}
+            {/* Exporter Uploads Cargo Documentation */}
             {isTalent && currentStep === 1 && (
               <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
                 <DialogTrigger asChild>
@@ -446,28 +437,28 @@ export default function ProjectDetails() {
               </Dialog>
             )}
 
-            {/* 3. Importer Verifies Shipping Documents & Releases Escrow */}
+            {/* Importer Verifies Shipping Documents */}
             {isClient && currentStep === 2 && (
               <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
                 <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={() => handleApproveWork(m.id)}>
-                  <Check className="w-3.5 h-3.5 mr-1.5" /> Verify & Release Payout
+                  <Check className="w-3.5 h-3.5 mr-1.5" /> Verify & Approve documents
                 </Button>
                 <Button variant="outline" className="border-slate-200 text-amber-600 hover:bg-amber-50 font-bold px-6 py-2.5 rounded-lg w-full md:w-auto text-xs" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
-                  File Dispute
+                  Request Revision
                 </Button>
               </div>
             )}
 
             {/* Status indicators */}
             {isTalent && currentStep === 0 && (
-              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Importer Escrow Deposit</span>
+              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Partner to Join</span>
             )}
             {isTalent && currentStep === 2 && (
-              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Importer Release Clearance</span>
+              <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-lg font-semibold">Awaiting Importer Verification</span>
             )}
             {currentStep === 3 && (
               <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-lg font-bold flex items-center gap-1 shadow-sm">
-                ✓ Escrow Released & Settled
+                ✓ Documents Approved & Verified
               </span>
             )}
           </div>
@@ -671,33 +662,8 @@ export default function ProjectDetails() {
         </CardContent>
       </Card>
 
-      {/* Bottom Payment Escrow Account metrics & Chat Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Escrow summary */}
-        {escrow && (
-          <Card className="border border-slate-100 shadow-sm overflow-hidden bg-white rounded-xl">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-6">
-              <CardTitle className="text-slate-850 text-sm font-semibold">Escrow Settlement Balance</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-between border-b border-slate-100 pb-2.5">
-                  <span className="text-slate-500 text-sm">Total Vault Value:</span>
-                  <span className="text-slate-900 font-bold font-mono text-sm">{formatMoney(escrow.totalAmount)}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-2.5">
-                  <span className="text-slate-500 text-sm">Released to Exporter:</span>
-                  <span className="text-emerald-600 font-bold font-mono text-sm">{formatMoney(escrow.releasedAmount)}</span>
-                </div>
-                <div className="flex justify-between pb-2.5">
-                  <span className="text-slate-500 text-sm">Remaining Locked:</span>
-                  <span className="text-amber-600 font-bold font-mono text-sm">{formatMoney(escrow.remainingAmount)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+      {/* Bottom Chat Panel */}
+      <div className="grid grid-cols-1 gap-6">
         {/* Chat / Messages Panel */}
         <Card className="border border-slate-100 shadow-sm overflow-hidden bg-white rounded-xl flex flex-col h-[280px]">
           <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-3.5 px-6 flex flex-row items-center gap-2">
