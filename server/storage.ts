@@ -90,7 +90,9 @@ export class DatabaseStorage implements IStorage {
     const updates: any = { status: 'WAITING_FOR_FUNDING' };
 
     if (existingProject) {
-      if (existingProject.buyerId && !existingProject.freelancerId) {
+      if (existingProject.buyerId === userId || existingProject.freelancerId === userId) {
+        // User is already a participant, do not overwrite the other participant slot
+      } else if (existingProject.buyerId && !existingProject.freelancerId) {
         updates.freelancerId = userId;
       } else if (existingProject.freelancerId && !existingProject.buyerId) {
         updates.buyerId = userId;

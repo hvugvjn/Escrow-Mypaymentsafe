@@ -147,6 +147,11 @@ export async function registerRoutes(
       const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
       const isExport = req.body.tradeType === 'export';
+      const targetFreelancerId = (input as any).freelancerId;
+      if (!isExport && targetFreelancerId && targetFreelancerId === userId) {
+        return res.status(400).json({ message: 'Cannot assign yourself as the project partner' });
+      }
+
       const project = await storage.createProject({
         ...input,
         projectCode,
@@ -155,7 +160,7 @@ export async function registerRoutes(
         expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
         currency: input.currency || 'USD',
         buyerId: isExport ? null : userId,
-        freelancerId: isExport ? userId : ((input as any).freelancerId || null),
+        freelancerId: isExport ? userId : (targetFreelancerId || null),
       } as any);
 
       if (user?.email) {
@@ -188,6 +193,10 @@ export async function registerRoutes(
 
       if (project.createdBy === userId) {
         return res.status(400).json({ message: 'Cannot join your own project' });
+      }
+
+      if (project.buyerId && project.freelancerId && project.buyerId !== userId && project.freelancerId !== userId) {
+        return res.status(400).json({ message: 'This project already has both a buyer and a freelancer' });
       }
 
       const updatedProject = await storage.joinProject(project.id, userId, user.role || 'FREELANCER');
