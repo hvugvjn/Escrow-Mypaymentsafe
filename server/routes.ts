@@ -303,7 +303,7 @@ export async function registerRoutes(
       const allMs = await storage.getMilestones(req.body.projectId || '');
       const ms = allMs.find(m => m.id === milestoneId);
       if (!ms) return res.status(404).json({ message: 'Milestone not found' });
-      if (ms.status !== 'SUBMITTED') return res.status(400).json({ message: 'Milestone must be in SUBMITTED state' });
+      if (ms.status !== 'PENDING') return res.status(400).json({ message: 'Milestone must be in PENDING state' });
 
       const project = await storage.getProject(ms.projectId);
       if (!project) return res.status(404).json({ message: 'Project not found' });
