@@ -123,6 +123,20 @@ export default function ProjectDetails() {
     }
   };
 
+  const openSubmitDialog = (milestoneId: string) => {
+    setSelectedMilestoneId(milestoneId);
+    setUploadFile(null);
+    setSubmitUrl("");
+    setIsSubmitOpen(true);
+  };
+
+  const openImporterDialog = (milestoneId: string) => {
+    setSelectedMilestoneId(milestoneId);
+    setImporterFile(null);
+    setImporterSubmitUrl("");
+    setIsImporterSubmitOpen(true);
+  };
+
   const handleShare = () => {
     setIsShareOpen(true);
   };
@@ -253,6 +267,7 @@ export default function ProjectDetails() {
         onSuccess: () => {
           setIsSubmitOpen(false);
           setSubmitUrl("");
+          setUploadFile(null);
           queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
         }
       });
@@ -260,16 +275,61 @@ export default function ProjectDetails() {
   };
 
   // Determine active logistics step (0 to 3)
-  const m = milestones?.[0];
+  const invoiceMilestone = milestones?.find(m => m.title === "Commercial Invoice & Packing List");
+  const bolMilestone = milestones?.find(m => m.title === "Bill of Lading (BoL) / Shipping Receipt");
+  const qcMilestone = milestones?.find(m => m.title === "Quality Certificate (SGS Inspection)");
+  const beMilestone = milestones?.find(m => m.title === "Import customs declaration (Bill of Entry)");
+
+  const exporterMilestones = milestones?.filter(m => m.title !== "Import customs declaration (Bill of Entry)") || [];
+  const allExporterSubmitted = exporterMilestones.length > 0 && exporterMilestones.every(m => !!m.submissionUrl);
+
+  const fallbackMilestone = milestones?.[0];
+  const m = beMilestone || fallbackMilestone;
+
+  const isCompleted = project.status === 'COMPLETED' || (milestones && milestones.length > 0 && milestones.every(m => m.status === 'RELEASED' || m.status === 'APPROVED'));
+
   const hasBothParticipants = !!project.buyerId && !!project.freelancerId;
   let currentStep = 0;
-  if (project.status === 'COMPLETED' || m?.status === 'RELEASED' || m?.status === 'APPROVED') {
+  if (isCompleted) {
     currentStep = 3;
-  } else if (m?.submissionUrl) {
+  } else if (allExporterSubmitted) {
     currentStep = 2;
   } else if (hasBothParticipants) {
     currentStep = 1;
   }
+
+  const handleApproveAll = async () => {
+    if (!milestones) return;
+    try {
+      for (const milestone of milestones) {
+        if (milestone.status !== 'RELEASED' && milestone.status !== 'APPROVED') {
+          const res = await fetch(`/api/milestones/${milestone.id}/approve`, {
+            method: 'POST',
+          });
+          if (!res.ok) throw new Error('Failed to approve');
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
+      toast({ title: 'Success', description: 'All documents have been approved successfully!' });
+    } catch (err) {
+      toast({ title: 'Error', description: 'Network error during approval', variant: 'destructive' });
+    }
+  };
+
+  const handleRejectAll = async () => {
+    if (!milestones) return;
+    try {
+      for (const milestone of milestones) {
+        if (milestone.status !== 'RELEASED' && milestone.status !== 'APPROVED') {
+          await requestRevision.mutateAsync(milestone.id);
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
+      toast({ title: 'Revision Requested', description: 'All pending milestones have been requested for revision.' });
+    } catch (err) {
+      toast({ title: 'Error', description: 'Network error', variant: 'destructive' });
+    }
+  };
 
   // Invitation Workspace view for unjoined users (Figma Wireframe Inspired)
   if (!isParticipant && project.status === 'WAITING_FOR_ACCEPTANCE') {
@@ -495,114 +555,19 @@ export default function ProjectDetails() {
             </div>
           </div>
           <div className="w-full md:w-auto flex justify-end">
-            {/* Exporter Uploads Cargo Documentation */}
-            {isTalent && currentStep === 1 && (
-              <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide">
-                    <Send className="w-3.5 h-3.5 mr-1.5" /> Upload Cargo Documents
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-white border-slate-200 text-slate-950 rounded-xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-slate-900 font-bold">Upload Cargo Shipping Documents</DialogTitle>
-                    <DialogDescription className="text-slate-500">
-                      Upload your shipping document files or provide a link to them.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-700">Choose Cargo Document File (PDF, Image, Doc)</Label>
-                      <div className="flex items-center gap-3">
-                        <label
-                          htmlFor="docFile"
-                          className="cursor-pointer flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg border border-dashed border-border/70 bg-muted/30 hover:bg-muted/60 transition-colors text-muted-foreground w-full h-16"
-                        >
-                          <Upload className="w-5 h-5" />
-                          {uploadFile ? uploadFile.name : "Select file from device"}
-                        </label>
-                        <input
-                          id="docFile"
-                          type="file"
-                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                          className="hidden"
-                          onChange={handleFileChange}
-                          disabled={isUploadingFile}
-                        />
-                      </div>
-                      {isUploadingFile && <p className="text-xs text-blue-600 animate-pulse mt-1">Uploading file to platform...</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="docUrl" className="text-slate-700">Or enter Shipping Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
-                      <Input id="docUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingFile} />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending || isUploadingFile} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
-                      {submitMilestone.isPending ? "Submitting..." : "Submit Documents"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-
             {/* Importer Verifies Shipping Documents */}
             {isClient && currentStep === 2 && (
               <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
-                {!m.importerSubmissionUrl ? (
-                  <Dialog open={isImporterSubmitOpen} onOpenChange={setIsImporterSubmitOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide">
-                        <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Bill of Entry
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-white border-slate-200 text-slate-950 rounded-xl">
-                      <DialogHeader>
-                        <DialogTitle className="text-slate-900 font-bold">Upload Import customs declaration (Bill of Entry)</DialogTitle>
-                        <DialogDescription className="text-slate-500">
-                          Choose a file from your device or enter the document URL.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label className="text-slate-700">Choose Bill of Entry File</Label>
-                          <div className="flex items-center gap-3">
-                            <label
-                              htmlFor="importerDocFile"
-                              className="cursor-pointer flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg border border-dashed border-border/70 bg-muted/30 hover:bg-muted/60 transition-colors text-muted-foreground w-full h-16"
-                            >
-                              <Upload className="w-5 h-5" />
-                              {importerFile ? importerFile.name : "Select file from device"}
-                            </label>
-                            <input
-                              id="importerDocFile"
-                              type="file"
-                              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                              className="hidden"
-                              onChange={handleImporterFileChange}
-                              disabled={isUploadingImporter}
-                            />
-                          </div>
-                          {isUploadingImporter && <p className="text-xs text-blue-600 animate-pulse mt-1">Uploading file to platform...</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="importerDocUrl" className="text-slate-700">Or enter Document URL</Label>
-                          <Input id="importerDocUrl" value={importerSubmitUrl} onChange={e => setImporterSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingImporter} />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button onClick={handleImporterSubmit} disabled={!importerSubmitUrl || isUploadingImporter} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
-                          Submit Document
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                {beMilestone && !beMilestone.importerSubmissionUrl ? (
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide animate-pulse" onClick={() => openImporterDialog(beMilestone.id)}>
+                    <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Bill of Entry
+                  </Button>
                 ) : (
                   <>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={() => handleApproveWork(m.id)}>
+                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={handleApproveAll}>
                       <Check className="w-3.5 h-3.5 mr-1.5" /> Verify & Approve documents
                     </Button>
-                    <Button variant="outline" className="border-slate-200 text-amber-600 hover:bg-amber-50 font-bold px-6 py-2.5 rounded-lg w-full md:w-auto text-xs" onClick={() => requestRevision.mutate(m.id)} disabled={requestRevision.isPending}>
+                    <Button variant="outline" className="border-slate-200 text-amber-600 hover:bg-amber-50 font-bold px-6 py-2.5 rounded-lg w-full md:w-auto text-xs" onClick={handleRejectAll}>
                       Request Revision
                     </Button>
                   </>
@@ -648,182 +613,252 @@ export default function ProjectDetails() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  <tr className="hover:bg-slate-50/40 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
-                          CI
-                        </div>
-                        {m.submissionUrl ? (
-                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
-                            Commercial Invoice & Packing List
-                          </a>
-                        ) : (
-                          <span>Commercial Invoice & Packing List</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
-                    <td className="px-6 py-4">
-                      {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            ✓ Uploaded
-                          </span>
-                        </a>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          ⏳ Pending Upload
-                        </span>
+                  {invoiceMilestone || bolMilestone || qcMilestone || beMilestone ? (
+                    <>
+                      {invoiceMilestone && (
+                        <tr className="hover:bg-slate-50/40 transition-colors">
+                          <td className="px-6 py-4 font-semibold text-slate-900">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                                CI
+                              </div>
+                              {invoiceMilestone.submissionUrl ? (
+                                <a href={invoiceMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                  Commercial Invoice & Packing List
+                                </a>
+                              ) : (
+                                <span>Commercial Invoice & Packing List</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                          <td className="px-6 py-4">
+                            {invoiceMilestone.submissionUrl ? (
+                              <a href={invoiceMilestone.submissionUrl} target="_blank" rel="noopener noreferrer">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                  ✓ Uploaded
+                                </span>
+                              </a>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                ⏳ Pending Upload
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {invoiceMilestone.submissionUrl ? (
+                              <a href={invoiceMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                View File <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : isTalent && currentStep === 1 ? (
+                              <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openSubmitDialog(invoiceMilestone.id)}>
+                                <Upload className="w-3 h-3 mr-1" /> Upload
+                              </Button>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                          View File <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-                  </tr>
 
-                  <tr className="hover:bg-slate-50/40 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                          BL
-                        </div>
-                        {m.submissionUrl ? (
-                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
-                            Bill of Lading (BoL) / Shipping Receipt
-                          </a>
-                        ) : (
-                          <span>Bill of Lading (BoL) / Shipping Receipt</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
-                    <td className="px-6 py-4">
-                      {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            ✓ Uploaded
-                          </span>
-                        </a>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          ⏳ Pending Upload
-                        </span>
+                      {bolMilestone && (
+                        <tr className="hover:bg-slate-50/40 transition-colors">
+                          <td className="px-6 py-4 font-semibold text-slate-900">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                                BL
+                              </div>
+                              {bolMilestone.submissionUrl ? (
+                                <a href={bolMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                  Bill of Lading (BoL) / Shipping Receipt
+                                </a>
+                              ) : (
+                                <span>Bill of Lading (BoL) / Shipping Receipt</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                          <td className="px-6 py-4">
+                            {bolMilestone.submissionUrl ? (
+                              <a href={bolMilestone.submissionUrl} target="_blank" rel="noopener noreferrer">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                  ✓ Uploaded
+                                </span>
+                              </a>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                ⏳ Pending Upload
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {bolMilestone.submissionUrl ? (
+                              <a href={bolMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                View File <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : isTalent && currentStep === 1 ? (
+                              <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openSubmitDialog(bolMilestone.id)}>
+                                <Upload className="w-3 h-3 mr-1" /> Upload
+                              </Button>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                          View File <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-                  </tr>
 
-                  <tr className="hover:bg-slate-50/40 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
-                          QC
-                        </div>
-                        {m.submissionUrl ? (
-                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
-                            Quality Certificate (SGS Inspection)
-                          </a>
-                        ) : (
-                          <span>Quality Certificate (SGS Inspection)</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
-                    <td className="px-6 py-4">
-                      {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            ✓ Certified
-                          </span>
-                        </a>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                          ⏳ Pending Upload
-                        </span>
+                      {qcMilestone && (
+                        <tr className="hover:bg-slate-50/40 transition-colors">
+                          <td className="px-6 py-4 font-semibold text-slate-900">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
+                                QC
+                              </div>
+                              {qcMilestone.submissionUrl ? (
+                                <a href={qcMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                  Quality Certificate (SGS Inspection)
+                                </a>
+                              ) : (
+                                <span>Quality Certificate (SGS Inspection)</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                          <td className="px-6 py-4">
+                            {qcMilestone.submissionUrl ? (
+                              <a href={qcMilestone.submissionUrl} target="_blank" rel="noopener noreferrer">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                  ✓ Certified
+                                </span>
+                              </a>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                ⏳ Pending Upload
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {qcMilestone.submissionUrl ? (
+                              <a href={qcMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                View File <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : isTalent && currentStep === 1 ? (
+                              <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openSubmitDialog(qcMilestone.id)}>
+                                <Upload className="w-3 h-3 mr-1" /> Upload
+                              </Button>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {m.submissionUrl ? (
-                        <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                          View File <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-                  </tr>
 
-                  <tr className="hover:bg-slate-50/40 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs">
-                          BE
+                      {beMilestone && (
+                        <tr className="hover:bg-slate-50/40 transition-colors">
+                          <td className="px-6 py-4 font-semibold text-slate-900">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs">
+                                BE
+                              </div>
+                              {beMilestone.importerSubmissionUrl ? (
+                                <a href={beMilestone.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                  Import customs declaration (Bill of Entry)
+                                </a>
+                              ) : (
+                                <span>Import customs declaration (Bill of Entry)</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Importer ({displayClientName})</td>
+                          <td className="px-6 py-4">
+                            {beMilestone.importerSubmissionUrl ? (
+                              <a href={beMilestone.importerSubmissionUrl} target="_blank" rel="noopener noreferrer">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                  ✓ Uploaded
+                                </span>
+                              </a>
+                            ) : allExporterSubmitted ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                ⏳ Pending Upload
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-550/10 text-amber-600 border border-amber-100 font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                ⏳ Awaiting Exporter Docs
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right font-medium">
+                            {beMilestone.importerSubmissionUrl ? (
+                              <a href={beMilestone.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                View File <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : isClient && currentStep === 2 ? (
+                              <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openImporterDialog(beMilestone.id)}>
+                                <Upload className="w-3 h-3 mr-1" /> Upload
+                              </Button>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ) : (
+                    <tr className="hover:bg-slate-50/40 transition-colors">
+                      <td className="px-6 py-4 font-semibold text-slate-900">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                            CI
+                          </div>
+                          {m.submissionUrl ? (
+                            <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                              {m.title}
+                            </a>
+                          ) : (
+                            <span>{m.title}</span>
+                          )}
                         </div>
-                        {m.importerSubmissionUrl ? (
-                          <a href={m.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
-                            Import customs declaration (Bill of Entry)
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
+                      <td className="px-6 py-4">
+                        {m.submissionUrl ? (
+                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              ✓ Uploaded
+                            </span>
                           </a>
                         ) : (
-                          <span>Import customs declaration (Bill of Entry)</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Importer ({displayClientName})</td>
-                    <td className="px-6 py-4">
-                      {m.importerSubmissionUrl ? (
-                        <a href={m.importerSubmissionUrl} target="_blank" rel="noopener noreferrer">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            ✓ Uploaded
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            ⏳ Pending Upload
                           </span>
-                        </a>
-                      ) : m.submissionUrl ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          ⏳ Pending Upload
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-550/10 text-amber-600 border border-amber-100 font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          ⏳ Awaiting Exporter Docs
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right font-medium">
-                      {m.importerSubmissionUrl ? (
-                        <a href={m.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                          View File <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : isClient && currentStep === 2 ? (
-                        <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => setIsImporterSubmitOpen(true)}>
-                          <Upload className="w-3 h-3 mr-1" /> Upload
-                        </Button>
-                      ) : (
-                        <span className="text-slate-300">—</span>
-                      )}
-                    </td>
-                  </tr>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {m.submissionUrl ? (
+                          <a href={m.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                            View File <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : isTalent && currentStep === 1 ? (
+                          <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openSubmitDialog(m.id)}>
+                            <Upload className="w-3 h-3 mr-1" /> Upload
+                          </Button>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -916,6 +951,94 @@ export default function ProjectDetails() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Exporter Upload Dialog */}
+      <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
+        <DialogContent className="bg-white border-slate-200 text-slate-950 rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 font-bold">Upload Cargo Shipping Document</DialogTitle>
+            <DialogDescription className="text-slate-500">
+              Upload your document file or provide a link to it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-slate-700">Choose Document File (PDF, Image, Doc)</Label>
+              <div className="flex items-center gap-3">
+                <label
+                  htmlFor="dialogDocFile"
+                  className="cursor-pointer flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg border border-dashed border-border/70 bg-muted/30 hover:bg-muted/60 transition-colors text-muted-foreground w-full h-16"
+                >
+                  <Upload className="w-5 h-5" />
+                  {uploadFile ? uploadFile.name : "Select file from device"}
+                </label>
+                <input
+                  id="dialogDocFile"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  disabled={isUploadingFile}
+                />
+              </div>
+              {isUploadingFile && <p className="text-xs text-blue-600 animate-pulse mt-1">Uploading file to platform...</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dialogDocUrl" className="text-slate-700">Or enter Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
+              <Input id="dialogDocUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingFile} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending || isUploadingFile} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+              {submitMilestone.isPending ? "Submitting..." : "Submit Document"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Importer Upload Dialog */}
+      <Dialog open={isImporterSubmitOpen} onOpenChange={setIsImporterSubmitOpen}>
+        <DialogContent className="bg-white border-slate-200 text-slate-950 rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 font-bold">Upload Import customs declaration (Bill of Entry)</DialogTitle>
+            <DialogDescription className="text-slate-500">
+              Choose a file from your device or enter the document URL.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-slate-700">Choose Bill of Entry File</Label>
+              <div className="flex items-center gap-3">
+                <label
+                  htmlFor="dialogImporterDocFile"
+                  className="cursor-pointer flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg border border-dashed border-border/70 bg-muted/30 hover:bg-muted/60 transition-colors text-muted-foreground w-full h-16"
+                >
+                  <Upload className="w-5 h-5" />
+                  {importerFile ? importerFile.name : "Select file from device"}
+                </label>
+                <input
+                  id="dialogImporterDocFile"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  className="hidden"
+                  onChange={handleImporterFileChange}
+                  disabled={isUploadingImporter}
+                />
+              </div>
+              {isUploadingImporter && <p className="text-xs text-blue-600 animate-pulse mt-1">Uploading file to platform...</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dialogImporterDocUrl" className="text-slate-700">Or enter Document URL</Label>
+              <Input id="dialogImporterDocUrl" value={importerSubmitUrl} onChange={e => setImporterSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingImporter} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleImporterSubmit} disabled={!importerSubmitUrl || isUploadingImporter} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+              Submit Document
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

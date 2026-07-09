@@ -94,29 +94,44 @@ export default function CreateProject() {
         tradeType,
       } as any);
 
-      // 2. Create single milestone tracking checklist in description
-      const docsString = Object.entries(requiredDocs)
-        .filter(([_, v]) => v)
-        .map(([k]) => {
-          if (k === 'invoice') return 'Commercial Invoice';
-          if (k === 'packingList') return 'Packing List';
-          if (k === 'billOfLading') return 'Bill of Lading';
-          if (k === 'inspectionCertificate') return 'Quality Certificate (SGS)';
-          if (k === 'billOfEntry') return 'Bill of Entry (Customs)';
-          return k;
-        })
-        .join(', ');
+      // 2. Create separate milestones for each checked document type
+      const docTypes = [
+        { key: 'invoice', title: 'Commercial Invoice & Packing List', description: 'Exporter Commercial Invoice & packing specification list' },
+        { key: 'billOfLading', title: 'Bill of Lading (BoL) / Shipping Receipt', description: 'Carrier Bill of Lading or cargo receipt document' },
+        { key: 'inspectionCertificate', title: 'Quality Certificate (SGS Inspection)', description: 'SGS or equivalent quality/quantity certification' },
+        { key: 'billOfEntry', title: 'Import customs declaration (Bill of Entry)', description: 'Importer Bill of Entry customs document' },
+      ];
 
-      await createMilestone.mutateAsync({
-        projectId: project.id,
-        data: {
-          title: "Cargo Escrow Settlement",
-          description: `Gated by: ${docsString}`,
-          amount: Math.round(parseFloat(totalValue) * 100), // Convert to cents
-          deadline: expiresAt,
-          projectId: project.id
+      let createdAnyMilestone = false;
+      for (const doc of docTypes) {
+        if (requiredDocs[doc.key as keyof typeof requiredDocs]) {
+          await createMilestone.mutateAsync({
+            projectId: project.id,
+            data: {
+              title: doc.title,
+              description: doc.description,
+              amount: 0,
+              deadline: expiresAt,
+              projectId: project.id
+            }
+          });
+          createdAnyMilestone = true;
         }
-      });
+      }
+
+      // If they unchecked all, create a fallback milestone
+      if (!createdAnyMilestone) {
+        await createMilestone.mutateAsync({
+          projectId: project.id,
+          data: {
+            title: 'Commercial Invoice & Packing List',
+            description: 'Fallback document checklist',
+            amount: 0,
+            deadline: expiresAt,
+            projectId: project.id
+          }
+        });
+      }
 
       setLocation(`/projects/${project.id}`);
     } catch (err) {
