@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload, XCircle } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload, XCircle, Trophy, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
@@ -518,7 +518,7 @@ export default function ProjectDetails() {
       </Card>
 
       {/* Action Center CTA Banner (Clean Sapphire Blue Alert at the top of the workflow page) */}
-      {m && (
+      {m && !isCompleted && (
         <div className="p-6 rounded-xl border border-blue-100 bg-blue-50/60 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600">
@@ -567,7 +567,7 @@ export default function ProjectDetails() {
                     <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={handleApproveAll}>
                       <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Approve & Verify All Docs
                     </Button>
-                    <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={handleRejectAll}>
+                    <Button variant="outline" className="border-red-200 text-red-650 hover:bg-red-50 font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={handleRejectAll}>
                       <XCircle className="w-3.5 h-3.5 mr-1.5" /> Request Revision
                     </Button>
                   </>
@@ -591,6 +591,40 @@ export default function ProjectDetails() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Congratulations Card shown when trade completed */}
+      {isCompleted && (
+        <Card className="border border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 shadow-md rounded-xl p-6 md:p-8 relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100/40 rounded-full blur-2xl -mr-16 -mt-16"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-100/30 rounded-full blur-2xl -ml-16 -mb-16"></div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 shrink-0 transform hover:scale-105 transition-transform duration-300">
+                <Trophy className="w-7 h-7" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 justify-center md:justify-start">
+                  <span className="text-[10px] text-emerald-600 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Completed</span>
+                  <span className="text-[10px] text-teal-600 bg-teal-100 border border-teal-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5" /> Confirmed</span>
+                </div>
+                <h2 className="text-lg md:text-xl font-bold text-slate-900 mt-2">Congratulations! Trade Successfully Completed</h2>
+                <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed">
+                  All cargo shipping documents and customs declarations have been audited and verified. The escrow funds have been safely released to the Exporter. Thank you for using Pax for a secure B2B trade.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 flex items-center gap-2">
+              <div className="text-right hidden sm:block mr-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Escrow Status</p>
+                <p className="text-sm font-bold text-emerald-600">100% Disbursed</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-250 flex items-center justify-center text-emerald-600 font-bold shadow-sm">
+                ✓
+              </div>
+            </div>
+          </div>
+        </Card>
       )}
 
       {/* Unified Document Checklist & Vault (Clean light bordered design) */}
