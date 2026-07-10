@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
@@ -558,10 +558,19 @@ export default function ProjectDetails() {
             {/* Importer Verifies Shipping Documents */}
             {isClient && currentStep === 2 && (
               <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
-                {beMilestone && !beMilestone.importerSubmissionUrl && (
+                {beMilestone && !beMilestone.importerSubmissionUrl ? (
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide animate-pulse" onClick={() => openImporterDialog(beMilestone.id)}>
                     <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Bill of Entry
                   </Button>
+                ) : (
+                  <>
+                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={handleApproveAll}>
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Approve & Verify All Docs
+                    </Button>
+                    <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide" onClick={handleRejectAll}>
+                      <XCircle className="w-3.5 h-3.5 mr-1.5" /> Request Revision
+                    </Button>
+                  </>
                 )}
               </div>
             )}
