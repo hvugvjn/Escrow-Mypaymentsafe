@@ -47,6 +47,7 @@ export default function ProjectDetails() {
   const [isUploadingImporter, setIsUploadingImporter] = useState(false);
   const [importerSubmitUrl, setImporterSubmitUrl] = useState("");
   const [isImporterSubmitOpen, setIsImporterSubmitOpen] = useState(false);
+  const [isReleasingEscrow, setIsReleasingEscrow] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -114,7 +115,7 @@ export default function ProjectDetails() {
         setIsImporterSubmitOpen(false);
         setImporterSubmitUrl("");
         setImporterFile(null);
-        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
+        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', id] });
         toast({ title: "Success", description: "Bill of Entry document submitted successfully!" });
       } else {
         toast({ title: "Error", description: "Failed to submit document", variant: "destructive" });
@@ -311,8 +312,6 @@ export default function ProjectDetails() {
   } else if (hasBothParticipants) {
     currentStep = 1;
   }
-
-  const [isReleasingEscrow, setIsReleasingEscrow] = useState(false);
 
   const handleReleaseEscrow = async () => {
     setIsReleasingEscrow(true);
