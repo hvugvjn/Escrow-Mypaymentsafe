@@ -1240,10 +1240,10 @@ export default function ProjectDetails() {
         setIsQrModalOpen(open);
         if (!open) setPaymentStep("qr");
       }}>
-        <DialogContent className="max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-0 overflow-hidden">
+        <DialogContent className="max-w-md max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-slate-100 p-0 overflow-hidden flex flex-col justify-between">
           {paymentStep === "qr" && (
             <>
-              <DialogHeader className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 pb-5 relative">
+              <DialogHeader className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 pb-4 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 font-bold shrink-0">
                     <CreditCard className="w-5 h-5" />
@@ -1257,39 +1257,39 @@ export default function ProjectDetails() {
                 </div>
               </DialogHeader>
 
-              <div className="p-6 space-y-5 bg-slate-50/50">
+              <div className="p-5 space-y-4 bg-slate-50/50 overflow-y-auto max-h-[60vh]">
                 {/* Amount Callout — Auto-calculated from project total */}
-                <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-4 flex items-center justify-between">
+                <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3.5 flex items-center justify-between shadow-sm">
                   <div>
-                    <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Total Contract Amount</p>
+                    <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Total Contract Amount</p>
                     <p className="text-2xl font-black text-emerald-950 mt-0.5">{formatMoney(totalAmountCents)}</p>
                   </div>
                   <div className="text-right">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-sm">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-600 text-white shadow-sm">
                       <ShieldCheck className="w-3 h-3 mr-1" /> 100% Protected
                     </span>
                   </div>
                 </div>
 
                 {/* QR Code Container */}
-                <div className="flex flex-col items-center justify-center p-5 bg-white border border-slate-200/80 rounded-2xl shadow-sm space-y-3">
+                <div className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/80 rounded-2xl shadow-sm space-y-2.5">
                   <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-md">
                     <img 
                       src="/escrow-qr.png" 
                       alt="PAX Escrow GPay UPI QR Code" 
-                      className="w-52 h-52 object-contain rounded-lg"
+                      className="w-44 h-44 object-contain rounded-lg"
                     />
                   </div>
-                  <p className="text-xs font-semibold text-slate-600 text-center leading-snug">
+                  <p className="text-[11px] font-semibold text-slate-600 text-center leading-snug">
                     Scan with <span className="font-bold text-slate-900">GPay, PhonePe, Paytm</span> or any UPI App to deposit funds into Escrow Vault.
                   </p>
                 </div>
 
                 {/* Merchant / Trade Details */}
-                <div className="bg-white border border-slate-200/60 rounded-xl p-3.5 space-y-2 text-xs">
+                <div className="bg-white border border-slate-200/60 rounded-xl p-3 space-y-1.5 text-xs">
                   <div className="flex justify-between text-slate-600">
                     <span className="font-medium">Trade Contract:</span>
-                    <span className="font-bold text-slate-900 truncate max-w-[200px]">{project.title}</span>
+                    <span className="font-bold text-slate-900 truncate max-w-[180px]">{project.title}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span className="font-medium">Escrow Beneficiary:</span>
@@ -1302,12 +1302,12 @@ export default function ProjectDetails() {
                 </div>
               </div>
 
-              <DialogFooter className="bg-slate-100/80 p-4 px-6 border-t border-slate-200/60">
+              <DialogFooter className="bg-white p-4 px-6 border-t border-slate-200/60 shrink-0 sticky bottom-0 z-20">
                 <Button
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl py-3 shadow-md transition-all animate-pulse"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-xl py-3.5 shadow-lg transition-all animate-pulse"
                   onClick={handleFinishPayment}
                 >
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  <CheckCircle2 className="w-5 h-5 mr-2" />
                   Finish Payment
                 </Button>
               </DialogFooter>

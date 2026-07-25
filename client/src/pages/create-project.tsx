@@ -102,6 +102,12 @@ export default function CreateProject() {
         { key: 'billOfEntry', title: 'Import customs declaration (Bill of Entry)', description: 'Importer Bill of Entry customs document' },
       ];
 
+      // 2. Calculate milestone amounts from totalValue (in cents/paise)
+      const parsedTotal = parseFloat(totalValue) || 0;
+      const totalAmountCents = Math.round(parsedTotal * 100);
+      const activeDocsCount = docTypes.filter(d => requiredDocs[d.key as keyof typeof requiredDocs]).length || 1;
+      const perMilestoneAmount = Math.round(totalAmountCents / activeDocsCount);
+
       let createdAnyMilestone = false;
       for (const doc of docTypes) {
         if (requiredDocs[doc.key as keyof typeof requiredDocs]) {
@@ -110,7 +116,7 @@ export default function CreateProject() {
             data: {
               title: doc.title,
               description: doc.description,
-              amount: 0,
+              amount: perMilestoneAmount,
               deadline: expiresAt,
               projectId: project.id
             }
@@ -124,9 +130,9 @@ export default function CreateProject() {
         await createMilestone.mutateAsync({
           projectId: project.id,
           data: {
-            title: 'Commercial Invoice & Packing List',
-            description: 'Fallback document checklist',
-            amount: 0,
+            title: "General Escrow Contract Deliverable",
+            description: "General trade contract milestone",
+            amount: totalAmountCents,
             deadline: expiresAt,
             projectId: project.id
           }
