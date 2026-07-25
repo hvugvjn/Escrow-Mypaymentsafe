@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload, XCircle, Trophy, Sparkles } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload, XCircle, Trophy, Sparkles, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
@@ -48,6 +48,7 @@ export default function ProjectDetails() {
   const [importerSubmitUrl, setImporterSubmitUrl] = useState("");
   const [isImporterSubmitOpen, setIsImporterSubmitOpen] = useState(false);
   const [isReleasingEscrow, setIsReleasingEscrow] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -611,7 +612,7 @@ export default function ProjectDetails() {
             {isClient && currentStep === 2 && (
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide animate-pulse"
-                onClick={() => fundProject.mutate(project.id)}
+                onClick={() => setIsQrModalOpen(true)}
                 disabled={fundProject.isPending}
               >
                 <CreditCard className="w-3.5 h-3.5 mr-1.5" />
@@ -886,7 +887,7 @@ export default function ProjectDetails() {
                                 <Button
                                   variant="outline"
                                   className="text-xs bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded-lg h-auto font-bold shadow-sm"
-                                  onClick={() => fundProject.mutate(project.id)}
+                                  onClick={() => setIsQrModalOpen(true)}
                                   disabled={fundProject.isPending}
                                 >
                                   <Lock className="w-3 h-3 mr-1 text-amber-600" />
@@ -1214,6 +1215,91 @@ export default function ProjectDetails() {
           <DialogFooter>
             <Button onClick={handleImporterSubmit} disabled={!importerSubmitUrl || isUploadingImporter} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
               Submit Document
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Escrow Payment Dialog */}
+      <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
+        <DialogContent className="max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-0 overflow-hidden">
+          <DialogHeader className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 pb-5 relative">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 font-bold shrink-0">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold text-white tracking-tight">PAX Escrow Vault — QR Payment</DialogTitle>
+                <DialogDescription className="text-xs text-slate-300 mt-0.5">
+                  Deposit contract funds into secure escrow vault
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="p-6 space-y-5 bg-slate-50/50">
+            {/* Amount Callout */}
+            <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-4 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Total Contract Amount</p>
+                <p className="text-2xl font-black text-emerald-950 mt-0.5">{formatMoney(project.totalAmount || 0)}</p>
+              </div>
+              <div className="text-right">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-sm">
+                  <ShieldCheck className="w-3 h-3 mr-1" /> 100% Protected
+                </span>
+              </div>
+            </div>
+
+            {/* QR Code Container */}
+            <div className="flex flex-col items-center justify-center p-5 bg-white border border-slate-200/80 rounded-2xl shadow-sm space-y-3">
+              <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-md">
+                <img 
+                  src="/escrow-qr.png" 
+                  alt="PAX Escrow GPay UPI QR Code" 
+                  className="w-52 h-52 object-contain rounded-lg"
+                />
+              </div>
+              <p className="text-xs font-semibold text-slate-600 text-center leading-snug">
+                Scan with <span className="font-bold text-slate-900">GPay, PhonePe, Paytm</span> or any UPI App to deposit funds into Escrow Vault.
+              </p>
+            </div>
+
+            {/* Merchant / Trade Details */}
+            <div className="bg-white border border-slate-200/60 rounded-xl p-3.5 space-y-2 text-xs">
+              <div className="flex justify-between text-slate-600">
+                <span className="font-medium">Trade Contract:</span>
+                <span className="font-bold text-slate-900 truncate max-w-[200px]">{project.title}</span>
+              </div>
+              <div className="flex justify-between text-slate-600">
+                <span className="font-medium">Escrow Beneficiary:</span>
+                <span className="font-bold text-slate-900">Exporter ({displayTalentName})</span>
+              </div>
+              <div className="flex justify-between text-slate-600">
+                <span className="font-medium">Status:</span>
+                <span className="font-bold text-amber-600">⏳ Pending Deposit Confirmation</span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="bg-slate-100/80 p-4 px-6 border-t border-slate-200/60 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto text-xs font-bold border-slate-300 hover:bg-slate-200 text-slate-700 rounded-xl px-5 py-2.5"
+              onClick={() => setIsQrModalOpen(false)}
+            >
+              <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Back
+            </Button>
+            <Button
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl px-6 py-2.5 shadow-md transition-all"
+              onClick={async () => {
+                setIsQrModalOpen(false);
+                await fundProject.mutateAsync(project.id);
+              }}
+              disabled={fundProject.isPending}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              {fundProject.isPending ? "Securing Escrow..." : "I Have Paid — Mark Escrow Funded"}
             </Button>
           </DialogFooter>
         </DialogContent>
