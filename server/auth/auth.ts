@@ -113,6 +113,13 @@ export async function setupAuth(app: Express) {
         res.redirect("/dashboard");
       }
     );
+  } else {
+    app.get("/api/auth/google", (_req, res) => {
+      res.redirect("/login?error=google_not_configured");
+    });
+    app.get("/api/auth/google/callback", (_req, res) => {
+      res.redirect("/login?error=google_not_configured");
+    });
   }
 
   // ── Check if email already exists (new vs returning user) ──────────────────
