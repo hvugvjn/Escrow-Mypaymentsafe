@@ -39,23 +39,28 @@ export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
 
-  // ── Temporary debug endpoint — remove after fixing Google OAuth ───────────
+  // ── Debug endpoint — inspect full Client ID ───────────────────
   app.get("/api/debug/oauth", (req, res) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID?.trim() || "";
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim() || "";
     res.json({
-      hasClientId: !!process.env.GOOGLE_CLIENT_ID,
-      clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.slice(0, 20) + "...",
-      hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
-      callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+      hasClientId: !!clientId,
+      fullClientId: clientId,
+      hasClientSecret: !!clientSecret,
+      callbackUrl: process.env.GOOGLE_CALLBACK_URL?.trim(),
     });
   });
 
   // ── Google OAuth ──────────────────────────────────────────────────────────
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+
+  if (googleClientId && googleClientSecret) {
     passport.use(new GoogleStrategy(
       {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: (process.env.NODE_ENV === "production" ? process.env.GOOGLE_CALLBACK_URL : undefined) || "/api/auth/google/callback",
+        clientID: googleClientId,
+        clientSecret: googleClientSecret,
+        callbackURL: (process.env.NODE_ENV === "production" ? process.env.GOOGLE_CALLBACK_URL?.trim() : undefined) || "/api/auth/google/callback",
       },
       async (_accessToken, _refreshToken, profile, done) => {
         try {
