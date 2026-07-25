@@ -191,10 +191,6 @@ export default function Home() {
 
                 <motion.div className="relative z-10 max-w-5xl mx-auto w-full" initial="hidden" animate="visible" variants={fadeUp}>
                     {/* Badge */}
-                    <motion.div custom={0} variants={fadeUp} className="inline-flex items-center gap-2 bg-[#122b5e]/40 border border-blue-500/20 rounded-full px-3.5 py-1 text-xs text-blue-300 mb-6 font-medium">
-                        <Globe className="w-3.5 h-3.5 text-blue-400" />
-                        RBI-Compliant Transaction & Escrow Infrastructure
-                    </motion.div>
 
                     {/* Headline */}
                     <motion.h1 custom={1} variants={fadeUp} className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.1] mb-4 tracking-tight text-white font-sans">
@@ -392,12 +388,6 @@ export default function Home() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
-                        {
-                            icon: ShieldCheck,
-                            title: "RBI-Regulated Safeguards",
-                            desc: "All escrow accounts are structured via RBI-compliant nodal banking partners. Funds sit protected inside authorized commercial banks.",
-                            tag: "Regulatory"
-                        },
                         {
                             icon: Scale,
                             title: "Independent Arbitration",

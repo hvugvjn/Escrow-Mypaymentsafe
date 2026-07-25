@@ -230,7 +230,6 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
             {[
-              "RBI-Compliant Escrow Vaults",
               "Logistics & Cargo Verification",
               "Technical & Custom Arbitration",
               "Full Transaction Audit Logs"
