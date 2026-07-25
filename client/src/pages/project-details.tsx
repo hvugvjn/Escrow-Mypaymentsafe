@@ -17,6 +17,7 @@ import { format, isPast } from "date-fns";
 
 export default function ProjectDetails() {
   const { id } = useParams();
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data, isLoading } = useProject(id!);
@@ -332,8 +333,6 @@ export default function ProjectDetails() {
   };
 
   // Invitation Workspace view for unjoined users (Figma Wireframe Inspired)
-  const [, setLocation] = useLocation();
-
   // Determine what role the joining user will get
   const joiningAs = !project.buyerId ? 'Importer (Buyer)' : !project.freelancerId ? 'Exporter (Seller)' : 'Trade Partner';
   const joiningAsColor = !project.buyerId ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
@@ -522,14 +521,14 @@ export default function ProjectDetails() {
               return (
                 <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${isCompleted ? "bg-emerald-500 text-white shadow-sm" :
-                      isCurrent ? "bg-blue-600 text-white shadow-md ring-4 ring-blue-100" :
-                        "bg-slate-100 text-slate-400 border border-slate-200"
+                    isCurrent ? "bg-blue-600 text-white shadow-md ring-4 ring-blue-100" :
+                      "bg-slate-100 text-slate-400 border border-slate-200"
                     }`}>
                     {isCompleted ? <Check className="w-4 h-4 text-white" /> : <span className="text-xs">{step.num}</span>}
                   </div>
                   <span className={`text-[11px] font-semibold tracking-wide transition-all ${isCurrent ? "text-blue-600 font-bold" :
-                      isCompleted ? "text-emerald-600" :
-                        "text-slate-400"
+                    isCompleted ? "text-emerald-600" :
+                      "text-slate-400"
                     }`}>{step.label}</span>
                 </div>
               );
