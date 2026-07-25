@@ -34,12 +34,14 @@ export function PaxLogo({ className = "", white = false, textOnly = false }: Pax
     }
 
     const logoSrc = white ? "/pax-light-logo.png" : "/pax-dark-logo.png";
+    const hasHeightClass = /\bh-\d+|\bh-\[\w+\]/.test(className);
+    const heightClass = hasHeightClass ? "" : "h-7 md:h-8";
 
     return (
         <img 
             src={logoSrc} 
             alt="pax logo" 
-            className={`h-8 w-auto object-contain inline-block shrink-0 ${className}`} 
+            className={`${heightClass} w-auto object-contain inline-block shrink-0 align-middle ${className}`} 
         />
     );
 }
