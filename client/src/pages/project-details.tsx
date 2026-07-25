@@ -201,8 +201,9 @@ export default function ProjectDetails() {
   const isParticipant = project.createdBy === user?.id || isClient || isTalent;
 
   // Clean, custom B2B display names
-  const displayClientName = clientName === 'Awaiting Buyer' ? 'Awaiting Importer' : clientName;
-  const displayTalentName = talentName === 'Awaiting Freelancer' ? 'Awaiting Exporter' : talentName;
+  const loggedInUserName = user ? ([user.firstName, user.lastName].filter(Boolean).join(' ').trim() || (user.email ? user.email.split('@')[0] : '')) : '';
+  const displayClientName = (isClient && loggedInUserName) ? loggedInUserName : (clientName === 'Awaiting Buyer' || clientName === 'Awaiting Importer' ? 'Awaiting Importer' : clientName);
+  const displayTalentName = (isTalent && loggedInUserName) ? loggedInUserName : (talentName === 'Awaiting Freelancer' || talentName === 'Awaiting Exporter' ? 'Awaiting Exporter' : talentName);
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
 
@@ -311,22 +312,30 @@ export default function ProjectDetails() {
     currentStep = 1;
   }
 
-  const handleApproveAll = async () => {
-    if (!milestones) return;
+  const [isReleasingEscrow, setIsReleasingEscrow] = useState(false);
+
+  const handleReleaseEscrow = async () => {
+    setIsReleasingEscrow(true);
     try {
-      for (const milestone of milestones) {
-        if (milestone.status !== 'RELEASED' && milestone.status !== 'APPROVED') {
-          const res = await fetch(`/api/milestones/${milestone.id}/approve`, {
-            method: 'POST',
-          });
-          if (!res.ok) throw new Error('Failed to approve');
-        }
-      }
+      const res = await fetch(`/api/projects/${project.id}/release-escrow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to release escrow funds');
       queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
-      toast({ title: 'Success', description: 'All documents have been approved successfully!' });
+      toast({
+        title: 'Escrow Funds Released! 🎉',
+        description: 'The trade escrow funds have been successfully disbursed to the Exporter and the contract is now completed.',
+      });
     } catch (err) {
-      toast({ title: 'Error', description: 'Network error during approval', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Network error during escrow release', variant: 'destructive' });
+    } finally {
+      setIsReleasingEscrow(false);
     }
+  };
+
+  const handleApproveAll = async () => {
+    await handleReleaseEscrow();
   };
 
   const handleRejectAll = async () => {
@@ -1018,6 +1027,33 @@ export default function ProjectDetails() {
               </div>
             )}
           </CardContent>
+        </Card>
+      )}
+
+      {/* Importer Escrow Release Button Card (Shown when documents are uploaded but contract not completed) */}
+      {isClient && !isCompleted && (
+        <Card className="border border-emerald-200 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 shadow-md rounded-xl p-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md shrink-0">
+                <DollarSign className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Goods Received Confirmation & Escrow Release</h3>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  After receiving your cargo shipment, click this button to confirm delivery and disburse escrow funds to the Exporter ({displayTalentName}).
+                </p>
+              </div>
+            </div>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all text-xs tracking-wide shrink-0 animate-pulse"
+              onClick={handleReleaseEscrow}
+              disabled={isReleasingEscrow}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+              {isReleasingEscrow ? "Releasing Payout..." : "Confirm Goods Received & Release Escrow Funds"}
+            </Button>
+          </div>
         </Card>
       )}
 

@@ -106,24 +106,22 @@ export async function registerRoutes(
     let buyerName = 'Awaiting Buyer';
     let freelancerName = 'Awaiting Freelancer';
 
+    const getDisplayName = (u: any, fallback: string) => {
+      if (!u) return fallback;
+      const fn = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
+      if (fn) return fn;
+      if (u.email) return u.email.split('@')[0];
+      if (u.companyName && u.companyName.trim()) return u.companyName.trim();
+      return fallback;
+    };
+
     if (project.buyerId) {
       const buyer = await storage.getUser(project.buyerId);
-      if (buyer) {
-        buyerName =
-          (buyer.companyName && buyer.companyName.trim()) ||
-          [buyer.firstName, buyer.lastName].filter(Boolean).join(' ') ||
-          (buyer.email ? buyer.email.split('@')[0] : '') ||
-          'Company';
-      }
+      buyerName = getDisplayName(buyer, 'Awaiting Importer');
     }
     if (project.freelancerId) {
       const freelancer = await storage.getUser(project.freelancerId);
-      if (freelancer) {
-        freelancerName =
-          [freelancer.firstName, freelancer.lastName].filter(Boolean).join(' ') ||
-          (freelancer.email ? freelancer.email.split('@')[0] : '') ||
-          'Freelancer';
-      }
+      freelancerName = getDisplayName(freelancer, 'Awaiting Exporter');
     }
 
     res.json({ project, milestones, escrow, clientName: buyerName, talentName: freelancerName });
@@ -500,6 +498,52 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error('[APPROVE ERROR]', err);
       res.status(500).json({ message: err.message || 'Failed to approve work' });
+    }
+  });
+
+  // ── RELEASE ESCROW FUNDS & COMPLETE TRADE ────────────────────────────────────
+  app.post('/api/projects/:id/release-escrow', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = req.params.id;
+      const userId = req.user.claims.sub;
+      const project = await storage.getProject(projectId);
+      if (!project) return res.status(404).json({ message: 'Project not found' });
+
+      if (project.buyerId !== userId && project.createdBy !== userId) {
+        return res.status(403).json({ message: 'Only buyer can release escrow funds' });
+      }
+
+      // 1. Mark all milestones as RELEASED
+      const milestones = await storage.getMilestones(projectId);
+      for (const m of milestones) {
+        await storage.updateMilestone(m.id, { status: 'RELEASED' });
+      }
+
+      // 2. Mark project status as COMPLETED
+      const updatedProject = await storage.updateProjectStatus(projectId, 'COMPLETED');
+
+      // 3. Mark escrow as fully released
+      const escrow = await storage.getEscrow(projectId);
+      if (escrow) {
+        await storage.updateEscrow(escrow.id, {
+          releasedAmount: escrow.totalAmount,
+          remainingAmount: 0,
+          funded: true,
+        });
+      }
+
+      // 4. Send email notification to exporter
+      if (project.freelancerId) {
+        const freelancer = await storage.getUser(project.freelancerId);
+        if (freelancer?.email) {
+          sendPaymentReleasedEmail(freelancer.email, project.title, escrow?.totalAmount || 0).catch(console.error);
+        }
+      }
+
+      res.json(updatedProject);
+    } catch (err: any) {
+      console.error('[RELEASE ESCROW ERROR]', err);
+      res.status(500).json({ message: err?.message || 'Failed to release escrow funds' });
     }
   });
 
