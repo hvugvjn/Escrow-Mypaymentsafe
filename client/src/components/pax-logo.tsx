@@ -19,17 +19,27 @@ interface PaxLogoProps {
 }
 
 export function PaxLogo({ className = "", white = false, textOnly = false }: PaxLogoProps) {
-    // Standardize branding: Purely typographic for maximum precision and scalability
-    // Uses Inter (Black 900) for an authoritative, matured tech feel
+    if (textOnly) {
+        return (
+            <span 
+                className={`font-["Inter"] font-[900] lowercase tracking-tighter inline-flex items-center ${className}`}
+                style={{ 
+                    color: white ? "#ffffff" : "#122b5e",
+                    lineHeight: '1'
+                }}
+            >
+                pax
+            </span>
+        );
+    }
+
+    const logoSrc = white ? "/pax-light-logo.png" : "/pax-dark-logo.png";
+
     return (
-        <span 
-            className={`font-["Inter"] font-[900] lowercase tracking-tighter inline-flex items-center ${className}`}
-            style={{ 
-                color: white ? "#ffffff" : "#122b5e",
-                lineHeight: '1'
-            }}
-        >
-            pax
-        </span>
+        <img 
+            src={logoSrc} 
+            alt="pax logo" 
+            className={`h-8 w-auto object-contain inline-block shrink-0 ${className}`} 
+        />
     );
 }
