@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /privacy
+Allow: /terms
+Allow: /support
+Allow: /info/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /inbox
+Disallow: /admin
+Disallow: /projects/
+
+Sitemap: https://www.paxdot.com/sitemap.xml
