@@ -246,7 +246,7 @@ export async function registerRoutes(
     let escrow = await storage.getEscrow(project.id);
     if (!escrow) {
       const milestones = await storage.getMilestones(project.id);
-      const totalAmount = milestones.reduce((sum, m) => sum + m.amount, 0) || 10000;
+      const totalAmount = milestones.reduce((sum, m) => sum + m.amount, 0) || 5000000;
       escrow = await storage.createEscrow({
         projectId: project.id,
         totalAmount,

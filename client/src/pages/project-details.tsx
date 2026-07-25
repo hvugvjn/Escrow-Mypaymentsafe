@@ -209,7 +209,7 @@ export default function ProjectDetails() {
   const displayTalentName = (isTalent && loggedInUserName) ? loggedInUserName : (talentName === 'Awaiting Freelancer' || talentName === 'Awaiting Exporter' ? 'Awaiting Exporter' : talentName);
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
-  const totalAmountCents = escrow?.totalAmount || milestones?.reduce((acc, m) => acc + (m.amount || 0), 0) || 0;
+  const totalAmountCents = escrow?.totalAmount || milestones?.reduce((acc, m) => acc + (m.amount || 0), 0) || (project as any).budget || 5000000;
 
   const handleFinishPayment = async () => {
     setPaymentStep("verifying");
