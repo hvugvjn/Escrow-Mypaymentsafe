@@ -243,10 +243,18 @@ export async function registerRoutes(
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
     const userId = req.user.claims.sub;
-    if (project.buyerId !== userId) return res.status(403).json({ message: 'Only buyer can fund' });
+    if (project.buyerId !== userId && project.createdBy !== userId) return res.status(403).json({ message: 'Only buyer can fund' });
 
-    const escrow = await storage.getEscrow(project.id);
-    if (!escrow) return res.status(404).json({ message: 'Escrow not found' });
+    let escrow = await storage.getEscrow(project.id);
+    if (!escrow) {
+      const milestones = await storage.getMilestones(project.id);
+      const totalAmount = milestones.reduce((sum, m) => sum + m.amount, 0) || 10000;
+      escrow = await storage.createEscrow({
+        projectId: project.id,
+        totalAmount,
+        remainingAmount: totalAmount,
+      });
+    }
 
     const updatedEscrow = await storage.updateEscrow(escrow.id, {
       funded: true,

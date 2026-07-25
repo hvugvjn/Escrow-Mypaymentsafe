@@ -97,8 +97,8 @@ export default function CreateProject() {
       // 2. Create separate milestones for each checked document type
       const docTypes = [
         { key: 'invoice', title: 'Commercial Invoice & Packing List', description: 'Exporter Commercial Invoice & packing specification list' },
-        { key: 'billOfLading', title: 'Bill of Lading (BoL) / Shipping Receipt', description: 'Carrier Bill of Lading or cargo receipt document' },
         { key: 'inspectionCertificate', title: 'Quality Certificate (SGS Inspection)', description: 'SGS or equivalent quality/quantity certification' },
+        { key: 'billOfLading', title: 'Bill of Lading (BoL) / Shipping Receipt', description: 'Carrier Bill of Lading or cargo receipt document' },
         { key: 'billOfEntry', title: 'Import customs declaration (Bill of Entry)', description: 'Importer Bill of Entry customs document' },
       ];
 
