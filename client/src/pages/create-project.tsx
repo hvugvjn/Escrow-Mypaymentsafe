@@ -146,13 +146,35 @@ export default function CreateProject() {
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-2">New Escrow Transaction</h1>
           <p className="text-slate-500 text-sm max-w-xl mx-auto">
-            Choose your role in this trade contract. PAX locks payment inside regulated escrow and structures the inspection milestones.
+            Choose your role in this trade contract. You create the contract and share a <span className="font-bold text-slate-700">6-character code</span> with your trade partner so they can join.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto pt-4">
+        {/* How it works banner */}
+        <div className="max-w-3xl mx-auto bg-slate-50 border border-slate-200 rounded-xl px-6 py-4">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">How it works</p>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="space-y-1">
+              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center mx-auto">1</div>
+              <p className="text-xs font-semibold text-slate-700">You Create</p>
+              <p className="text-[10px] text-slate-400 leading-tight">Pick your role — Importer or Exporter</p>
+            </div>
+            <div className="space-y-1">
+              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center mx-auto">2</div>
+              <p className="text-xs font-semibold text-slate-700">Share Code</p>
+              <p className="text-[10px] text-slate-400 leading-tight">Send the 6-char code to your partner</p>
+            </div>
+            <div className="space-y-1">
+              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center mx-auto">3</div>
+              <p className="text-xs font-semibold text-slate-700">Partner Joins</p>
+              <p className="text-[10px] text-slate-400 leading-tight">They join as the opposite role</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto pt-2">
           {/* Import Card */}
-          <div 
+          <div
             onClick={() => {
               setTradeType("import");
               setTitle("Import Trade Escrow Agreement");
@@ -163,16 +185,19 @@ export default function CreateProject() {
               <Anchor className="w-6 h-6 text-blue-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">Import Transaction</h3>
-            <p className="text-sm text-slate-500 leading-relaxed mb-6">
-              You are the <strong>Buyer / Importer</strong> securing goods or cargo from a vendor. Payouts release only after customs clearance, weights check, or delivery inspection.
+            <p className="text-sm text-slate-500 leading-relaxed mb-4">
+              You are the <strong>Buyer / Importer</strong> securing goods or cargo from a vendor. Share the code with the Exporter to join.
             </p>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-blue-500 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-lg w-fit mb-6">
+              You = Importer → Exporter joins via code
+            </div>
             <div className="mt-auto text-xs font-semibold text-blue-600 uppercase tracking-wider flex items-center gap-1.5">
               Select Import <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </div>
 
           {/* Export Card */}
-          <div 
+          <div
             onClick={() => {
               setTradeType("export");
               setTitle("Export Trade Escrow Agreement");
@@ -183,9 +208,12 @@ export default function CreateProject() {
               <Truck className="w-6 h-6 text-emerald-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors">Export Transaction</h3>
-            <p className="text-sm text-slate-500 leading-relaxed mb-6">
-              You are the <strong>Seller / Exporter</strong> shipping raw materials or goods. Secures buyer's funds inside the escrow vault before you load shipping cargo.
+            <p className="text-sm text-slate-500 leading-relaxed mb-4">
+              You are the <strong>Seller / Exporter</strong> shipping raw materials or goods. Share the code with the Importer to join.
             </p>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg w-fit mb-6">
+              You = Exporter → Importer joins via code
+            </div>
             <div className="mt-auto text-xs font-semibold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
               Select Export <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -232,25 +260,25 @@ export default function CreateProject() {
           <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title" className="text-slate-700 text-xs font-bold uppercase tracking-wider">Contract Title</Label>
-              <Input 
-                id="title" 
-                required 
-                value={title} 
-                onChange={e => setTitle(e.target.value)} 
-                placeholder="e.g. Bulk Wheat Shipment Mumbai to Dubai" 
+              <Input
+                id="title"
+                required
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="e.g. Bulk Wheat Shipment Mumbai to Dubai"
                 className="bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-blue-500"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description" className="text-slate-700 text-xs font-bold uppercase tracking-wider">Contract Terms & Specifications</Label>
-              <Textarea 
-                id="description" 
-                required 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                placeholder="Describe the specs, quality criteria, logistics freights, and weight inspection terms..." 
+              <Textarea
+                id="description"
+                required
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="Describe the specs, quality criteria, logistics freights, and weight inspection terms..."
                 className="bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-blue-500"
-                rows={4} 
+                rows={4}
               />
             </div>
             <div className="space-y-2">
@@ -311,16 +339,16 @@ export default function CreateProject() {
                 <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-semibold">
                   {getCurrencySymbol(currency)}
                 </span>
-                <Input 
+                <Input
                   id="totalValue"
-                  type="number" 
-                  step="0.01" 
-                  min="0.01" 
-                  required 
-                  className="pl-8 bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-blue-500 font-bold" 
-                  value={totalValue} 
-                  onChange={e => setTotalValue(e.target.value)} 
-                  placeholder="0.00" 
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  className="pl-8 bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-blue-500 font-bold"
+                  value={totalValue}
+                  onChange={e => setTotalValue(e.target.value)}
+                  placeholder="0.00"
                 />
               </div>
               <p className="text-xs text-slate-400">

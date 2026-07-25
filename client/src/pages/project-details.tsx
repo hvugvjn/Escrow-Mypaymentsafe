@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProject, useFundProject, useJoinProject } from "@/hooks/use-projects";
 import { useSubmitMilestone, useApproveMilestone, useRequestRevision } from "@/hooks/use-milestones";
@@ -193,7 +193,7 @@ export default function ProjectDetails() {
   if (!data || !data.project) return <div className="p-8 text-center text-destructive">Project not found.</div>;
 
   const { project, milestones, escrow, clientName, talentName } = data;
-  
+
   // Participant Checks based strictly on project record (not generic roles)
   const isClient = user?.id === project.buyerId;
   const isTalent = user?.id === project.freelancerId;
@@ -231,12 +231,12 @@ export default function ProjectDetails() {
         const cashfree = (window as any).Cashfree({
           mode: "production",
         });
-        
+
         let checkoutOptions = {
           paymentSessionId: data.paymentSessionId,
-          redirectTarget: "_self", 
+          redirectTarget: "_self",
         };
-        
+
         try {
           cashfree.checkout(checkoutOptions);
         } catch (sdkErr) {
@@ -245,9 +245,9 @@ export default function ProjectDetails() {
         }
       } else {
         if (data.message?.includes('authentication Failed')) {
-          toast({ 
-            title: 'Configuration Error', 
-            description: 'The Cashfree API Keys provided to the server are invalid or expired. Please update CASHFREE_APP_ID and CASHFREE_SECRET_KEY.', 
+          toast({
+            title: 'Configuration Error',
+            description: 'The Cashfree API Keys provided to the server are invalid or expired. Please update CASHFREE_APP_ID and CASHFREE_SECRET_KEY.',
             variant: 'destructive',
             duration: 10000
           });
@@ -332,6 +332,12 @@ export default function ProjectDetails() {
   };
 
   // Invitation Workspace view for unjoined users (Figma Wireframe Inspired)
+  const [, setLocation] = useLocation();
+
+  // Determine what role the joining user will get
+  const joiningAs = !project.buyerId ? 'Importer (Buyer)' : !project.freelancerId ? 'Exporter (Seller)' : 'Trade Partner';
+  const joiningAsColor = !project.buyerId ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
+
   if (!isParticipant && project.status === 'WAITING_FOR_ACCEPTANCE') {
     return (
       <div className="max-w-md mx-auto py-12 px-4 animate-in fade-in duration-300">
@@ -349,17 +355,28 @@ export default function ProjectDetails() {
               <h3 className="text-sm font-bold text-slate-900">{project.title}</h3>
               <p className="text-xs text-slate-600 leading-relaxed mt-1">{project.description}</p>
               <p className="text-xs text-slate-500 mt-2">
-                Created by: <span className="font-semibold text-slate-800">{displayClientName || 'Trade Partner'}</span>
+                Created by: <span className="font-semibold text-slate-800">{displayClientName || displayTalentName || 'Trade Partner'}</span>
               </p>
+            </div>
+
+            {/* Role badge — shows what role the user will take on joining */}
+            <div className={`flex items-center gap-3 p-3 rounded-xl border ${joiningAsColor}`}>
+              <Users className="w-4 h-4 shrink-0" />
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">You will join as</p>
+                <p className="text-sm font-bold">{joiningAs}</p>
+              </div>
             </div>
 
             <form onSubmit={async (e) => {
               e.preventDefault();
               if (!joinCode.trim()) return;
               try {
-                await joinProject.mutateAsync(joinCode.trim().toUpperCase());
+                const joined = await joinProject.mutateAsync(joinCode.trim().toUpperCase());
                 toast({ title: "Joined!", description: "You have successfully joined the trade contract." });
                 queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
+                // Redirect to force full project view to reload
+                setLocation(`/projects/${project.id}`);
               } catch (err) { }
             }} className="space-y-4">
               <div className="space-y-2">
@@ -368,15 +385,21 @@ export default function ProjectDetails() {
                   id="joinCode"
                   placeholder="6-CHARACTER CODE"
                   className="h-12 text-center text-lg tracking-widest font-mono bg-slate-50 border-slate-200 text-slate-900 font-bold focus:border-blue-500"
-                  value={joinCode}
+                  value={joinCode || project.projectCode}
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
                   maxLength={6}
                 />
               </div>
-              <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all" disabled={joinProject.isPending || joinCode.length < 6}>
+              <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all" disabled={joinProject.isPending || (joinCode || project.projectCode).length < 6}>
                 {joinProject.isPending ? "Joining Workspace..." : "Accept & Join Contract"}
               </Button>
             </form>
+
+            <div className="text-center pt-1">
+              <a href="/projects/new" className="text-xs text-slate-400 hover:text-blue-600 font-semibold underline underline-offset-2 transition-colors">
+                Create your own escrow contract instead →
+              </a>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -498,18 +521,16 @@ export default function ProjectDetails() {
               const StepIcon = step.icon;
               return (
                 <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
-                    isCompleted ? "bg-emerald-500 text-white shadow-sm" :
-                    isCurrent ? "bg-blue-600 text-white shadow-md ring-4 ring-blue-100" :
-                    "bg-slate-100 text-slate-400 border border-slate-200"
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${isCompleted ? "bg-emerald-500 text-white shadow-sm" :
+                      isCurrent ? "bg-blue-600 text-white shadow-md ring-4 ring-blue-100" :
+                        "bg-slate-100 text-slate-400 border border-slate-200"
+                    }`}>
                     {isCompleted ? <Check className="w-4 h-4 text-white" /> : <span className="text-xs">{step.num}</span>}
                   </div>
-                  <span className={`text-[11px] font-semibold tracking-wide transition-all ${
-                    isCurrent ? "text-blue-600 font-bold" : 
-                    isCompleted ? "text-emerald-600" : 
-                    "text-slate-400"
-                  }`}>{step.label}</span>
+                  <span className={`text-[11px] font-semibold tracking-wide transition-all ${isCurrent ? "text-blue-600 font-bold" :
+                      isCompleted ? "text-emerald-600" :
+                        "text-slate-400"
+                    }`}>{step.label}</span>
                 </div>
               );
             })}
@@ -527,10 +548,10 @@ export default function ProjectDetails() {
             <div>
               <p className="text-[10px] text-blue-500 uppercase tracking-widest font-bold">Action Required</p>
               <h4 className="text-sm font-bold text-blue-900 mt-0.5">
-                {currentStep === 0 ? "Awaiting Partner to Join Contract" : 
-                 currentStep === 1 ? (isTalent ? "Provide Cargo Shipping Documentation" : "Awaiting Seller Document Uploads") : 
-                 currentStep === 2 ? (isClient ? (!m.importerSubmissionUrl ? "Upload Bill of Entry Document" : "Audit Documentation Checklist & Verify") : "Awaiting Importer Document Verification") : 
-                 "Trade Documents Approved & Completed"}
+                {currentStep === 0 ? "Awaiting Partner to Join Contract" :
+                  currentStep === 1 ? (isTalent ? "Provide Cargo Shipping Documentation" : "Awaiting Seller Document Uploads") :
+                    currentStep === 2 ? (isClient ? (!m.importerSubmissionUrl ? "Upload Bill of Entry Document" : "Audit Documentation Checklist & Verify") : "Awaiting Importer Document Verification") :
+                      "Trade Documents Approved & Completed"}
               </h4>
               <p className="text-xs text-slate-500 mt-1">
                 {currentStep === 0 && (
@@ -538,8 +559,8 @@ export default function ProjectDetails() {
                 )}
                 {currentStep === 1 && (
                   isClient ? "Waiting for the Exporter (Seller) to upload the required cargo documents." :
-                  isTalent ? "You are the Exporter. Please upload your shipping documents to submit for verification." :
-                  "Waiting for the Exporter (Seller) to upload cargo documents."
+                    isTalent ? "You are the Exporter. Please upload your shipping documents to submit for verification." :
+                      "Waiting for the Exporter (Seller) to upload cargo documents."
                 )}
                 {currentStep === 2 && (
                   isClient ? (
@@ -547,8 +568,8 @@ export default function ProjectDetails() {
                       ? "You are the Importer. Please upload your Bill of Entry (customs declaration) document to proceed."
                       : "You are the Importer. All cargo and import documents have been successfully uploaded."
                   ) :
-                  isTalent ? "You are the Exporter. Waiting for the Importer to upload the Bill of Entry." :
-                  "Awaiting Importer (Buyer) customs declaration upload."
+                    isTalent ? "You are the Exporter. Waiting for the Importer to upload the Bill of Entry." :
+                      "Awaiting Importer (Buyer) customs declaration upload."
                 )}
                 {currentStep === 3 && "This contract has been fully verified and completed."}
               </p>

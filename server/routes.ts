@@ -195,11 +195,25 @@ export async function registerRoutes(
         return res.status(400).json({ message: 'Cannot join your own project' });
       }
 
-      if (project.buyerId && project.freelancerId && project.buyerId !== userId && project.freelancerId !== userId) {
-        return res.status(400).json({ message: 'This project already has both a buyer and a freelancer' });
+      // Already a participant — just return the project
+      if (project.buyerId === userId || project.freelancerId === userId) {
+        return res.json(project);
       }
 
-      const updatedProject = await storage.joinProject(project.id, userId, user.role || 'FREELANCER');
+      if (project.buyerId && project.freelancerId) {
+        return res.status(400).json({ message: 'This project already has both participants' });
+      }
+
+      // Smart slot assignment: fill whichever slot is empty
+      // This allows both Importer-created and Exporter-created projects to work symmetrically
+      let slotRole: string;
+      if (!project.buyerId) {
+        slotRole = 'BUYER';   // project has exporter, needs importer
+      } else {
+        slotRole = 'FREELANCER';  // project has importer, needs exporter
+      }
+
+      const updatedProject = await storage.joinProject(project.id, userId, slotRole);
 
       // Calculate total escrow needed
       const milestones = await storage.getMilestones(project.id);
@@ -329,18 +343,18 @@ export async function registerRoutes(
       const user = await storage.getUser(userId);
       if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
-      const clientName  = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Client';
+      const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Client';
       const clientPhone = user.phone?.replace(/\D/g, '').slice(-10) || '9999999999';
-      const returnUrl   = `${process.env.SITE_URL || 'https://paxdot.com'}/projects/${project.id}?payment=done`;
+      const returnUrl = `${process.env.SITE_URL || 'https://paxdot.com'}/projects/${project.id}?payment=done`;
 
       // Amount: milestones store in cents → convert to paise (same unit for INR)
       const paymentLink = await createMilestonePaymentLink({
-        milestoneId:    ms.id,
-        projectTitle:   project.title,
+        milestoneId: ms.id,
+        projectTitle: project.title,
         milestoneTitle: ms.title,
-        amountInPaise:  ms.amount, // stored as cents, works as paise for INR
+        amountInPaise: ms.amount, // stored as cents, works as paise for INR
         clientName,
-        clientEmail:    user.email || '',
+        clientEmail: user.email || '',
         clientPhone,
         returnUrl,
       });
@@ -350,10 +364,10 @@ export async function registerRoutes(
 
       res.json({
         paymentSessionId: paymentLink.payment_session_id,
-        orderId:          paymentLink.order_id,
-        paymentUrl:       paymentLink.link_url,
-        amount:           ms.amount,
-        milestone:        ms.title,
+        orderId: paymentLink.order_id,
+        paymentUrl: paymentLink.link_url,
+        amount: ms.amount,
+        milestone: ms.title,
       });
     } catch (err: any) {
       console.error('[PAYMENT LINK ERROR]', err);
@@ -367,7 +381,7 @@ export async function registerRoutes(
     express.raw({ type: 'application/json' }),
     async (req, res) => {
       try {
-        const rawBody  = req.body?.toString() || '';
+        const rawBody = req.body?.toString() || '';
         const timestamp = req.headers['x-webhook-timestamp'] as string || '';
         const signature = req.headers['x-webhook-signature'] as string || '';
 
@@ -383,8 +397,8 @@ export async function registerRoutes(
 
         // Handle successful payment
         if (event?.type === 'PAYMENT_SUCCESS_WEBHOOK' || event?.data?.payment?.payment_status === 'SUCCESS') {
-          const linkId    = event?.data?.link?.link_id || event?.data?.order?.order_id || '';
-          const linkMeta  = event?.data?.link?.link_meta || {};
+          const linkId = event?.data?.link?.link_id || event?.data?.order?.order_id || '';
+          const linkMeta = event?.data?.link?.link_meta || {};
           const orderTags = event?.data?.order?.order_tags || {};
           const milestoneId = linkMeta?.milestone_id || orderTags?.milestone_id;
 
@@ -442,9 +456,9 @@ export async function registerRoutes(
     try {
       const milestoneId = req.params.id;
       const userId = req.user.claims.sub;
-      
+
       const updated = await storage.updateMilestone(milestoneId, { status: 'RELEASED' });
-      
+
       // Update escrow tracking
       const escrow = await storage.getEscrow(updated.projectId);
       if (escrow) {
@@ -484,7 +498,7 @@ export async function registerRoutes(
   // ── ACTIVATE PROJECT (Free) ──────────────
   app.post('/api/projects/:id/activate', isAuthenticated, async (req: any, res) => {
     try {
-      const userId  = req.user.claims.sub;
+      const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
       if (!project) return res.status(404).json({ message: 'Project not found' });
       if (project.buyerId !== userId && project.createdBy !== userId) {
