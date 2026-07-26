@@ -300,7 +300,7 @@ export default function ProjectDetails() {
 
   const isCiUploaded = !!invoiceMilestone?.submissionUrl;
   const isQcUploaded = !!qcMilestone?.submissionUrl;
-  const isInitialExporterDocsUploaded = (!invoiceMilestone || isCiUploaded) && (!qcMilestone || isQcUploaded);
+  const isInitialExporterDocsUploaded = (!invoiceMilestone || isCiUploaded);
 
   const isEscrowFunded = !!escrow?.funded;
 
@@ -316,9 +316,9 @@ export default function ProjectDetails() {
 
   const hasBothParticipants = !!project.buyerId && !!project.freelancerId;
   let currentStep = 0;
-  if (isCompleted || (isBeUploaded && isBolUploaded && isEscrowFunded)) {
+  if (isCompleted || (isBeUploaded && isBolUploaded && isQcUploaded && isEscrowFunded)) {
     currentStep = 5;
-  } else if (isBolUploaded && isEscrowFunded) {
+  } else if (isBolUploaded && isQcUploaded && isEscrowFunded) {
     currentStep = 4;
   } else if (isEscrowFunded) {
     currentStep = 3;
@@ -522,9 +522,9 @@ export default function ProjectDetails() {
 
             {[
               { label: "Access", icon: FileText, num: 1 },
-              { label: "CI & QC Docs", icon: Send, num: 2 },
+              { label: "Commercial Invoice", icon: Send, num: 2 },
               { label: "Fund Escrow", icon: CreditCard, num: 3 },
-              { label: "Upload BoL", icon: Anchor, num: 4 },
+              { label: "Quality & BoL", icon: Anchor, num: 4 },
               { label: "Bill of Entry", icon: FileCheck, num: 5 },
               { label: "Completed", icon: CheckCircle2, num: 6 },
             ].map((step, idx) => {
@@ -581,9 +581,9 @@ export default function ProjectDetails() {
               <p className="text-[10px] text-blue-500 uppercase tracking-widest font-bold">Action Required</p>
               <h4 className="text-sm font-bold text-blue-900 mt-0.5">
                 {currentStep === 0 ? "Awaiting Partner to Join Contract" :
-                  currentStep === 1 ? (isTalent ? "Upload Commercial Invoice & Quality Certificate (SGS)" : "Awaiting Exporter Initial Documents (CI & QC)") :
-                    currentStep === 2 ? (isClient ? "Initial Docs Received — Deposit Funds to Escrow" : "Awaiting Importer Escrow Funding") :
-                      currentStep === 3 ? (isTalent ? "Escrow Secured — Upload Bill of Lading (BoL)" : "Escrow Secured — Awaiting Exporter Bill of Lading") :
+                  currentStep === 1 ? (isTalent ? "Upload Commercial Invoice (CI)" : "Awaiting Exporter Commercial Invoice (CI)") :
+                    currentStep === 2 ? (isClient ? "Commercial Invoice Received — Deposit Funds to Escrow" : "Awaiting Importer Escrow Funding") :
+                      currentStep === 3 ? (isTalent ? "Escrow Secured — Upload Quality Certificate & Bill of Lading" : "Escrow Secured — Awaiting Quality Cert & BoL") :
                         currentStep === 4 ? (isClient ? (!beMilestone?.importerSubmissionUrl ? "Upload Import customs declaration (Bill of Entry)" : "Audit Documentation Checklist & Verify") : "Awaiting Importer Customs Declaration") :
                           "Trade Documents Approved & Completed"}
               </h4>
@@ -592,29 +592,29 @@ export default function ProjectDetails() {
                   "Please share the project code with your trade partner so they can join this contract workspace."
                 )}
                 {currentStep === 1 && (
-                  isClient ? "Waiting for the Exporter (Seller) to upload the Commercial Invoice and SGS Quality Certificate." :
-                    isTalent ? "You are the Exporter. Please upload Commercial Invoice and SGS Quality Certificate." :
-                      "Waiting for Exporter (Seller) to upload initial cargo documents."
+                  isClient ? "Waiting for the Exporter (Seller) to upload the Commercial Invoice." :
+                    isTalent ? "You are the Exporter. Please upload Commercial Invoice to proceed." :
+                      "Waiting for Exporter (Seller) to upload Commercial Invoice."
                 )}
                 {currentStep === 2 && (
                   isClient ? (
-                    "The Exporter has uploaded Commercial Invoice and SGS Quality Certificate. Please deposit funds into Escrow so the Exporter can upload the Bill of Lading."
+                    "The Exporter has uploaded Commercial Invoice. Please deposit funds into Escrow so the Exporter can upload the Quality Certificate and Bill of Lading."
                   ) :
-                    isTalent ? "You have uploaded CI & QC. Waiting for the Importer to deposit funds into Escrow before you can submit the Bill of Lading." :
+                    isTalent ? "You have uploaded Commercial Invoice. Waiting for the Importer to deposit funds into Escrow before you can submit Quality Certificate & Bill of Lading." :
                       "Awaiting Importer (Buyer) Escrow deposit."
                 )}
                 {currentStep === 3 && (
-                  isClient ? "Escrow funds are secured. Waiting for the Exporter (Seller) to upload the Bill of Lading (BoL)." :
-                    isTalent ? "Funds are secured in Escrow! Please upload the Bill of Lading (BoL) shipping receipt." :
-                      "Escrow secured. Waiting for Bill of Lading."
+                  isClient ? "Escrow funds are secured. Waiting for the Exporter (Seller) to upload the Quality Certificate (SGS) and Bill of Lading (BoL)." :
+                    isTalent ? "Funds are secured in Escrow! Please upload the Quality Certificate (SGS) and Bill of Lading (BoL)." :
+                      "Escrow secured. Waiting for Quality Certificate & Bill of Lading."
                 )}
                 {currentStep === 4 && (
                   isClient ? (
                     !beMilestone?.importerSubmissionUrl
-                      ? "Bill of Lading has been submitted. Please upload your Import customs declaration (Bill of Entry) to complete trade verification."
+                      ? "Quality Certificate and Bill of Lading have been submitted. Please upload your Import customs declaration (Bill of Entry) to complete trade verification."
                       : "You are the Importer. All cargo and import documents have been uploaded. Please audit and approve to release funds."
                   ) :
-                    isTalent ? "Bill of Lading submitted. Waiting for the Importer to upload Bill of Entry and audit final documents." :
+                    isTalent ? "Documents submitted. Waiting for the Importer to upload Bill of Entry and audit final documents." :
                       "Awaiting Importer customs verification."
                 )}
                 {currentStep === 5 && "This contract has been fully verified and completed."}
@@ -634,14 +634,26 @@ export default function ProjectDetails() {
               </Button>
             )}
 
-            {/* Step 3 CTA: Exporter Uploads BoL */}
-            {isTalent && currentStep === 3 && bolMilestone && !bolMilestone.submissionUrl && (
-              <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide"
-                onClick={() => openSubmitDialog(bolMilestone.id)}
-              >
-                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Bill of Lading (BoL)
-              </Button>
+            {/* Step 3 CTA: Exporter Uploads Quality Certificate & BoL */}
+            {isTalent && currentStep === 3 && (
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                {qcMilestone && !qcMilestone.submissionUrl && (
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all text-xs tracking-wide"
+                    onClick={() => openSubmitDialog(qcMilestone.id)}
+                  >
+                    <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Quality Cert
+                  </Button>
+                )}
+                {bolMilestone && !bolMilestone.submissionUrl && (
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all text-xs tracking-wide"
+                    onClick={() => openSubmitDialog(bolMilestone.id)}
+                  >
+                    <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload BoL
+                  </Button>
+                )}
+              </div>
             )}
 
             {/* Step 4 CTA: Importer Uploads Bill of Entry & Verifies */}
@@ -811,6 +823,14 @@ export default function ProjectDetails() {
                                   ✓ Certified
                                 </span>
                               </a>
+                            ) : !isCiUploaded ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                                ⏳ Awaiting Commercial Invoice
+                              </span>
+                            ) : !isEscrowFunded ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
+                                ⏳ Awaiting Escrow Deposit
+                              </span>
                             ) : (
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -823,10 +843,14 @@ export default function ProjectDetails() {
                               <a href={qcMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
                                 View File <ExternalLink className="w-3 h-3" />
                               </a>
-                            ) : isTalent && currentStep === 1 ? (
-                              <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openSubmitDialog(qcMilestone.id)}>
-                                <Upload className="w-3 h-3 mr-1" /> Upload
-                              </Button>
+                            ) : isTalent ? (
+                              isEscrowFunded ? (
+                                <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto font-bold" onClick={() => openSubmitDialog(qcMilestone.id)}>
+                                  <Upload className="w-3 h-3 mr-1" /> Upload
+                                </Button>
+                              ) : (
+                                <span className="text-xs text-slate-400 italic font-medium">Awaiting Escrow Deposit</span>
+                              )
                             ) : (
                               <span className="text-slate-300">—</span>
                             )}
@@ -882,7 +906,7 @@ export default function ProjectDetails() {
                               )
                             ) : !isInitialExporterDocsUploaded ? (
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
-                                ⏳ Awaiting CI & QC Upload
+                                ⏳ Awaiting Commercial Invoice
                               </span>
                             ) : !isEscrowFunded ? (
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
