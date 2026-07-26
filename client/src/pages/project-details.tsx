@@ -649,6 +649,16 @@ export default function ProjectDetails() {
             </div>
           </div>
           <div className="w-full md:w-auto flex justify-end">
+            {/* Step 1 / Re-upload CTA: Exporter Uploads Commercial Invoice */}
+            {isTalent && invoiceMilestone && !invoiceMilestone.submissionUrl && (
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide"
+                onClick={() => openSubmitDialog(invoiceMilestone.id)}
+              >
+                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload Commercial Invoice
+              </Button>
+            )}
+
             {/* Step 2 CTA: Importer Deposits Funds to Escrow */}
             {isClient && currentStep === 2 && (
               <Button
@@ -821,8 +831,8 @@ export default function ProjectDetails() {
                                   </Button>
                                 )}
                               </div>
-                            ) : isTalent && currentStep === 1 ? (
-                              <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openSubmitDialog(invoiceMilestone.id)}>
+                            ) : isTalent ? (
+                              <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto font-bold" onClick={() => openSubmitDialog(invoiceMilestone.id)}>
                                 <Upload className="w-3 h-3 mr-1" /> Upload
                               </Button>
                             ) : (
@@ -1047,7 +1057,7 @@ export default function ProjectDetails() {
                                   </Button>
                                 )}
                               </div>
-                            ) : isClient && currentStep === 4 ? (
+                            ) : isClient && (isEscrowFunded || currentStep === 4) ? (
                               <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto font-bold" onClick={() => openImporterDialog(beMilestone.id)}>
                                 <Upload className="w-3 h-3 mr-1" /> Upload
                               </Button>
