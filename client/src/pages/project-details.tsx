@@ -449,11 +449,11 @@ export default function ProjectDetails() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Project: {project.title}</h1>
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Trade: {project.title}</h1>
                 <StatusBadge status={project.status} />
               </div>
               <div className="flex items-center gap-1">
-                <span className="text-slate-400 font-medium text-xs">Project ID:</span>
+                <span className="text-slate-400 font-medium text-xs">Trade ID:</span>
                 <span className="font-mono text-slate-600 font-semibold text-xs tracking-wider uppercase">{project.projectCode}</span>
                 <button
                   onClick={() => {
