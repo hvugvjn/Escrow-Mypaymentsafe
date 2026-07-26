@@ -33,6 +33,7 @@ export function useProject(id: string) {
       };
     },
     enabled: !!id,
+    refetchInterval: 3000,
   });
 }
 

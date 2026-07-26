@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload, XCircle, Trophy, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
+import { Lock, FileCheck, AlertCircle, Calendar, DollarSign, CheckCircle2, FileText, CreditCard, Share2, Check, User, Users, Clock, AlertTriangle, Copy, ExternalLink, Flag, Send, MessageCircle, ShieldCheck, Truck, Anchor, Upload, XCircle, Trophy, Sparkles, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney as formatMoneyByCurrency } from "@/lib/currencies";
 import { format, isPast } from "date-fns";
@@ -145,6 +145,33 @@ export default function ProjectDetails() {
     setIsShareOpen(true);
   };
 
+  const formatDocUrl = (url: string) => {
+    if (!url) return '#';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) return url;
+    return `https://${url}`;
+  };
+
+  const handleDeleteDoc = async (milestoneId: string, docType: 'exporter' | 'importer') => {
+    try {
+      const res = await fetch(`/api/milestones/${milestoneId}/delete-doc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docType }),
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', id] });
+        toast({
+          title: "Document Deleted",
+          description: "The uploaded document has been removed. You can now upload a new file.",
+        });
+      } else {
+        toast({ title: "Error", description: "Failed to delete document", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Network error during delete", variant: "destructive" });
+    }
+  };
+
   // Pre-load selected milestone ID for uploads at top level
   useEffect(() => {
     const firstM = data?.milestones?.[0];
@@ -153,7 +180,7 @@ export default function ProjectDetails() {
     }
   }, [data?.milestones]);
 
-  // Fetch chat messages and poll every 5s
+  // Fetch chat messages and poll every 3s
   useEffect(() => {
     if (!id) return;
     const fetchMsgs = async () => {
@@ -163,7 +190,7 @@ export default function ProjectDetails() {
       } catch { }
     };
     fetchMsgs();
-    const interval = setInterval(fetchMsgs, 5000);
+    const interval = setInterval(fetchMsgs, 3000);
     return () => clearInterval(interval);
   }, [id]);
 
@@ -758,7 +785,7 @@ export default function ProjectDetails() {
                                 CI
                               </div>
                               {invoiceMilestone.submissionUrl ? (
-                                <a href={invoiceMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                <a href={formatDocUrl(invoiceMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
                                   Commercial Invoice & Packing List
                                 </a>
                               ) : (
@@ -769,7 +796,7 @@ export default function ProjectDetails() {
                           <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
                           <td className="px-6 py-4">
                             {invoiceMilestone.submissionUrl ? (
-                              <a href={invoiceMilestone.submissionUrl} target="_blank" rel="noopener noreferrer">
+                              <a href={formatDocUrl(invoiceMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer">
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                   ✓ Uploaded
@@ -784,9 +811,16 @@ export default function ProjectDetails() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             {invoiceMilestone.submissionUrl ? (
-                              <a href={invoiceMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                                View File <ExternalLink className="w-3 h-3" />
-                              </a>
+                              <div className="flex items-center justify-end gap-2">
+                                <a href={formatDocUrl(invoiceMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                  View File <ExternalLink className="w-3 h-3" />
+                                </a>
+                                {isTalent && (
+                                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs px-2.5 py-1.5 h-auto font-semibold border border-red-100" onClick={() => handleDeleteDoc(invoiceMilestone.id, 'exporter')} title="Delete & Re-upload">
+                                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                                  </Button>
+                                )}
+                              </div>
                             ) : isTalent && currentStep === 1 ? (
                               <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto" onClick={() => openSubmitDialog(invoiceMilestone.id)}>
                                 <Upload className="w-3 h-3 mr-1" /> Upload
@@ -806,7 +840,7 @@ export default function ProjectDetails() {
                                 QC
                               </div>
                               {qcMilestone.submissionUrl ? (
-                                <a href={qcMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                <a href={formatDocUrl(qcMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
                                   Quality Certificate (SGS Inspection)
                                 </a>
                               ) : (
@@ -817,7 +851,7 @@ export default function ProjectDetails() {
                           <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Exporter ({displayTalentName})</td>
                           <td className="px-6 py-4">
                             {qcMilestone.submissionUrl ? (
-                              <a href={qcMilestone.submissionUrl} target="_blank" rel="noopener noreferrer">
+                              <a href={formatDocUrl(qcMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer">
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                   ✓ Certified
@@ -840,9 +874,16 @@ export default function ProjectDetails() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             {qcMilestone.submissionUrl ? (
-                              <a href={qcMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                                View File <ExternalLink className="w-3 h-3" />
-                              </a>
+                              <div className="flex items-center justify-end gap-2">
+                                <a href={formatDocUrl(qcMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                  View File <ExternalLink className="w-3 h-3" />
+                                </a>
+                                {isTalent && (
+                                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs px-2.5 py-1.5 h-auto font-semibold border border-red-100" onClick={() => handleDeleteDoc(qcMilestone.id, 'exporter')} title="Delete & Re-upload">
+                                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                                  </Button>
+                                )}
+                              </div>
                             ) : isTalent ? (
                               isEscrowFunded ? (
                                 <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto font-bold" onClick={() => openSubmitDialog(qcMilestone.id)}>
@@ -879,7 +920,7 @@ export default function ProjectDetails() {
                                     </span>
                                   </div>
                                 ) : (
-                                  <a href={bolMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                  <a href={formatDocUrl(bolMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
                                     Bill of Lading (BoL) / Shipping Receipt
                                   </a>
                                 )
@@ -897,7 +938,7 @@ export default function ProjectDetails() {
                                   🔒 Blurred (Escrow Required)
                                 </span>
                               ) : (
-                                <a href={bolMilestone.submissionUrl} target="_blank" rel="noopener noreferrer">
+                                <a href={formatDocUrl(bolMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer">
                                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                     ✓ Uploaded
@@ -932,9 +973,16 @@ export default function ProjectDetails() {
                                   {fundProject.isPending ? "Securing Escrow..." : "Deposit to Escrow to Unblur"}
                                 </Button>
                               ) : (
-                                <a href={bolMilestone.submissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                                  View File <ExternalLink className="w-3 h-3" />
-                                </a>
+                                <div className="flex items-center justify-end gap-2">
+                                  <a href={formatDocUrl(bolMilestone.submissionUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                    View File <ExternalLink className="w-3 h-3" />
+                                  </a>
+                                  {isTalent && (
+                                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs px-2.5 py-1.5 h-auto font-semibold border border-red-100" onClick={() => handleDeleteDoc(bolMilestone.id, 'exporter')} title="Delete & Re-upload">
+                                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                                    </Button>
+                                  )}
+                                </div>
                               )
                             ) : isTalent ? (
                               isEscrowFunded ? (
@@ -959,7 +1007,7 @@ export default function ProjectDetails() {
                                 BE
                               </div>
                               {beMilestone.importerSubmissionUrl ? (
-                                <a href={beMilestone.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
+                                <a href={formatDocUrl(beMilestone.importerSubmissionUrl)} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
                                   Import customs declaration (Bill of Entry)
                                 </a>
                               ) : (
@@ -970,7 +1018,7 @@ export default function ProjectDetails() {
                           <td className="px-6 py-4 text-slate-500 text-xs font-semibold">Importer ({displayClientName})</td>
                           <td className="px-6 py-4">
                             {beMilestone.importerSubmissionUrl ? (
-                              <a href={beMilestone.importerSubmissionUrl} target="_blank" rel="noopener noreferrer">
+                              <a href={formatDocUrl(beMilestone.importerSubmissionUrl)} target="_blank" rel="noopener noreferrer">
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition-colors">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                   ✓ Uploaded
@@ -989,9 +1037,16 @@ export default function ProjectDetails() {
                           </td>
                           <td className="px-6 py-4 text-right font-medium">
                             {beMilestone.importerSubmissionUrl ? (
-                              <a href={beMilestone.importerSubmissionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                                View File <ExternalLink className="w-3 h-3" />
-                              </a>
+                              <div className="flex items-center justify-end gap-2">
+                                <a href={formatDocUrl(beMilestone.importerSubmissionUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                  View File <ExternalLink className="w-3 h-3" />
+                                </a>
+                                {isClient && (
+                                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs px-2.5 py-1.5 h-auto font-semibold border border-red-100" onClick={() => handleDeleteDoc(beMilestone.id, 'importer')} title="Delete & Re-upload">
+                                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                                  </Button>
+                                )}
+                              </div>
                             ) : isClient && currentStep === 4 ? (
                               <Button variant="outline" className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg h-auto font-bold" onClick={() => openImporterDialog(beMilestone.id)}>
                                 <Upload className="w-3 h-3 mr-1" /> Upload

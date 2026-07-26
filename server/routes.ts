@@ -325,7 +325,25 @@ export async function registerRoutes(
       });
       res.json(milestone);
     } catch (err) {
-      res.status(550).json({ message: "Internal error" });
+      res.status(500).json({ message: "Internal error" });
+    }
+  });
+
+  // POST route to delete/reset an uploaded document (exporter or importer)
+  app.post('/api/milestones/:id/delete-doc', isAuthenticated, async (req: any, res) => {
+    try {
+      const { docType } = req.body; // 'exporter' | 'importer'
+      const updates: any = {};
+      if (docType === 'importer') {
+        updates.importerSubmissionUrl = null;
+      } else {
+        updates.submissionUrl = null;
+        updates.status = 'PENDING';
+      }
+      const milestone = await storage.updateMilestone(req.params.id, updates);
+      res.json(milestone);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to delete document" });
     }
   });
 
