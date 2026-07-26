@@ -112,7 +112,7 @@ export const api = {
     submit: {
       method: 'POST' as const,
       path: '/api/milestones/:id/submit' as const,
-      input: z.object({ submissionUrl: z.string() }),
+      input: z.object({ submissionUrl: z.string(), quotedAmount: z.number().optional() }),
       responses: {
         200: z.custom<typeof milestones.$inferSelect>(),
         400: errorSchemas.validation,

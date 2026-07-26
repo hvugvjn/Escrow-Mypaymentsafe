@@ -17,6 +17,8 @@ export const projects = pgTable("projects", {
   status: varchar("status").notNull().default('WAITING_FOR_ACCEPTANCE'),
   expiresAt: timestamp("expires_at").notNull(),
   documentUrl: text("document_url"),
+  quotedAmount: integer("quoted_amount"),
+  tradeValueStatus: varchar("trade_value_status"), // 'PENDING_AGREEMENT' | 'AGREED' | 'DISAGREED'
   createdAt: timestamp("created_at").defaultNow(),
 });
 

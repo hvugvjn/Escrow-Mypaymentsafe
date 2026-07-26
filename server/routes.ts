@@ -4,6 +4,9 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { isAuthenticated } from "./auth";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import { projects, messages, escrows } from "@shared/schema";
 import { setupAuth, registerAuthRoutes } from "./auth";
 import { registerAdminRoutes } from "./admin";
 import {
@@ -299,6 +302,26 @@ export async function registerRoutes(
       await storage.updateProjectStatus(milestone.projectId, 'UNDER_REVIEW');
 
       const project = await storage.getProject(milestone.projectId);
+      if (input.quotedAmount && input.quotedAmount > 0) {
+        const amountCents = Math.round(input.quotedAmount * 100);
+        await db.update(projects).set({
+          quotedAmount: amountCents,
+          tradeValueStatus: 'PENDING_AGREEMENT'
+        }).where(eq(projects.id, milestone.projectId));
+
+        // Create system chat message
+        const sender = req.user || { id: 'system', firstName: 'Exporter', lastName: '' };
+        const senderName = `${sender.firstName} ${sender.lastName}`.trim() || 'Exporter';
+        const formattedAmount = (amountCents / 100).toLocaleString('en-US', { style: 'currency', currency: project?.currency || 'USD' });
+        await db.insert(messages).values({
+          projectId: milestone.projectId,
+          senderId: sender.id || 'system',
+          senderName,
+          senderRole: 'SYSTEM',
+          content: `📋 Commercial Invoice uploaded with quoted Trade Value: ${formattedAmount}. Awaiting Importer agreement.`
+        });
+      }
+
       if (project?.buyerId) {
         const buyer = await storage.getUser(project.buyerId);
         if (buyer?.email) {
@@ -308,7 +331,127 @@ export async function registerRoutes(
 
       res.json(milestone);
     } catch (err) {
+      console.error(err);
       res.status(400).json({ message: "Validation failed" });
+    }
+  });
+
+  // Agree to quoted Trade Value (Importer)
+  app.post('/api/projects/:id/agree-trade-value', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = req.params.id;
+      const project = await storage.getProject(projectId);
+      if (!project || !project.quotedAmount) {
+        return res.status(400).json({ message: "No quoted trade value found" });
+      }
+
+      await db.update(projects).set({ tradeValueStatus: 'AGREED' }).where(eq(projects.id, projectId));
+
+      // Update milestones amount to match agreed total amount
+      const allMs = await storage.getMilestones(projectId);
+      if (allMs.length > 0) {
+        const perMsAmount = Math.round(project.quotedAmount / allMs.length);
+        for (const ms of allMs) {
+          await storage.updateMilestone(ms.id, { amount: perMsAmount });
+        }
+      }
+
+      // Update escrow record
+      const existingEscrow = await storage.getEscrow(projectId);
+      if (existingEscrow) {
+        await db.update(escrows).set({
+          totalAmount: project.quotedAmount,
+          remainingAmount: project.quotedAmount
+        }).where(eq(escrows.projectId, projectId));
+      } else {
+        await storage.createEscrow({
+          projectId,
+          totalAmount: project.quotedAmount,
+          remainingAmount: project.quotedAmount,
+          funded: false
+        });
+      }
+
+      const senderName = `${req.user?.firstName || 'Importer'} ${req.user?.lastName || ''}`.trim();
+      const formattedAmount = (project.quotedAmount / 100).toLocaleString('en-US', { style: 'currency', currency: project.currency || 'USD' });
+      await db.insert(messages).values({
+        projectId,
+        senderId: req.user?.id || 'system',
+        senderName,
+        senderRole: 'SYSTEM',
+        content: `✅ Importer agreed to the quoted Trade Value of ${formattedAmount}. Escrow deposit is now unlocked.`
+      });
+
+      const updated = await storage.getProject(projectId);
+      res.json(updated);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to agree trade value" });
+    }
+  });
+
+  // Disagree with quoted Trade Value (Importer)
+  app.post('/api/projects/:id/disagree-trade-value', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = req.params.id;
+      const project = await storage.getProject(projectId);
+      if (!project) return res.status(404).json({ message: "Project not found" });
+
+      await db.update(projects).set({ tradeValueStatus: 'DISAGREED' }).where(eq(projects.id, projectId));
+
+      const senderName = `${req.user?.firstName || 'Importer'} ${req.user?.lastName || ''}`.trim();
+      const formattedAmount = project.quotedAmount
+        ? (project.quotedAmount / 100).toLocaleString('en-US', { style: 'currency', currency: project.currency || 'USD' })
+        : '';
+      await db.insert(messages).values({
+        projectId,
+        senderId: req.user?.id || 'system',
+        senderName,
+        senderRole: 'SYSTEM',
+        content: `❌ Importer disagreed with the quoted Trade Value${formattedAmount ? ` (${formattedAmount})` : ''}. Please negotiate in this chat. Exporter can update the quoted trade value anytime.`
+      });
+
+      const updated = await storage.getProject(projectId);
+      res.json(updated);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to disagree trade value" });
+    }
+  });
+
+  // Update quoted Trade Value (Exporter)
+  app.post('/api/projects/:id/update-quoted-value', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = req.params.id;
+      const { quotedAmount } = req.body;
+      if (!quotedAmount || quotedAmount <= 0) {
+        return res.status(400).json({ message: "Valid quoted amount is required" });
+      }
+
+      const project = await storage.getProject(projectId);
+      if (!project) return res.status(404).json({ message: "Project not found" });
+
+      const amountCents = Math.round(quotedAmount * 100);
+      await db.update(projects).set({
+        quotedAmount: amountCents,
+        tradeValueStatus: 'PENDING_AGREEMENT'
+      }).where(eq(projects.id, projectId));
+
+      const senderName = `${req.user?.firstName || 'Exporter'} ${req.user?.lastName || ''}`.trim();
+      const formattedAmount = (amountCents / 100).toLocaleString('en-US', { style: 'currency', currency: project.currency || 'USD' });
+      await db.insert(messages).values({
+        projectId,
+        senderId: req.user?.id || 'system',
+        senderName,
+        senderRole: 'SYSTEM',
+        content: `✏️ Exporter updated the quoted Trade Value to ${formattedAmount}. Awaiting Importer agreement.`
+      });
+
+      const updated = await storage.getProject(projectId);
+      res.json(updated);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to update quoted trade value" });
     }
   });
 

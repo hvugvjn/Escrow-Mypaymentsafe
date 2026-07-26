@@ -50,6 +50,9 @@ export default function ProjectDetails() {
   const [isReleasingEscrow, setIsReleasingEscrow] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [paymentStep, setPaymentStep] = useState<"qr" | "verifying" | "success">("qr");
+  const [quotedTradeValue, setQuotedTradeValue] = useState("");
+  const [isUpdateValueOpen, setIsUpdateValueOpen] = useState(false);
+  const [newQuotedValue, setNewQuotedValue] = useState("");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -169,6 +172,70 @@ export default function ProjectDetails() {
       }
     } catch (err) {
       toast({ title: "Error", description: "Network error during delete", variant: "destructive" });
+    }
+  };
+
+  const handleAgreeTradeValue = async () => {
+    try {
+      const res = await fetch(`/api/projects/${id}/agree-trade-value`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', id] });
+        toast({
+          title: "Trade Value Agreed! 🎉",
+          description: "You have agreed to the quoted Trade Value. You can now deposit funds into Escrow.",
+        });
+      } else {
+        toast({ title: "Error", description: "Failed to agree trade value", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Network error", variant: "destructive" });
+    }
+  };
+
+  const handleDisagreeTradeValue = async () => {
+    try {
+      const res = await fetch(`/api/projects/${id}/disagree-trade-value`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', id] });
+        toast({
+          title: "Negotiation Requested",
+          description: "Status updated to Under Negotiation. Please discuss in the chat box.",
+        });
+      } else {
+        toast({ title: "Error", description: "Failed to update status", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Network error", variant: "destructive" });
+    }
+  };
+
+  const handleUpdateQuotedValue = async () => {
+    if (!newQuotedValue || parseFloat(newQuotedValue) <= 0) return;
+    try {
+      const res = await fetch(`/api/projects/${id}/update-quoted-value`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quotedAmount: parseFloat(newQuotedValue) }),
+      });
+      if (res.ok) {
+        setIsUpdateValueOpen(false);
+        setNewQuotedValue("");
+        queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', id] });
+        toast({
+          title: "Trade Value Updated!",
+          description: "The quoted trade value has been updated and sent to the Importer for agreement.",
+        });
+      } else {
+        toast({ title: "Error", description: "Failed to update trade value", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Network error", variant: "destructive" });
     }
   };
 
@@ -308,11 +375,16 @@ export default function ProjectDetails() {
 
   const handleSubmitWork = () => {
     if (selectedMilestoneId && submitUrl) {
-      submitMilestone.mutate({ id: selectedMilestoneId, submissionUrl: submitUrl }, {
+      const payload: any = { id: selectedMilestoneId, submissionUrl: submitUrl };
+      if (selectedMilestoneId === invoiceMilestone?.id && quotedTradeValue) {
+        payload.quotedAmount = parseFloat(quotedTradeValue);
+      }
+      submitMilestone.mutate(payload, {
         onSuccess: () => {
           setIsSubmitOpen(false);
           setSubmitUrl("");
           setUploadFile(null);
+          setQuotedTradeValue("");
           queryClient.invalidateQueries({ queryKey: ['/api/projects/:id', project.id] });
         }
       });
@@ -624,11 +696,25 @@ export default function ProjectDetails() {
                       "Waiting for Exporter (Seller) to upload Commercial Invoice."
                 )}
                 {currentStep === 2 && (
-                  isClient ? (
-                    "The Exporter has uploaded Commercial Invoice. Please deposit funds into Escrow so the Exporter can upload the Quality Certificate and Bill of Lading."
-                  ) :
-                    isTalent ? "You have uploaded Commercial Invoice. Waiting for the Importer to deposit funds into Escrow before you can submit Quality Certificate & Bill of Lading." :
-                      "Awaiting Importer (Buyer) Escrow deposit."
+                  project.tradeValueStatus === 'DISAGREED' ? (
+                    isClient
+                      ? "You requested negotiation on the quoted Trade Value. Please negotiate in the chat box below."
+                      : isTalent
+                        ? "The Importer requested negotiation on the quoted Trade Value. Please negotiate in the chat box or update the Trade Value."
+                        : "Trade Value is under negotiation."
+                  ) : project.tradeValueStatus === 'PENDING_AGREEMENT' ? (
+                    isClient
+                      ? `The Exporter quoted Trade Value: ${formatMoney(project.quotedAmount || 0)}. Do you agree to this amount or wish to negotiate?`
+                      : isTalent
+                        ? `You quoted Trade Value: ${formatMoney(project.quotedAmount || 0)}. Waiting for the Importer to agree or request negotiation.`
+                        : "Awaiting Importer agreement on quoted Trade Value."
+                  ) : (
+                    isClient
+                      ? "The Trade Value has been agreed. Please deposit funds into Escrow so the Exporter can upload the Quality Certificate and Bill of Lading."
+                      : isTalent
+                        ? "Trade Value agreed! Waiting for the Importer to deposit funds into Escrow before you submit Quality Certificate & Bill of Lading."
+                        : "Awaiting Importer Escrow deposit."
+                  )
                 )}
                 {currentStep === 3 && (
                   isClient ? "Escrow funds are secured. Waiting for the Exporter (Seller) to upload the Quality Certificate (SGS) and Bill of Lading (BoL)." :
@@ -659,16 +745,54 @@ export default function ProjectDetails() {
               </Button>
             )}
 
-            {/* Step 2 CTA: Importer Deposits Funds to Escrow */}
-            {isClient && currentStep === 2 && (
-              <Button
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide"
-                onClick={() => setIsQrModalOpen(true)}
-                disabled={fundProject.isPending}
-              >
-                <CreditCard className="w-3.5 h-3.5 mr-1.5" />
-                {fundProject.isPending ? "Securing Escrow..." : "Deposit Funds to Escrow"}
-              </Button>
+            {/* Step 2 CTA: Trade Value Agreement & Escrow Deposit */}
+            {currentStep === 2 && (
+              <div className="flex flex-wrap items-center gap-2 justify-end w-full md:w-auto">
+                {/* Importer Actions when Pending Agreement */}
+                {isClient && project.tradeValueStatus === 'PENDING_AGREEMENT' && (
+                  <>
+                    <Button
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all text-xs tracking-wide"
+                      onClick={handleAgreeTradeValue}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Agree ({formatMoney(project.quotedAmount || 0)}) & Proceed
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-red-200 text-red-600 hover:bg-red-50 font-bold px-4 py-2.5 rounded-lg text-xs"
+                      onClick={handleDisagreeTradeValue}
+                    >
+                      <XCircle className="w-3.5 h-3.5 mr-1.5" /> Disagree / Negotiate
+                    </Button>
+                  </>
+                )}
+
+                {/* Exporter Action to Update Trade Value when Pending or Disagreed */}
+                {isTalent && (project.tradeValueStatus === 'PENDING_AGREEMENT' || project.tradeValueStatus === 'DISAGREED') && (
+                  <Button
+                    variant="outline"
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50 font-bold px-4 py-2.5 rounded-lg text-xs"
+                    onClick={() => {
+                      setNewQuotedValue(project.quotedAmount ? (project.quotedAmount / 100).toString() : "");
+                      setIsUpdateValueOpen(true);
+                    }}
+                  >
+                    <DollarSign className="w-3.5 h-3.5 mr-1.5" /> Change / Update Trade Value
+                  </Button>
+                )}
+
+                {/* Importer Action to Deposit Funds when Agreed or No Status yet */}
+                {isClient && (project.tradeValueStatus === 'AGREED' || !project.tradeValueStatus) && (
+                  <Button
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide"
+                    onClick={() => setIsQrModalOpen(true)}
+                    disabled={fundProject.isPending}
+                  >
+                    <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+                    {fundProject.isPending ? "Securing Escrow..." : "Deposit Funds to Escrow"}
+                  </Button>
+                )}
+              </div>
             )}
 
             {/* Step 3 CTA: Exporter Uploads Quality Certificate & BoL */}
@@ -1270,10 +1394,65 @@ export default function ProjectDetails() {
               <Label htmlFor="dialogDocUrl" className="text-slate-700">Or enter Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
               <Input id="dialogDocUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingFile} />
             </div>
+
+            {selectedMilestoneId === invoiceMilestone?.id && (
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <Label htmlFor="dialogQuotedValue" className="text-slate-900 font-bold text-xs uppercase tracking-wider">Quote Total Trade Escrow Value ({project.currency || 'USD'}) *</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-slate-400 text-sm font-semibold">$</span>
+                  <Input
+                    id="dialogQuotedValue"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="e.g. 10000.00"
+                    value={quotedTradeValue}
+                    onChange={e => setQuotedTradeValue(e.target.value)}
+                    className="pl-8 bg-white border-slate-300 text-slate-900 font-bold focus:border-blue-500 text-sm"
+                  />
+                </div>
+                <p className="text-xs text-slate-400">Specify the total trade escrow amount for this contract.</p>
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending || isUploadingFile} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+            <Button onClick={handleSubmitWork} disabled={!submitUrl || (selectedMilestoneId === invoiceMilestone?.id && (!quotedTradeValue || parseFloat(quotedTradeValue) <= 0)) || submitMilestone.isPending || isUploadingFile} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
               {submitMilestone.isPending ? "Submitting..." : "Submit Document"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Trade Value Dialog (Exporter) */}
+      <Dialog open={isUpdateValueOpen} onOpenChange={setIsUpdateValueOpen}>
+        <DialogContent className="bg-white border-slate-200 text-slate-950 rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 font-bold">Update Quoted Trade Value</DialogTitle>
+            <DialogDescription className="text-slate-500">
+              Enter the new total trade value after negotiation with the Importer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="updateValueInput" className="text-slate-700 font-bold text-xs uppercase tracking-wider">New Trade Escrow Value ({project?.currency || 'USD'})</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-slate-400 text-sm font-semibold">$</span>
+                <Input
+                  id="updateValueInput"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={newQuotedValue}
+                  onChange={e => setNewQuotedValue(e.target.value)}
+                  placeholder="0.00"
+                  className="pl-8 bg-white border-slate-300 text-slate-900 font-bold focus:border-blue-500 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleUpdateQuotedValue} disabled={!newQuotedValue || parseFloat(newQuotedValue) <= 0} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+              Update Trade Value
             </Button>
           </DialogFooter>
         </DialogContent>

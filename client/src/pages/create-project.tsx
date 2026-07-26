@@ -57,10 +57,10 @@ export default function CreateProject() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !totalValue) {
+    if (!title || !description) {
       toast({
         title: "Validation Error",
-        description: "Please fill out all contract fields and enter the total trade value.",
+        description: "Please fill out title and contract specifications.",
         variant: "destructive"
       });
       return;
@@ -323,46 +323,13 @@ export default function CreateProject() {
               </Popover>
             </div>
             <div className="space-y-2 flex flex-col">
-              <Label className="text-slate-700 text-xs font-bold uppercase tracking-wider">Bill of Lading / Trade Document (Optional)</Label>
+              <Label className="text-slate-700 text-xs font-bold uppercase tracking-wider">Supporting Documents (Optional)</Label>
               <Input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={e => {
                 if (e.target.files && e.target.files[0]) {
                   setDocumentFile(e.target.files[0]);
                 }
               }} className="bg-slate-50 border-slate-200 text-slate-900 cursor-pointer focus:bg-white" />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Unified Payout Value & Checklist Block */}
-        <Card className="border border-slate-100 shadow-sm bg-white rounded-xl">
-          <CardHeader className="border-b border-slate-100 bg-slate-50/30 py-4 px-6">
-            <CardTitle className="text-base font-semibold text-slate-800">Escrow Payment & Document Gates</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="totalValue" className="text-slate-700 text-xs font-bold uppercase tracking-wider">Total Trade Escrow Value ({currency})</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-semibold">
-                  {getCurrencySymbol(currency)}
-                </span>
-                <Input
-                  id="totalValue"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  className="pl-8 bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-blue-500 font-bold"
-                  value={totalValue}
-                  onChange={e => setTotalValue(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              <p className="text-xs text-slate-400">
-                This total amount will be locked in the secure nodal vault and released only when documents are cleared.
-              </p>
-            </div>
-
-
           </CardContent>
         </Card>
 
