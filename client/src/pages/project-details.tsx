@@ -698,22 +698,22 @@ export default function ProjectDetails() {
                 {currentStep === 2 && (
                   project.tradeValueStatus === 'DISAGREED' ? (
                     isClient
-                      ? "You requested negotiation on the quoted Trade Value. Please negotiate in the chat box below."
+                      ? `You requested negotiation on the quoted Trade Value (${formatMoney(project.quotedAmount || 0)}). Please negotiate in the chat box below.`
                       : isTalent
-                        ? "The Importer requested negotiation on the quoted Trade Value. Please negotiate in the chat box or update the Trade Value."
+                        ? `The Importer requested negotiation on the quoted Trade Value (${formatMoney(project.quotedAmount || 0)}). Please negotiate in the chat box or update the Trade Value.`
                         : "Trade Value is under negotiation."
-                  ) : project.tradeValueStatus === 'PENDING_AGREEMENT' ? (
+                  ) : project.tradeValueStatus === 'AGREED' ? (
+                    isClient
+                      ? `The Trade Value of ${formatMoney(project.quotedAmount || 0)} has been agreed. Please deposit funds into Escrow so the Exporter can upload the Quality Certificate and Bill of Lading.`
+                      : isTalent
+                        ? `Trade Value agreed (${formatMoney(project.quotedAmount || 0)})! Waiting for the Importer to deposit funds into Escrow before you submit Quality Certificate & Bill of Lading.`
+                        : "Awaiting Importer Escrow deposit."
+                  ) : (
                     isClient
                       ? `The Exporter quoted Trade Value: ${formatMoney(project.quotedAmount || 0)}. Do you agree to this amount or wish to negotiate?`
                       : isTalent
                         ? `You quoted Trade Value: ${formatMoney(project.quotedAmount || 0)}. Waiting for the Importer to agree or request negotiation.`
                         : "Awaiting Importer agreement on quoted Trade Value."
-                  ) : (
-                    isClient
-                      ? "The Trade Value has been agreed. Please deposit funds into Escrow so the Exporter can upload the Quality Certificate and Bill of Lading."
-                      : isTalent
-                        ? "Trade Value agreed! Waiting for the Importer to deposit funds into Escrow before you submit Quality Certificate & Bill of Lading."
-                        : "Awaiting Importer Escrow deposit."
                   )
                 )}
                 {currentStep === 3 && (
@@ -748,8 +748,8 @@ export default function ProjectDetails() {
             {/* Step 2 CTA: Trade Value Agreement & Escrow Deposit */}
             {currentStep === 2 && (
               <div className="flex flex-wrap items-center gap-2 justify-end w-full md:w-auto">
-                {/* Importer Actions when Pending Agreement */}
-                {isClient && project.tradeValueStatus === 'PENDING_AGREEMENT' && (
+                {/* Importer Actions when Trade Value is NOT yet Agreed */}
+                {isClient && project.tradeValueStatus !== 'AGREED' && (
                   <>
                     <Button
                       className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all text-xs tracking-wide"
@@ -767,8 +767,8 @@ export default function ProjectDetails() {
                   </>
                 )}
 
-                {/* Exporter Action to Update Trade Value when Pending or Disagreed */}
-                {isTalent && (project.tradeValueStatus === 'PENDING_AGREEMENT' || project.tradeValueStatus === 'DISAGREED') && (
+                {/* Exporter Action to Update Trade Value when NOT yet Agreed */}
+                {isTalent && project.tradeValueStatus !== 'AGREED' && (
                   <Button
                     variant="outline"
                     className="border-blue-200 text-blue-600 hover:bg-blue-50 font-bold px-4 py-2.5 rounded-lg text-xs"
@@ -781,8 +781,8 @@ export default function ProjectDetails() {
                   </Button>
                 )}
 
-                {/* Importer Action to Deposit Funds when Agreed or No Status yet */}
-                {isClient && (project.tradeValueStatus === 'AGREED' || !project.tradeValueStatus) && (
+                {/* Importer Action to Deposit Funds ONLY when Trade Value IS Agreed */}
+                {isClient && project.tradeValueStatus === 'AGREED' && (
                   <Button
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all w-full md:w-auto text-xs tracking-wide"
                     onClick={() => setIsQrModalOpen(true)}
