@@ -302,11 +302,19 @@ export async function registerRoutes(
       await storage.updateProjectStatus(milestone.projectId, 'UNDER_REVIEW');
 
       const project = await storage.getProject(milestone.projectId);
+      let amountCents = 0;
       if (input.quotedAmount && input.quotedAmount > 0) {
-        const amountCents = Math.round(input.quotedAmount * 100);
+        amountCents = Math.round(input.quotedAmount * 100);
+      } else if (project?.quotedAmount && project.quotedAmount > 0) {
+        amountCents = project.quotedAmount;
+      } else if (milestone.amount && milestone.amount > 0) {
+        amountCents = milestone.amount;
+      }
+
+      if (amountCents > 0) {
         await db.update(projects).set({
           quotedAmount: amountCents,
-          tradeValueStatus: 'PENDING_AGREEMENT'
+          tradeValueStatus: project?.tradeValueStatus === 'AGREED' ? 'AGREED' : 'PENDING_AGREEMENT'
         }).where(eq(projects.id, milestone.projectId));
 
         // Create system chat message

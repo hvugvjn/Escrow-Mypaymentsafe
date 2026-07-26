@@ -134,6 +134,12 @@ export default function ProjectDetails() {
     setSelectedMilestoneId(milestoneId);
     setUploadFile(null);
     setSubmitUrl("");
+    const initialQuote = (project?.quotedAmount && project.quotedAmount > 0)
+      ? (project.quotedAmount / 100).toString()
+      : (displayQuotedAmount && displayQuotedAmount > 0)
+        ? (displayQuotedAmount / 100).toString()
+        : "";
+    setQuotedTradeValue(initialQuote);
     setIsSubmitOpen(true);
   };
 
@@ -303,7 +309,9 @@ export default function ProjectDetails() {
   const displayTalentName = (isTalent && loggedInUserName) ? loggedInUserName : (talentName === 'Awaiting Freelancer' || talentName === 'Awaiting Exporter' ? 'Awaiting Exporter' : talentName);
 
   const formatMoney = (cents: number): string => formatMoneyByCurrency(cents, project.currency || 'USD');
-  const totalAmountCents = escrow?.totalAmount || milestones?.reduce((acc, m) => acc + (m.amount || 0), 0) || (project as any).budget || 5000000;
+  const totalAmountCents = (project.quotedAmount && project.quotedAmount > 0)
+    ? project.quotedAmount
+    : (escrow?.totalAmount || milestones?.reduce((acc, m) => acc + (m.amount || 0), 0) || (project as any).budget || 0);
 
   const handleFinishPayment = async () => {
     setPaymentStep("verifying");
@@ -376,8 +384,10 @@ export default function ProjectDetails() {
   const handleSubmitWork = () => {
     if (selectedMilestoneId && submitUrl) {
       const payload: any = { id: selectedMilestoneId, submissionUrl: submitUrl };
-      if (selectedMilestoneId === invoiceMilestone?.id && quotedTradeValue) {
-        payload.quotedAmount = parseFloat(quotedTradeValue);
+      const isCi = selectedMilestoneId === invoiceMilestone?.id || selectedMilestoneId === milestones?.[0]?.id;
+      const numericQuote = quotedTradeValue ? parseFloat(quotedTradeValue) : (displayQuotedAmount > 0 ? displayQuotedAmount / 100 : 0);
+      if (isCi && numericQuote > 0) {
+        payload.quotedAmount = numericQuote;
       }
       submitMilestone.mutate(payload, {
         onSuccess: () => {
@@ -392,10 +402,16 @@ export default function ProjectDetails() {
   };
 
   // Determine active logistics step (0 to 5)
-  const invoiceMilestone = milestones?.find(m => m.title === "Commercial Invoice & Packing List");
-  const qcMilestone = milestones?.find(m => m.title === "Quality Certificate (SGS Inspection)");
-  const bolMilestone = milestones?.find(m => m.title === "Bill of Lading (BoL) / Shipping Receipt");
-  const beMilestone = milestones?.find(m => m.title === "Import customs declaration (Bill of Entry)");
+  const invoiceMilestone = milestones?.find(m => m.title?.toLowerCase().includes("commercial invoice") || m.title === "Commercial Invoice & Packing List") || milestones?.[0];
+  const qcMilestone = milestones?.find(m => m.title?.toLowerCase().includes("quality") || m.title === "Quality Certificate (SGS Inspection)");
+  const bolMilestone = milestones?.find(m => m.title?.toLowerCase().includes("lading") || m.title === "Bill of Lading (BoL) / Shipping Receipt");
+  const beMilestone = milestones?.find(m => m.title?.toLowerCase().includes("entry") || m.title === "Import customs declaration (Bill of Entry)");
+
+  const displayQuotedAmount = (project.quotedAmount && project.quotedAmount > 0)
+    ? project.quotedAmount
+    : (invoiceMilestone?.amount && invoiceMilestone.amount > 0)
+      ? invoiceMilestone.amount
+      : (milestones?.reduce((acc, m) => acc + (m.amount || 0), 0) || (project as any).budget || 0);
 
   const isCiUploaded = !!invoiceMilestone?.submissionUrl;
   const isQcUploaded = !!qcMilestone?.submissionUrl;
@@ -698,21 +714,21 @@ export default function ProjectDetails() {
                 {currentStep === 2 && (
                   project.tradeValueStatus === 'DISAGREED' ? (
                     isClient
-                      ? `You requested negotiation on the quoted Trade Value (${formatMoney(project.quotedAmount || 0)}). Please negotiate in the chat box below.`
+                      ? `You requested negotiation on the quoted Trade Value (${formatMoney(displayQuotedAmount)}). Please negotiate in the chat box below.`
                       : isTalent
-                        ? `The Importer requested negotiation on the quoted Trade Value (${formatMoney(project.quotedAmount || 0)}). Please negotiate in the chat box or update the Trade Value.`
+                        ? `The Importer requested negotiation on the quoted Trade Value (${formatMoney(displayQuotedAmount)}). Please negotiate in the chat box or update the Trade Value.`
                         : "Trade Value is under negotiation."
                   ) : project.tradeValueStatus === 'AGREED' ? (
                     isClient
-                      ? `The Trade Value of ${formatMoney(project.quotedAmount || 0)} has been agreed. Please deposit funds into Escrow so the Exporter can upload the Quality Certificate and Bill of Lading.`
+                      ? `The Trade Value of ${formatMoney(displayQuotedAmount)} has been agreed. Please deposit funds into Escrow so the Exporter can upload the Quality Certificate and Bill of Lading.`
                       : isTalent
-                        ? `Trade Value agreed (${formatMoney(project.quotedAmount || 0)})! Waiting for the Importer to deposit funds into Escrow before you submit Quality Certificate & Bill of Lading.`
+                        ? `Trade Value agreed (${formatMoney(displayQuotedAmount)})! Waiting for the Importer to deposit funds into Escrow before you submit Quality Certificate & Bill of Lading.`
                         : "Awaiting Importer Escrow deposit."
                   ) : (
                     isClient
-                      ? `The Exporter quoted Trade Value: ${formatMoney(project.quotedAmount || 0)}. Do you agree to this amount or wish to negotiate?`
+                      ? `The Exporter quoted Trade Value: ${formatMoney(displayQuotedAmount)}. Do you agree to this amount or wish to negotiate?`
                       : isTalent
-                        ? `You quoted Trade Value: ${formatMoney(project.quotedAmount || 0)}. Waiting for the Importer to agree or request negotiation.`
+                        ? `You quoted Trade Value: ${formatMoney(displayQuotedAmount)}. Waiting for the Importer to agree or request negotiation.`
                         : "Awaiting Importer agreement on quoted Trade Value."
                   )
                 )}
@@ -755,7 +771,7 @@ export default function ProjectDetails() {
                       className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all text-xs tracking-wide"
                       onClick={handleAgreeTradeValue}
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Agree ({formatMoney(project.quotedAmount || 0)}) & Proceed
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Agree ({formatMoney(displayQuotedAmount)}) & Proceed
                     </Button>
                     <Button
                       variant="outline"
