@@ -697,7 +697,11 @@ export default function ProjectDetails() {
               <h4 className="text-sm font-bold text-blue-900 mt-0.5">
                 {currentStep === 0 ? "Awaiting Partner to Join Contract" :
                   currentStep === 1 ? (isTalent ? "Upload Commercial Invoice (CI)" : "Awaiting Exporter Commercial Invoice (CI)") :
-                    currentStep === 2 ? (isClient ? "Commercial Invoice Received — Deposit Funds to Escrow" : "Awaiting Importer Escrow Funding") :
+                    currentStep === 2 ? (
+                      displayQuotedAmount > 0
+                        ? (project.tradeValueStatus === 'AGREED' ? "Commercial Invoice Received — Deposit Funds to Escrow" : "Commercial Invoice Received — Review Quoted Trade Value")
+                        : (isTalent ? "Commercial Invoice Uploaded — Quote Trade Value" : "Commercial Invoice Uploaded — Awaiting Exporter Trade Value")
+                    ) :
                       currentStep === 3 ? (isTalent ? "Escrow Secured — Upload Quality Certificate & Bill of Lading" : "Escrow Secured — Awaiting Quality Cert & BoL") :
                         currentStep === 4 ? (isClient ? (!beMilestone?.importerSubmissionUrl ? "Upload Import customs declaration (Bill of Entry)" : "Audit Documentation Checklist & Verify") : "Awaiting Importer Customs Declaration") :
                           "Trade Documents Approved & Completed"}
@@ -712,7 +716,11 @@ export default function ProjectDetails() {
                       "Waiting for Exporter (Seller) to upload Commercial Invoice."
                 )}
                 {currentStep === 2 && (
-                  project.tradeValueStatus === 'DISAGREED' ? (
+                  displayQuotedAmount <= 0 ? (
+                    isTalent
+                      ? "You have uploaded the Commercial Invoice. Please quote the Total Trade Escrow Value so the Importer can review and agree."
+                      : "The Exporter has uploaded the Commercial Invoice. Waiting for the Exporter to specify the Trade Escrow Value."
+                  ) : project.tradeValueStatus === 'DISAGREED' ? (
                     isClient
                       ? `You requested negotiation on the quoted Trade Value (${formatMoney(displayQuotedAmount)}). Please negotiate in the chat box below.`
                       : isTalent
@@ -764,8 +772,21 @@ export default function ProjectDetails() {
             {/* Step 2 CTA: Trade Value Agreement & Escrow Deposit */}
             {currentStep === 2 && (
               <div className="flex flex-wrap items-center gap-2 justify-end w-full md:w-auto">
-                {/* Importer Actions when Trade Value is NOT yet Agreed */}
-                {isClient && project.tradeValueStatus !== 'AGREED' && (
+                {/* Exporter Action to Quote Trade Value when NOT yet Quoted */}
+                {isTalent && displayQuotedAmount <= 0 && (
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg shadow-sm transition-all text-xs tracking-wide"
+                    onClick={() => {
+                      setNewQuotedValue("");
+                      setIsUpdateValueOpen(true);
+                    }}
+                  >
+                    <DollarSign className="w-3.5 h-3.5 mr-1.5" /> Quote Trade Value
+                  </Button>
+                )}
+
+                {/* Importer Actions when Trade Value IS Quoted (>0) but NOT yet Agreed */}
+                {isClient && displayQuotedAmount > 0 && project.tradeValueStatus !== 'AGREED' && (
                   <>
                     <Button
                       className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all text-xs tracking-wide"
@@ -783,13 +804,13 @@ export default function ProjectDetails() {
                   </>
                 )}
 
-                {/* Exporter Action to Update Trade Value when NOT yet Agreed */}
-                {isTalent && project.tradeValueStatus !== 'AGREED' && (
+                {/* Exporter Action to Update Trade Value when Quoted (>0) but NOT yet Agreed */}
+                {isTalent && displayQuotedAmount > 0 && project.tradeValueStatus !== 'AGREED' && (
                   <Button
                     variant="outline"
                     className="border-blue-200 text-blue-600 hover:bg-blue-50 font-bold px-4 py-2.5 rounded-lg text-xs"
                     onClick={() => {
-                      setNewQuotedValue(project.quotedAmount ? (project.quotedAmount / 100).toString() : "");
+                      setNewQuotedValue(displayQuotedAmount > 0 ? (displayQuotedAmount / 100).toString() : "");
                       setIsUpdateValueOpen(true);
                     }}
                   >
@@ -1410,29 +1431,9 @@ export default function ProjectDetails() {
               <Label htmlFor="dialogDocUrl" className="text-slate-700">Or enter Document URL (Google Drive, Dropbox, MSC/Maersk Tracking link)</Label>
               <Input id="dialogDocUrl" value={submitUrl} onChange={e => setSubmitUrl(e.target.value)} placeholder="https://" className="bg-white border-slate-200 text-slate-900 focus:border-blue-500" disabled={isUploadingFile} />
             </div>
-
-            {selectedMilestoneId === invoiceMilestone?.id && (
-              <div className="space-y-2 pt-2 border-t border-slate-100">
-                <Label htmlFor="dialogQuotedValue" className="text-slate-900 font-bold text-xs uppercase tracking-wider">Quote Total Trade Escrow Value ({project.currency || 'USD'}) *</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-slate-400 text-sm font-semibold">$</span>
-                  <Input
-                    id="dialogQuotedValue"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="e.g. 10000.00"
-                    value={quotedTradeValue}
-                    onChange={e => setQuotedTradeValue(e.target.value)}
-                    className="pl-8 bg-white border-slate-300 text-slate-900 font-bold focus:border-blue-500 text-sm"
-                  />
-                </div>
-                <p className="text-xs text-slate-400">Specify the total trade escrow amount for this contract.</p>
-              </div>
-            )}
           </div>
           <DialogFooter>
-            <Button onClick={handleSubmitWork} disabled={!submitUrl || (selectedMilestoneId === invoiceMilestone?.id && (!quotedTradeValue || parseFloat(quotedTradeValue) <= 0)) || submitMilestone.isPending || isUploadingFile} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
+            <Button onClick={handleSubmitWork} disabled={!submitUrl || submitMilestone.isPending || isUploadingFile} className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs">
               {submitMilestone.isPending ? "Submitting..." : "Submit Document"}
             </Button>
           </DialogFooter>

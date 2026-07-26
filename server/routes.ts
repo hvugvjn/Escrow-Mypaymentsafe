@@ -169,7 +169,7 @@ export async function registerRoutes(
         projectCode,
         createdBy: userId,
         status: 'WAITING_FOR_ACCEPTANCE',
-        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        expiresAt: (input as any).expiresAt ? new Date((input as any).expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         currency: input.currency || 'USD',
         buyerId: isExport ? null : userId,
         freelancerId: isExport ? userId : (targetFreelancerId || null),
