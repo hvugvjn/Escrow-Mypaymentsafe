@@ -106,6 +106,17 @@ export async function registerRoutes(
     const milestones = await storage.getMilestones(project.id);
     const escrow = await storage.getEscrow(project.id);
 
+    // Auto-repair project.quotedAmount if missing or 0 in DB
+    let effectiveQuoted = project.quotedAmount || 0;
+    if (effectiveQuoted <= 0) {
+      const msTotal = milestones.reduce((sum, m) => sum + (m.amount || 0), 0);
+      effectiveQuoted = escrow?.totalAmount || msTotal || 0;
+      if (effectiveQuoted > 0) {
+        await db.update(projects).set({ quotedAmount: effectiveQuoted }).where(eq(projects.id, project.id));
+        project.quotedAmount = effectiveQuoted;
+      }
+    }
+
     let buyerName = 'Awaiting Buyer';
     let freelancerName = 'Awaiting Freelancer';
 
